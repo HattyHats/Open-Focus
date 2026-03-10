@@ -1990,13 +1990,53 @@ function applyCrop(){
   const x=Math.max(0,Math.round(cropR.x)),y=Math.max(0,Math.round(cropR.y));
   const w=Math.max(1,Math.min(Math.round(cropR.w),canvas.width-x));
   const h=Math.max(1,Math.min(Math.round(cropR.h),canvas.height-y));
+
+  // Render a clean frame with no crop guides, then grab the crop region from it
+  const cleanCanvas=document.createElement('canvas');
+  cleanCanvas.width=canvas.width;cleanCanvas.height=canvas.height;
+  const cleanCtx=cleanCanvas.getContext('2d');
+  const wasCropOn=cropOn;
+  cropOn=false; // suppress crop guide drawing
+  const savedTool=S.tool;S.tool='move'; // suppress any other overlays
+  // Temporarily draw to cleanCanvas by swapping ctx target
+  const origCtx=ctx;
+  // Re-render directly: composite all layers onto cleanCanvas
+  cleanCtx.clearRect(0,0,canvas.width,canvas.height);
+  layers.forEach(layer=>{
+    if(!layer.visible)return;
+    cleanCtx.save();
+    cleanCtx.globalAlpha=layer.opacity/100;
+    if(layer.type==='base'){
+      const lx=layer.x??0,ly=layer.y??0,lw=layer.w??canvas.width,lh=layer.h??canvas.height;
+      const raw=document.createElement('canvas');raw.width=lw;raw.height=lh;
+      raw.getContext('2d').drawImage(origImg,0,0,lw,lh);
+      const adjusted=applyAdjustments(raw,layer.adjustments||DSLIDERS);
+      cleanCtx.drawImage(adjusted,lx,ly,lw,lh);
+    } else if(layer.type==='image'&&layer.img){
+      const adjImg=renderImageLayerToCanvas(layer);
+      cleanCtx.drawImage(adjImg,layer.x,layer.y,layer.w,layer.h);
+    } else if(layer.type==='text'){
+      const fontSize=layer.size;
+      cleanCtx.font=`${layer.weight} ${fontSize}px ${layer.font}`;
+      cleanCtx.textAlign=layer.align;cleanCtx.textBaseline='top';
+      if(layer.shadow==='soft'){cleanCtx.shadowColor='rgba(0,0,0,0.6)';cleanCtx.shadowBlur=fontSize*0.15;cleanCtx.shadowOffsetX=cleanCtx.shadowOffsetY=fontSize*0.04;}
+      else if(layer.shadow==='hard'){cleanCtx.shadowColor='rgba(0,0,0,0.9)';cleanCtx.shadowBlur=2;cleanCtx.shadowOffsetX=cleanCtx.shadowOffsetY=fontSize*0.06;}
+      else if(layer.shadow==='glow'){cleanCtx.shadowColor=layer.color;cleanCtx.shadowBlur=fontSize*0.3;cleanCtx.shadowOffsetX=cleanCtx.shadowOffsetY=0;}
+      else{cleanCtx.shadowColor='transparent';cleanCtx.shadowBlur=0;cleanCtx.shadowOffsetX=cleanCtx.shadowOffsetY=0;}
+      cleanCtx.fillStyle=layer.color;
+      const lines=layer.text.split('\n');
+      lines.forEach((line,i)=>{cleanCtx.fillText(line,layer.x,layer.y+i*fontSize*1.25);});
+    }
+    cleanCtx.restore();
+  });
+  cropOn=wasCropOn;S.tool=savedTool;
+
   const tmp=document.createElement('canvas');tmp.width=w;tmp.height=h;
-  tmp.getContext('2d').drawImage(canvas,x,y,w,h,0,0,w,h);
+  tmp.getContext('2d').drawImage(cleanCanvas,x,y,w,h,0,0,w,h);
   const dataURL=tmp.toDataURL('image/png');
   const newImg=new Image();
   newImg.onload=()=>{
     origImg=newImg;canvas.width=w;canvas.height=h;
-    // Reset base layer to fill the new canvas
     const base=layers.find(l=>l.type==='base');
     if(base){base.name=base.name.replace(/\s*\(cropped\)*/,'');base.x=0;base.y=0;base.w=w;base.h=h;}
     resetSlidersUI();cropOn=false;
@@ -2009,7 +2049,6 @@ function applyCrop(){
     document.getElementById('t-move').classList.add('active');
     document.getElementById('sttool').textContent='Move';
     ca.className=ca.className.replace(/\b(tm|tc2)\b/g,'').trim()+' tm';
-    // Adjust layer positions for the crop offset
     layers.forEach(l=>{if(l.type!=='base'){l.x-=x;l.y-=y;}});
     renderCanvas();renderLayersPanel();pushHist(`✂ Cropped ${w}×${h}`);
     toast(`✂ Cropped to ${w}×${h}!`);
