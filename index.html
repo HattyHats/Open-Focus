@@ -343,7 +343,9 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
   #mob-sheet.open{transform:translateY(0);}
   #mob-sheet-handle{width:36px;height:4px;background:var(--border-light);border-radius:2px;margin:10px auto 6px;flex-shrink:0;}
   #mob-sheet-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);text-align:center;padding:0 0 8px;flex-shrink:0;}
-  #mob-sheet-body{flex:1;overflow-y:auto;padding:0 14px 14px;}
+  #mob-sheet-body{flex:1;overflow:hidden;display:flex;flex-direction:column;}
+  /* When rp is inside mob-sheet-body it should fill it */
+  #mob-sheet-body #rp{display:flex!important;width:100%!important;border:none!important;flex:1;min-height:0;}
 
   /* ── Modals: full screen on mobile ── */
   .modal-bg{align-items:flex-end;}
@@ -2899,43 +2901,50 @@ document.addEventListener('paste',e=>{
 // ════════════════════════════════════════════
 const isMobile=()=>window.innerWidth<=700;
 
-// ── Bottom sheet ──
+// ── Bottom sheet — moves the REAL right panel in/out ──
 let mobSheetPane=null;
+const rp=document.getElementById('rp');
+const mobSheetBody=document.getElementById('mob-sheet-body');
+
 function mobOpenSheet(pane){
   if(!isMobile())return;
   const sheet=document.getElementById('mob-sheet');
-  const title=document.getElementById('mob-sheet-title');
-  const body=document.getElementById('mob-sheet-body');
-  const labels={adjust:'Adjust',layers:'Layers',history:'History'};
-  // If same pane already open, close it
+  // Toggle closed if same pane tapped again
   if(sheet.classList.contains('open')&&mobSheetPane===pane){mobSheetClose();return;}
   mobSheetPane=pane;
-  title.textContent=labels[pane]||pane;
-  // Clone the right-panel pane content into the sheet
-  const srcPane=document.getElementById('pane-'+pane);
-  if(srcPane) body.innerHTML=srcPane.innerHTML;
+  document.getElementById('mob-sheet-title').textContent=
+    {adjust:'Adjust',layers:'Layers',history:'History'}[pane]||pane;
+  // Move the real right panel into the sheet body (single source of truth)
+  mobSheetBody.appendChild(rp);
+  rp.style.display='flex';
+  rp.style.flexDirection='column';
+  rp.style.flex='1';
+  rp.style.overflow='hidden';
+  // Switch to the right pane inside the panel
+  const tab=rp.querySelector(`.ptab[data-p="${pane}"]`);
+  if(tab) switchPane(tab);
   sheet.classList.add('open');
-  // Sync range inputs — they don't carry values through innerHTML clone
-  if(pane==='adjust'){
-    Object.keys(DSLIDERS).forEach(k=>{
-      const s=body.querySelector('#s-'+k);
-      const v=body.querySelector('#v-'+k);
-      const src=document.getElementById('s-'+k);
-      if(s&&src){s.value=src.value;if(v)v.textContent=document.getElementById('v-'+k).textContent;}
-      if(s) s.oninput=function(){slide(k,this.value);const ms=body.querySelector('#s-'+k);if(ms)ms.value=this.value;};
-    });
-  }
-  // Update mob toolbar active state
+  // Update mob toolbar highlight
   document.querySelectorAll('.mob-tbtn').forEach(b=>b.classList.remove('active'));
   const mb=document.getElementById('mt-'+pane);
   if(mb)mb.classList.add('active');
 }
 function mobSheetClose(){
-  document.getElementById('mob-sheet').classList.remove('open');
+  const sheet=document.getElementById('mob-sheet');
+  sheet.classList.remove('open');
   mobSheetPane=null;
+  // Move rp back to its original desktop home (hidden on mobile via CSS)
+  const mainEl=document.getElementById('main');
+  mainEl.appendChild(rp);
+  rp.style.display='';
+  rp.style.flexDirection='';
+  rp.style.flex='';
+  rp.style.overflow='';
 }
-// Close sheet on canvas tap (when not editing)
-canvas.addEventListener('touchstart',()=>{if(mobSheetPane)mobSheetClose();},{passive:true});
+// Close sheet on canvas tap (when not editing a layer)
+canvas.addEventListener('touchstart',()=>{
+  if(mobSheetPane&&!layerDrag&&!layerResizing) mobSheetClose();
+},{passive:true});
 
 // Keep mobile toolbar in sync with setTool
 const _origSetTool=setTool;
