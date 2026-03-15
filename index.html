@@ -343,9 +343,14 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
   #mob-sheet.open{transform:translateY(0);}
   #mob-sheet-handle{width:36px;height:4px;background:var(--border-light);border-radius:2px;margin:10px auto 6px;flex-shrink:0;}
   #mob-sheet-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);text-align:center;padding:0 0 8px;flex-shrink:0;}
-  #mob-sheet-body{flex:1;overflow:hidden;display:flex;flex-direction:column;}
-  /* When rp is inside mob-sheet-body it should fill it */
-  #mob-sheet-body #rp{display:flex!important;width:100%!important;border:none!important;flex:1;min-height:0;}
+  #mob-sheet-body{flex:1;overflow-y:auto;padding:0 14px 16px;display:flex;flex-direction:column;}
+  /* Mobile sheet tab bar */
+  #mob-sheet-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;padding:0 14px;}
+  .mob-stab{flex:1;height:38px;border:none;background:none;color:var(--text-dim);font-family:var(--font-b);font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;border-bottom:2px solid transparent;transition:var(--tr);}
+  .mob-stab.active{color:var(--accent);border-bottom-color:var(--accent);}
+  /* Mobile panes */
+  .mob-pane{display:none;flex-direction:column;gap:14px;padding-top:12px;}
+  .mob-pane.mob-pane-active{display:flex;}
 
   /* ── Modals: full screen on mobile ── */
   .modal-bg{align-items:flex-end;}
@@ -670,7 +675,7 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
     </div>
   </div>
 
-  <!-- RIGHT PANEL (desktop) -->
+  <!-- RIGHT PANEL (desktop only — hidden on mobile, content mirrored to mob-sheet) -->
   <div id="rp">
     <div class="ptabs">
       <button class="ptab active" data-p="adjust" onclick="switchPane(this)">Adjust</button>
@@ -770,11 +775,17 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
   <button class="mob-tbtn" onclick="mobOpenSheet('history')"><div class="ticon">↺</div><div class="tlabel">History</div></button>
 </div>
 
-<!-- MOBILE BOTTOM SHEET -->
+<!-- MOBILE BOTTOM SHEET — contains the real right panel permanently -->
 <div id="mob-sheet">
   <div id="mob-sheet-handle" onclick="mobSheetClose()"></div>
-  <div id="mob-sheet-title">Adjust</div>
-  <div id="mob-sheet-body"></div>
+  <div id="mob-sheet-tabs">
+    <button class="mob-stab active" data-p="adjust" onclick="mobSwitchTab(this,'adjust')">Adjust</button>
+    <button class="mob-stab" data-p="layers" onclick="mobSwitchTab(this,'layers')">Layers</button>
+    <button class="mob-stab" data-p="history" onclick="mobSwitchTab(this,'history')">History</button>
+  </div>
+  <div id="mob-sheet-body">
+    <!-- pane-adjust, pane-layers, pane-history rendered here via JS -->
+  </div>
 </div>
 
 <div id="sb">
@@ -2900,55 +2911,152 @@ document.addEventListener('paste',e=>{
 //  MOBILE SUPPORT
 // ════════════════════════════════════════════
 const isMobile=()=>window.innerWidth<=700;
-
-// ── Bottom sheet — moves the REAL right panel in/out ──
 let mobSheetPane=null;
-const rp=document.getElementById('rp');
-const mobSheetBody=document.getElementById('mob-sheet-body');
+
+// ── Build the mobile sheet panes once on load ──
+function buildMobSheet(){
+  const body=document.getElementById('mob-sheet-body');
+  if(!body)return;
+  // Copy each pane's innerHTML into a mobile pane div
+  ['adjust','layers','history'].forEach(pane=>{
+    const src=document.getElementById('pane-'+pane);
+    if(!src)return;
+    const div=document.createElement('div');
+    div.id='mob-pane-'+pane;
+    div.className='mob-pane'+(pane==='adjust'?' mob-pane-active':'');
+    div.innerHTML=src.innerHTML;
+    body.appendChild(div);
+  });
+  // Wire up all sliders in the mobile adjust pane
+  const mobAdjust=document.getElementById('mob-pane-adjust');
+  if(mobAdjust){
+    Object.keys(DSLIDERS).forEach(k=>{
+      const sl=mobAdjust.querySelector('[id="s-'+k+'"]');
+      const vl=mobAdjust.querySelector('[id="v-'+k+'"]');
+      if(sl){
+        // Sync initial value
+        const realSl=document.getElementById('s-'+k);
+        if(realSl) sl.value=realSl.value;
+        if(vl){const rv=document.getElementById('v-'+k);if(rv)vl.textContent=rv.textContent;}
+        sl.oninput=function(){
+          // Update both mobile display and real slider, then call slide()
+          if(vl) vl.textContent=parseInt(this.value)>0?'+'+this.value:this.value;
+          const realSl2=document.getElementById('s-'+k);
+          if(realSl2) realSl2.value=this.value;
+          slide(k,this.value);
+        };
+      }
+    });
+    // Wire Quick Fix button
+    const qf=mobAdjust.querySelector('.qfbtn');
+    if(qf) qf.onclick=()=>quickFix();
+    // Wire preset buttons
+    mobAdjust.querySelectorAll('.pi').forEach(pi=>{
+      const orig=pi.getAttribute('onclick');
+      if(orig) pi.onclick=()=>eval(orig); // re-evaluate the onclick from original
+    });
+  }
+  // Wire layer panel buttons (add text, add overlay)
+  const mobLayers=document.getElementById('mob-pane-layers');
+  if(mobLayers){
+    const addText=mobLayers.querySelector('.ladd');
+    if(addText) addText.onclick=()=>openTxtModal(null);
+    const addImg=mobLayers.querySelectorAll('.ladd')[1];
+    if(addImg) addImg.onclick=()=>document.getElementById('overlay-fi').click();
+  }
+}
+
+// Keep mobile sliders in sync when values change from other sources
+function syncMobSliders(){
+  const mobAdjust=document.getElementById('mob-pane-adjust');
+  if(!mobAdjust)return;
+  Object.keys(DSLIDERS).forEach(k=>{
+    const sl=mobAdjust.querySelector('[id="s-'+k+'"]');
+    const vl=mobAdjust.querySelector('[id="v-'+k+'"]');
+    const realSl=document.getElementById('s-'+k);
+    const realVl=document.getElementById('v-'+k);
+    if(sl&&realSl) sl.value=realSl.value;
+    if(vl&&realVl) vl.textContent=realVl.textContent;
+  });
+}
+
+// Keep mobile layers panel in sync
+function syncMobLayers(){
+  const mobLayers=document.getElementById('mob-pane-layers');
+  if(!mobLayers)return;
+  const realLL=document.getElementById('ll');
+  const mobLL=mobLayers.querySelector('.ll');
+  if(realLL&&mobLL) mobLL.innerHTML=realLL.innerHTML;
+  // Rewire click handlers on cloned layer rows
+  mobLL&&mobLL.querySelectorAll('.li').forEach(li=>{
+    const id=parseInt(li.dataset.id);
+    if(!id)return;
+    li.onclick=()=>selectLayer(id);
+    const vis=li.querySelector('.lvis');
+    if(vis) vis.onclick=e=>{e.stopPropagation();const l=layers.find(x=>x.id===id);if(l){l.visible=!l.visible;renderCanvas();renderLayersPanel();}};
+    const del=li.querySelector('.ldel');
+    if(del) del.onclick=e=>{e.stopPropagation();deleteLayer(id);};
+  });
+}
+
+function mobSwitchTab(btn,pane){
+  document.querySelectorAll('.mob-stab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.mob-pane').forEach(p=>p.classList.remove('mob-pane-active'));
+  const mp=document.getElementById('mob-pane-'+pane);
+  if(mp) mp.classList.add('mob-pane-active');
+  mobSheetPane=pane;
+  if(pane==='adjust') syncMobSliders();
+  if(pane==='layers') syncMobLayers();
+  if(pane==='history'){
+    const mobHist=document.getElementById('mob-pane-history');
+    const realHist=document.getElementById('pane-history');
+    if(mobHist&&realHist) mobHist.innerHTML=realHist.innerHTML;
+  }
+}
 
 function mobOpenSheet(pane){
   if(!isMobile())return;
   const sheet=document.getElementById('mob-sheet');
-  // Toggle closed if same pane tapped again
   if(sheet.classList.contains('open')&&mobSheetPane===pane){mobSheetClose();return;}
   mobSheetPane=pane;
-  document.getElementById('mob-sheet-title').textContent=
-    {adjust:'Adjust',layers:'Layers',history:'History'}[pane]||pane;
-  // Move the real right panel into the sheet body (single source of truth)
-  mobSheetBody.appendChild(rp);
-  rp.style.display='flex';
-  rp.style.flexDirection='column';
-  rp.style.flex='1';
-  rp.style.overflow='hidden';
-  // Switch to the right pane inside the panel
-  const tab=rp.querySelector(`.ptab[data-p="${pane}"]`);
-  if(tab) switchPane(tab);
+  // Switch to the right tab
+  const tab=document.querySelector(`.mob-stab[data-p="${pane}"]`);
+  if(tab) mobSwitchTab(tab,pane);
+  else{ if(pane==='adjust') syncMobSliders(); if(pane==='layers') syncMobLayers(); }
   sheet.classList.add('open');
-  // Update mob toolbar highlight
   document.querySelectorAll('.mob-tbtn').forEach(b=>b.classList.remove('active'));
   const mb=document.getElementById('mt-'+pane);
   if(mb)mb.classList.add('active');
 }
 function mobSheetClose(){
-  const sheet=document.getElementById('mob-sheet');
-  sheet.classList.remove('open');
+  document.getElementById('mob-sheet').classList.remove('open');
   mobSheetPane=null;
-  // Move rp back to its original desktop home (hidden on mobile via CSS)
-  const mainEl=document.getElementById('main');
-  mainEl.appendChild(rp);
-  rp.style.display='';
-  rp.style.flexDirection='';
-  rp.style.flex='';
-  rp.style.overflow='';
 }
-// Close sheet on canvas tap (when not editing a layer)
+
+// Patch renderLayersPanel to also sync mobile layers
+const _origRLP=renderLayersPanel;
+function renderLayersPanel(){
+  _origRLP();
+  if(isMobile()&&mobSheetPane==='layers') syncMobLayers();
+}
+window.renderLayersPanel=renderLayersPanel;
+
+// Patch loadSlidersFromLayer to also sync mobile sliders
+const _origLSFL=loadSlidersFromLayer;
+function loadSlidersFromLayer(layer){
+  _origLSFL(layer);
+  if(isMobile()) syncMobSliders();
+}
+window.loadSlidersFromLayer=loadSlidersFromLayer;
+
+// Close sheet on canvas tap
 canvas.addEventListener('touchstart',()=>{
   if(mobSheetPane&&!layerDrag&&!layerResizing) mobSheetClose();
 },{passive:true});
 
 // Keep mobile toolbar in sync with setTool
 const _origSetTool=setTool;
-// Patch setTool to also update mobile toolbar
 function setToolMob(tool){
   _origSetTool(tool);
   if(!isMobile())return;
@@ -2956,38 +3064,25 @@ function setToolMob(tool){
   const mob=document.getElementById('mt-'+tool);
   if(mob)mob.classList.add('active');
 }
-// Override setTool globally
 window.setTool=setToolMob;
 
 // ── Touch events for canvas pan & layer drag ──
-let touchStart=null, touchPanOrigin=null;
-let pinchStartDist=null, pinchStartZoom=null;
-
-function getTouchDist(t){
-  const dx=t[0].clientX-t[1].clientX, dy=t[0].clientY-t[1].clientY;
-  return Math.sqrt(dx*dx+dy*dy);
-}
-function touchCanvasCoords(touch){
-  const rect=canvas.getBoundingClientRect();
-  return{
-    cx:(touch.clientX-rect.left)*(canvas.width/rect.width),
-    cy:(touch.clientY-rect.top)*(canvas.height/rect.height)
-  };
-}
+let touchStart=null,touchPanOrigin=null;
+let pinchStartDist=null,pinchStartZoom=null;
+function getTouchDist(t){const dx=t[0].clientX-t[1].clientX,dy=t[0].clientY-t[1].clientY;return Math.sqrt(dx*dx+dy*dy);}
 
 canvas.addEventListener('touchstart',e=>{
   if(S.tool==='crop'||S.tool==='bgr')return;
   if(e.touches.length===1){
     const t=e.touches[0];
-    touchStart={x:t.clientX,y:t.clientY,time:Date.now()};
+    touchStart={x:t.clientX,y:t.clientY};
     touchPanOrigin={panX:S.panX,panY:S.panY};
-    // Also fire mousedown-equivalent for layer selection
     const me=new MouseEvent('mousedown',{clientX:t.clientX,clientY:t.clientY,bubbles:true});
     canvas.dispatchEvent(me);
   } else if(e.touches.length===2){
     pinchStartDist=getTouchDist(e.touches);
     pinchStartZoom=S.zoom;
-    touchStart=null; layerDrag=null; layerResizing=null;
+    touchStart=null;layerDrag=null;layerResizing=null;
   }
 },{passive:true});
 
@@ -2995,59 +3090,45 @@ canvas.addEventListener('touchmove',e=>{
   e.preventDefault();
   if(e.touches.length===1&&touchStart){
     const t=e.touches[0];
-    const dx=t.clientX-touchStart.x, dy=t.clientY-touchStart.y;
+    const dx=t.clientX-touchStart.x,dy=t.clientY-touchStart.y;
     if(layerDrag||layerResizing){
-      // Layer is being dragged — fire synthetic mousemove
-      const me=new MouseEvent('mousemove',{clientX:t.clientX,clientY:t.clientY,bubbles:true});
-      window.dispatchEvent(me);
+      window.dispatchEvent(new MouseEvent('mousemove',{clientX:t.clientX,clientY:t.clientY,bubbles:true}));
     } else {
-      // Pan canvas
       S.panX=(touchPanOrigin?.panX||0)+dx;
       S.panY=(touchPanOrigin?.panY||0)+dy;
       positionCanvas();
     }
   } else if(e.touches.length===2&&pinchStartDist){
     const dist=getTouchDist(e.touches);
-    const scale=dist/pinchStartDist;
-    S.zoom=Math.max(0.05,Math.min(4,pinchStartZoom*scale));
+    S.zoom=Math.max(0.05,Math.min(4,pinchStartZoom*dist/pinchStartDist));
     applyZoom();
   }
 },{passive:false});
 
 canvas.addEventListener('touchend',e=>{
-  if(layerDrag||layerResizing){
-    const me=new MouseEvent('mouseup',{bubbles:true});
-    window.dispatchEvent(me);
-  }
-  touchStart=null; touchPanOrigin=null; pinchStartDist=null;
+  if(layerDrag||layerResizing) window.dispatchEvent(new MouseEvent('mouseup',{bubbles:true}));
+  touchStart=null;touchPanOrigin=null;pinchStartDist=null;
 },{passive:true});
 
-// ── Lasso touch support ──
+// Lasso touch support
 function addLassoTouchEvents(){
   if(!lassoCanvas)return;
-  lassoCanvas.addEventListener('touchstart',e=>{
-    e.preventDefault();
-    const t=e.touches[0];
-    const me=new MouseEvent('mousedown',{clientX:t.clientX,clientY:t.clientY});
-    lassoCanvas.dispatchEvent(me);
-  },{passive:false});
-  lassoCanvas.addEventListener('touchmove',e=>{
-    e.preventDefault();
-    const t=e.touches[0];
-    const me=new MouseEvent('mousemove',{clientX:t.clientX,clientY:t.clientY});
-    lassoCanvas.dispatchEvent(me);
-  },{passive:false});
-  lassoCanvas.addEventListener('touchend',e=>{
-    const me=new MouseEvent('mouseup',{});
-    lassoCanvas.dispatchEvent(me);
+  ['touchstart','touchmove'].forEach(type=>{
+    lassoCanvas.addEventListener(type,e=>{
+      e.preventDefault();
+      const t=e.touches[0];
+      lassoCanvas.dispatchEvent(new MouseEvent(type==='touchstart'?'mousedown':'mousemove',{clientX:t.clientX,clientY:t.clientY}));
+    },{passive:false});
+  });
+  lassoCanvas.addEventListener('touchend',()=>{
+    lassoCanvas.dispatchEvent(new MouseEvent('mouseup'));
   },{passive:true});
 }
-// Hook into startLasso to add touch events
-const _origStartLasso=startLasso;
-window.startLasso=function(){
-  _origStartLasso();
-  setTimeout(addLassoTouchEvents,50);
-};
+const _origStartLasso2=window.startLasso||startLasso;
+window.startLasso=function(){_origStartLasso2();setTimeout(addLassoTouchEvents,50);};
+
+// ── Init mobile sheet on load ──
+if(isMobile()) buildMobSheet();
 
 // ════════════════════════════════════════════
 //  INIT
