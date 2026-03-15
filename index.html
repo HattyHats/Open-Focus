@@ -282,7 +282,92 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 }
 .hatty-link:hover{border-color:var(--accent);background:var(--accent-glow);color:var(--accent-hover);}
 *{scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
-@media(max-width:700px){#rp{display:none;}#toolstrip{width:52px;}.tlabel{display:none;}}
+/* Mobile elements hidden by default on desktop */
+#mob-toolbar{display:none;}
+#mob-sheet{display:none;}
+
+@media(max-width:700px){
+  /* ── Variables ── */
+  :root{--mob-toolbar-h:60px;--mob-sheet-h:55vh;}
+
+  /* ── Top bar: keep only logo, open, export, undo ── */
+  #topbar{padding:0 8px;gap:5px;height:48px;}
+  #topbar .sep,#topbar .zoom-ctrl,#topbar #docname,
+  #topbar .hatty-link,#topbar .hatty-credit,
+  #topbar button[onclick="showOB()"],
+  #topbar button[onclick="doRedo()"]{ display:none!important; }
+  #topbar .logo-text{font-size:15px;}
+  #topbar .logo-icon{width:26px;height:26px;font-size:13px;}
+  #ubtn{font-size:12px!important;padding:0 8px!important;}
+
+  /* ── Main: no left toolstrip ── */
+  #main{flex-direction:column;}
+  #toolstrip{
+    display:none; /* hidden — replaced by bottom bar */
+  }
+  #rp{display:none;} /* hidden — replaced by bottom sheet */
+  #sb{display:none;} /* hide status bar */
+
+  /* ── Canvas area: full width, leave room for bottom toolbar ── */
+  #canvas-area{flex:1;overflow:hidden;}
+
+  /* ── Bottom toolbar (mobile toolstrip) ── */
+  #mob-toolbar{
+    display:flex;height:var(--mob-toolbar-h);
+    background:var(--surface);border-top:1px solid var(--border);
+    overflow-x:auto;overflow-y:hidden;flex-shrink:0;
+    align-items:center;padding:0 4px;gap:2px;
+    -webkit-overflow-scrolling:touch;scrollbar-width:none;
+  }
+  #mob-toolbar::-webkit-scrollbar{display:none;}
+  .mob-tbtn{
+    min-width:52px;height:52px;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:3px;
+    border-radius:var(--rs);cursor:pointer;color:var(--text-muted);
+    border:none;background:none;font-family:var(--font-b);flex-shrink:0;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .mob-tbtn.active{background:var(--accent-glow);color:var(--accent);}
+  .mob-tbtn .ticon{font-size:20px;line-height:1;}
+  .mob-tbtn .tlabel{font-size:9px;font-weight:500;text-transform:uppercase;letter-spacing:.3px;}
+  .mob-tsep{width:1px;height:32px;background:var(--border);margin:0 3px;flex-shrink:0;}
+
+  /* ── Bottom sheet (replaces right panel) ── */
+  #mob-sheet{
+    display:flex!important;position:fixed;bottom:var(--mob-toolbar-h);left:0;right:0;
+    height:var(--mob-sheet-h);background:var(--surface);
+    border-top:1px solid var(--border-light);border-radius:14px 14px 0 0;
+    transform:translateY(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);
+    z-index:200;flex-direction:column;overflow:hidden;
+  }
+  #mob-sheet.open{transform:translateY(0);}
+  #mob-sheet-handle{width:36px;height:4px;background:var(--border-light);border-radius:2px;margin:10px auto 6px;flex-shrink:0;}
+  #mob-sheet-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);text-align:center;padding:0 0 8px;flex-shrink:0;}
+  #mob-sheet-body{flex:1;overflow-y:auto;padding:0 14px 14px;}
+
+  /* ── Modals: full screen on mobile ── */
+  .modal-bg{align-items:flex-end;}
+  .mcard{width:100%!important;max-width:100%!important;border-radius:16px 16px 0 0!important;max-height:85vh;overflow-y:auto;}
+
+  /* ── Bigger touch targets on canvas ── */
+  .ch{width:20px!important;height:20px!important;}
+  .ch.tl{top:-10px!important;left:-10px!important;}
+  .ch.tr{top:-10px!important;right:-10px!important;}
+  .ch.bl{bottom:-10px!important;left:-10px!important;}
+  .ch.br{bottom:-10px!important;right:-10px!important;}
+  .ch.tc{top:-10px!important;left:calc(50% - 10px)!important;}
+  .ch.bc{bottom:-10px!important;left:calc(50% - 10px)!important;}
+  .ch.lc{left:-10px!important;top:calc(50% - 10px)!important;}
+  .ch.rc{right:-10px!important;top:calc(50% - 10px)!important;}
+
+  /* ── Crop / BA / WM bars reposition above toolbar ── */
+  #crop-bar{bottom:calc(var(--mob-toolbar-h) + 8px)!important;}
+  #ba-bar{bottom:var(--mob-toolbar-h)!important;}
+  #wm-bar{bottom:var(--mob-toolbar-h)!important;}
+
+  /* ── Toast above toolbar ── */
+  #toast{bottom:calc(var(--mob-toolbar-h) + 10px)!important;}
+}
 </style>
 </head>
 <body>
@@ -583,7 +668,7 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
     </div>
   </div>
 
-  <!-- RIGHT PANEL -->
+  <!-- RIGHT PANEL (desktop) -->
   <div id="rp">
     <div class="ptabs">
       <button class="ptab active" data-p="adjust" onclick="switchPane(this)">Adjust</button>
@@ -662,6 +747,32 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
       </div>
     </div>
   </div>
+</div>
+
+<!-- MOBILE BOTTOM TOOLBAR -->
+<div id="mob-toolbar">
+  <button class="mob-tbtn active" id="mt-move" onclick="setTool('move');mobSheetClose()"><div class="ticon">✥</div><div class="tlabel">Move</div></button>
+  <button class="mob-tbtn" id="mt-crop" onclick="setTool('crop');mobSheetClose()"><div class="ticon">⛶</div><div class="tlabel">Crop</div></button>
+  <div class="mob-tsep"></div>
+  <button class="mob-tbtn" id="mt-adjust" onclick="mobOpenSheet('adjust')"><div class="ticon">🎚</div><div class="tlabel">Adjust</div></button>
+  <button class="mob-tbtn" id="mt-filter" onclick="mobOpenSheet('adjust')"><div class="ticon">✨</div><div class="tlabel">Filter</div></button>
+  <div class="mob-tsep"></div>
+  <button class="mob-tbtn" id="mt-text" onclick="setTool('text');mobSheetClose()"><div class="ticon">T</div><div class="tlabel">Text</div></button>
+  <button class="mob-tbtn" id="mt-layers" onclick="mobOpenSheet('layers')"><div class="ticon">◫</div><div class="tlabel">Layers</div></button>
+  <div class="mob-tsep"></div>
+  <button class="mob-tbtn" id="mt-bgr" onclick="setTool('bgr');mobSheetClose()"><div class="ticon">🪄</div><div class="tlabel">BG Remove</div></button>
+  <button class="mob-tbtn" id="mt-wm" onclick="setTool('wm');mobSheetClose()"><div class="ticon">💧</div><div class="tlabel">Watermark</div></button>
+  <div class="mob-tsep"></div>
+  <button class="mob-tbtn" id="mt-ba" onclick="setTool('ba');mobSheetClose()"><div class="ticon">◑</div><div class="tlabel">Before/After</div></button>
+  <div class="mob-tsep"></div>
+  <button class="mob-tbtn" onclick="mobOpenSheet('history')"><div class="ticon">↺</div><div class="tlabel">History</div></button>
+</div>
+
+<!-- MOBILE BOTTOM SHEET -->
+<div id="mob-sheet">
+  <div id="mob-sheet-handle" onclick="mobSheetClose()"></div>
+  <div id="mob-sheet-title">Adjust</div>
+  <div id="mob-sheet-body"></div>
 </div>
 
 <div id="sb">
@@ -2782,6 +2893,152 @@ document.addEventListener('paste',e=>{
     }
   }
 });
+
+// ════════════════════════════════════════════
+//  MOBILE SUPPORT
+// ════════════════════════════════════════════
+const isMobile=()=>window.innerWidth<=700;
+
+// ── Bottom sheet ──
+let mobSheetPane=null;
+function mobOpenSheet(pane){
+  if(!isMobile())return;
+  const sheet=document.getElementById('mob-sheet');
+  const title=document.getElementById('mob-sheet-title');
+  const body=document.getElementById('mob-sheet-body');
+  const labels={adjust:'Adjust',layers:'Layers',history:'History'};
+  // If same pane already open, close it
+  if(sheet.classList.contains('open')&&mobSheetPane===pane){mobSheetClose();return;}
+  mobSheetPane=pane;
+  title.textContent=labels[pane]||pane;
+  // Clone the right-panel pane content into the sheet
+  const srcPane=document.getElementById('pane-'+pane);
+  if(srcPane) body.innerHTML=srcPane.innerHTML;
+  sheet.classList.add('open');
+  // Sync range inputs — they don't carry values through innerHTML clone
+  if(pane==='adjust'){
+    Object.keys(DSLIDERS).forEach(k=>{
+      const s=body.querySelector('#s-'+k);
+      const v=body.querySelector('#v-'+k);
+      const src=document.getElementById('s-'+k);
+      if(s&&src){s.value=src.value;if(v)v.textContent=document.getElementById('v-'+k).textContent;}
+      if(s) s.oninput=function(){slide(k,this.value);const ms=body.querySelector('#s-'+k);if(ms)ms.value=this.value;};
+    });
+  }
+  // Update mob toolbar active state
+  document.querySelectorAll('.mob-tbtn').forEach(b=>b.classList.remove('active'));
+  const mb=document.getElementById('mt-'+pane);
+  if(mb)mb.classList.add('active');
+}
+function mobSheetClose(){
+  document.getElementById('mob-sheet').classList.remove('open');
+  mobSheetPane=null;
+}
+// Close sheet on canvas tap (when not editing)
+canvas.addEventListener('touchstart',()=>{if(mobSheetPane)mobSheetClose();},{passive:true});
+
+// Keep mobile toolbar in sync with setTool
+const _origSetTool=setTool;
+// Patch setTool to also update mobile toolbar
+function setToolMob(tool){
+  _origSetTool(tool);
+  if(!isMobile())return;
+  document.querySelectorAll('.mob-tbtn').forEach(b=>b.classList.remove('active'));
+  const mob=document.getElementById('mt-'+tool);
+  if(mob)mob.classList.add('active');
+}
+// Override setTool globally
+window.setTool=setToolMob;
+
+// ── Touch events for canvas pan & layer drag ──
+let touchStart=null, touchPanOrigin=null;
+let pinchStartDist=null, pinchStartZoom=null;
+
+function getTouchDist(t){
+  const dx=t[0].clientX-t[1].clientX, dy=t[0].clientY-t[1].clientY;
+  return Math.sqrt(dx*dx+dy*dy);
+}
+function touchCanvasCoords(touch){
+  const rect=canvas.getBoundingClientRect();
+  return{
+    cx:(touch.clientX-rect.left)*(canvas.width/rect.width),
+    cy:(touch.clientY-rect.top)*(canvas.height/rect.height)
+  };
+}
+
+canvas.addEventListener('touchstart',e=>{
+  if(S.tool==='crop'||S.tool==='bgr')return;
+  if(e.touches.length===1){
+    const t=e.touches[0];
+    touchStart={x:t.clientX,y:t.clientY,time:Date.now()};
+    touchPanOrigin={panX:S.panX,panY:S.panY};
+    // Also fire mousedown-equivalent for layer selection
+    const me=new MouseEvent('mousedown',{clientX:t.clientX,clientY:t.clientY,bubbles:true});
+    canvas.dispatchEvent(me);
+  } else if(e.touches.length===2){
+    pinchStartDist=getTouchDist(e.touches);
+    pinchStartZoom=S.zoom;
+    touchStart=null; layerDrag=null; layerResizing=null;
+  }
+},{passive:true});
+
+canvas.addEventListener('touchmove',e=>{
+  e.preventDefault();
+  if(e.touches.length===1&&touchStart){
+    const t=e.touches[0];
+    const dx=t.clientX-touchStart.x, dy=t.clientY-touchStart.y;
+    if(layerDrag||layerResizing){
+      // Layer is being dragged — fire synthetic mousemove
+      const me=new MouseEvent('mousemove',{clientX:t.clientX,clientY:t.clientY,bubbles:true});
+      window.dispatchEvent(me);
+    } else {
+      // Pan canvas
+      S.panX=(touchPanOrigin?.panX||0)+dx;
+      S.panY=(touchPanOrigin?.panY||0)+dy;
+      positionCanvas();
+    }
+  } else if(e.touches.length===2&&pinchStartDist){
+    const dist=getTouchDist(e.touches);
+    const scale=dist/pinchStartDist;
+    S.zoom=Math.max(0.05,Math.min(4,pinchStartZoom*scale));
+    applyZoom();
+  }
+},{passive:false});
+
+canvas.addEventListener('touchend',e=>{
+  if(layerDrag||layerResizing){
+    const me=new MouseEvent('mouseup',{bubbles:true});
+    window.dispatchEvent(me);
+  }
+  touchStart=null; touchPanOrigin=null; pinchStartDist=null;
+},{passive:true});
+
+// ── Lasso touch support ──
+function addLassoTouchEvents(){
+  if(!lassoCanvas)return;
+  lassoCanvas.addEventListener('touchstart',e=>{
+    e.preventDefault();
+    const t=e.touches[0];
+    const me=new MouseEvent('mousedown',{clientX:t.clientX,clientY:t.clientY});
+    lassoCanvas.dispatchEvent(me);
+  },{passive:false});
+  lassoCanvas.addEventListener('touchmove',e=>{
+    e.preventDefault();
+    const t=e.touches[0];
+    const me=new MouseEvent('mousemove',{clientX:t.clientX,clientY:t.clientY});
+    lassoCanvas.dispatchEvent(me);
+  },{passive:false});
+  lassoCanvas.addEventListener('touchend',e=>{
+    const me=new MouseEvent('mouseup',{});
+    lassoCanvas.dispatchEvent(me);
+  },{passive:true});
+}
+// Hook into startLasso to add touch events
+const _origStartLasso=startLasso;
+window.startLasso=function(){
+  _origStartLasso();
+  setTimeout(addLassoTouchEvents,50);
+};
 
 // ════════════════════════════════════════════
 //  INIT
