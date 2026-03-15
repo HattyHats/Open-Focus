@@ -207,6 +207,36 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 #adj-layer-indicator .adj-layer-name{flex:1;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 #adj-img-note{padding:8px 10px;background:rgba(109,190,140,0.08);border:1px solid rgba(109,190,140,0.2);border-radius:var(--rs);font-size:12px;color:var(--green);margin-bottom:4px;display:none;}
 #adj-img-note.on{display:block;}
+/* ── One-click BG remove progress ── */
+#bgr-auto-progress{margin-top:10px;display:none;}
+/* ── Watermark modal ── */
+.wm-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
+.wm-row label{font-size:12px;color:var(--text-muted);min-width:52px;}
+.wm-pos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin:6px 0 10px;}
+.wm-pos-btn{padding:6px;border-radius:var(--rs);border:1px solid var(--border);background:none;color:var(--text-muted);cursor:pointer;font-size:11px;transition:var(--tr);}
+.wm-pos-btn:hover{border-color:var(--border-light);color:var(--text);}
+.wm-pos-btn.active{border-color:var(--accent);color:var(--accent);background:var(--accent-glow);}
+/* ── Before/After slider ── */
+#ba-bar{position:absolute;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);display:none;align-items:center;justify-content:center;gap:12px;padding:8px 16px;z-index:30;}
+#ba-bar.on{display:flex;}
+#ba-bar label{font-size:12px;color:var(--text-muted);}
+#ba-slider{flex:1;max-width:220px;}
+#ba-divider{position:absolute;top:0;bottom:0;width:2px;background:var(--accent);pointer-events:none;display:none;z-index:15;}
+#ba-divider.on{display:block;}
+#ba-handle{position:absolute;top:50%;transform:translate(-50%,-50%);width:28px;height:28px;border-radius:50%;background:var(--accent);border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-size:11px;color:#1a1510;font-weight:700;cursor:ew-resize;box-shadow:0 1px 6px rgba(0,0,0,0.4);}
+#ba-label-before{position:absolute;top:8px;left:8px;background:rgba(0,0,0,0.55);color:#fff;font-size:11px;font-weight:600;padding:3px 8px;border-radius:3px;pointer-events:none;display:none;}
+#ba-label-after{position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.55);color:#fff;font-size:11px;font-weight:600;padding:3px 8px;border-radius:3px;pointer-events:none;display:none;}
+#ba-label-before.on,#ba-label-after.on{display:block;}
+/* ── Open file choice popup ── */
+#open-popup{position:fixed;top:0;left:0;right:0;bottom:0;z-index:500;display:none;align-items:flex-start;justify-content:flex-start;pointer-events:none;}
+#open-popup.on{display:flex;pointer-events:all;}
+#open-popup-card{background:var(--panel);border:1px solid var(--border-light);border-radius:var(--r);box-shadow:0 8px 32px rgba(0,0,0,0.5);padding:6px;min-width:200px;pointer-events:all;}
+.op-btn{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border-radius:var(--rs);border:none;background:none;color:var(--text);cursor:pointer;font-family:var(--font-b);font-size:13px;text-align:left;transition:var(--tr);}
+.op-btn:hover{background:var(--surface);}
+.op-btn .op-icon{font-size:16px;width:22px;text-align:center;}
+.op-btn .op-label{font-weight:500;}
+.op-btn .op-sub{font-size:11px;color:var(--text-muted);display:block;margin-top:1px;}
+.op-sep{height:1px;background:var(--border);margin:4px 0;}
 /* ── HattyHats glitch credit ── */
 .hatty-credit{display:flex;align-items:center;gap:7px;margin-left:4px;}
 .hatty-label{font-size:11px;color:var(--text-dim);font-family:var(--font-b);white-space:nowrap;}
@@ -324,12 +354,23 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 <div class="modal-bg" id="bgr-modal">
   <div class="mcard">
     <div class="mtitle">🪄 Remove Background</div>
+    <div id="bgr-target-label" style="font-size:12px;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(232,184,109,0.25);border-radius:var(--rs);padding:5px 10px;margin-bottom:10px;display:none">🎯 Targeting: <strong id="bgr-target-name">—</strong></div>
     <div class="bgr-tabs">
-      <button class="bgr-tab active" onclick="switchBGRTab('color',this)">🎨 Color Sample</button>
+      <button class="bgr-tab active" onclick="switchBGRTab('auto',this)">⚡ One-Click</button>
+      <button class="bgr-tab" onclick="switchBGRTab('color',this)">🎨 Color Sample</button>
       <button class="bgr-tab" onclick="switchBGRTab('lasso',this)">✏️ Draw Outline</button>
     </div>
+    <!-- One-Click Auto Panel -->
+    <div class="bgr-panel active" id="bgr-panel-auto">
+      <p style="font-size:13px;color:var(--text-muted);line-height:1.6;margin-bottom:16px">Removes the background automatically. Works best when the subject stands out from the background.</p>
+      <div id="bgr-auto-progress" style="display:none;margin-bottom:12px"><div id="bgr-auto-bar" style="height:4px;background:var(--border);border-radius:2px;overflow:hidden"><div id="bgr-auto-fill" style="height:100%;background:var(--accent);width:0%;transition:width .2s"></div></div><div style="font-size:11px;color:var(--text-muted);margin-top:6px;text-align:center" id="bgr-auto-status">Removing background…</div></div>
+      <div class="macts">
+        <button class="btn btn-ghost" onclick="closeBGR()">Cancel</button>
+        <button class="btn btn-red" id="bgr-auto-btn" onclick="applyAutoBGR()">⚡ Remove background now</button>
+      </div>
+    </div>
     <!-- Color Sample Panel -->
-    <div class="bgr-panel active" id="bgr-panel-color">
+    <div class="bgr-panel" id="bgr-panel-color">
       <p style="font-size:13px;color:var(--text-muted);line-height:1.6;margin-bottom:12px">Click a spot on your photo to sample the background color, then remove all similar pixels from the edges inward.</p>
       <div class="bgr-slider-row">
         <div class="shdr"><span class="slbl">Tolerance</span><span class="sval" id="bgr-tol-val">30</span></div>
@@ -367,6 +408,50 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
   </div>
 </div>
 
+<!-- WATERMARK MODAL -->
+<div class="modal-bg" id="wm-modal">
+  <div class="mcard">
+    <div class="mtitle">💧 Watermark</div>
+    <div class="wm-row">
+      <label>Text</label>
+      <input type="text" id="wm-text" value="© My Brand" style="flex:1;background:var(--panel);border:1px solid var(--border);border-radius:var(--rs);padding:5px 8px;color:var(--text);font-size:13px" oninput="updateWMPreview()">
+    </div>
+    <div class="wm-row">
+      <label>Size</label>
+      <input type="range" id="wm-size" min="10" max="120" value="32" oninput="document.getElementById('wm-size-val').textContent=this.value;updateWMPreview()" style="flex:1">
+      <span style="font-size:12px;color:var(--text-muted);min-width:24px" id="wm-size-val">32</span>
+    </div>
+    <div class="wm-row">
+      <label>Color</label>
+      <input type="color" id="wm-color" value="#ffffff" oninput="updateWMPreview()">
+      <label style="margin-left:10px">Opacity</label>
+      <input type="range" id="wm-opacity" min="5" max="100" value="40" oninput="document.getElementById('wm-opacity-val').textContent=this.value+'%';updateWMPreview()" style="flex:1">
+      <span style="font-size:12px;color:var(--text-muted);min-width:32px" id="wm-opacity-val">40%</span>
+    </div>
+    <div class="wm-row">
+      <label>Rotation</label>
+      <input type="range" id="wm-rotate" min="-90" max="90" value="0" oninput="document.getElementById('wm-rotate-val').textContent=this.value+'°';updateWMPreview()" style="flex:1">
+      <span style="font-size:12px;color:var(--text-muted);min-width:30px" id="wm-rotate-val">0°</span>
+    </div>
+    <div style="margin:10px 0 6px;font-size:12px;color:var(--text-muted)">Mode</div>
+    <div style="display:flex;gap:6px;margin-bottom:12px">
+      <button class="wm-pos-btn active" id="wm-mode-free" onclick="setWMMode('free',this)" style="flex:1;padding:7px">✋ Drag freely</button>
+      <button class="wm-pos-btn" id="wm-mode-tile" onclick="setWMMode('tile',this)" style="flex:1;padding:7px">⊞ Tile all over</button>
+    </div>
+    <div style="font-size:11px;color:var(--text-muted);margin-bottom:12px;padding:6px 8px;background:var(--panel);border-radius:var(--rs)" id="wm-hint">💡 Click OK to place watermark, then drag it anywhere on the canvas.</div>
+    <div class="macts">
+      <button class="btn btn-ghost" onclick="closeWM()">Cancel</button>
+      <button class="btn btn-accent" onclick="startWMDrag()">OK — place it →</button>
+    </div>
+  </div>
+</div>
+<!-- Watermark accept bar (shown while dragging watermark on canvas) -->
+<div id="wm-bar" style="position:absolute;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);display:none;align-items:center;justify-content:center;gap:10px;padding:8px 16px;z-index:30">
+  <span style="font-size:12px;color:var(--text-muted)">💧 Drag watermark to position</span>
+  <button class="btn btn-accent" style="font-size:12px" onclick="acceptWatermark()">✓ Apply watermark</button>
+  <button class="btn btn-ghost" style="font-size:12px" onclick="cancelWMDrag()">✕ Cancel</button>
+</div>
+
 <!-- EXPORT MODAL -->
 <div class="modal-bg" id="em">
   <div class="mcard">
@@ -384,6 +469,21 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
       <div class="epr" onclick="pickEP(this,'tiktok')"><span class="epn">♪ TikTok Cover</span><span class="eps">1080 × 1920</span></div>
     </div>
     <div class="macts"><button class="btn btn-ghost" onclick="closeEM()">Cancel</button><button class="btn btn-accent" onclick="doExport()">⬇ Download</button></div>
+  </div>
+</div>
+
+<!-- OPEN FILE CHOICE POPUP -->
+<div id="open-popup">
+  <div id="open-popup-card">
+    <button class="op-btn" onclick="openAsNew()">
+      <span class="op-icon">🆕</span>
+      <span><span class="op-label">New project</span><span class="op-sub">Replaces current photo &amp; layers</span></span>
+    </button>
+    <div class="op-sep"></div>
+    <button class="op-btn" onclick="openAsLayer()">
+      <span class="op-icon">◫</span>
+      <span><span class="op-label">Add as layer</span><span class="op-sub">Adds image on top of current photo</span></span>
+    </button>
   </div>
 </div>
 
@@ -412,6 +512,7 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
     <span class="hatty-name" data-text="HattyHats">HattyHats</span>
   </div>
   <input type="file" id="fi" accept="image/*" style="display:none" onchange="onFileInput(event)">
+  <input type="file" id="fi-layer" accept="image/*" style="display:none" onchange="onLayerFileInput(event)">
   <input type="file" id="overlay-fi" accept="image/*" style="display:none" onchange="onOverlayInput(event)">
 </div>
 
@@ -428,6 +529,9 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
     <button class="tbtn" id="t-overlay" onclick="setTool('overlay')" title="Layers"><div class="ticon">◫</div><div class="tlabel">Layers</div></button>
     <div class="tsep"></div>
     <button class="tbtn" id="t-bgr" onclick="setTool('bgr')" title="Remove Background"><div class="ticon">🪄</div><div class="tlabel">BG Remove</div></button>
+    <button class="tbtn" id="t-wm" onclick="setTool('wm')" title="Watermark"><div class="ticon">💧</div><div class="tlabel">Watermark</div></button>
+    <div class="tsep"></div>
+    <button class="tbtn" id="t-ba" onclick="setTool('ba')" title="Before / After"><div class="ticon">◑</div><div class="tlabel">Before/After</div></button>
   </div>
 
   <!-- CANVAS -->
@@ -457,6 +561,20 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
           </div>
         </div>
       </div>
+    </div>
+    <!-- Before/After divider -->
+    <div id="ba-divider"><div id="ba-handle">◑</div></div>
+    <div id="ba-label-before">BEFORE</div>
+    <div id="ba-label-after">AFTER</div>
+    <!-- Before/After control bar -->
+    <div id="ba-bar">
+      <span style="font-size:12px;color:var(--text-muted);white-space:nowrap">◀ Before</span>
+      <input type="range" id="ba-slider" min="0" max="100" value="50" oninput="updateBADivider(this.value)">
+      <span style="font-size:12px;color:var(--text-muted);white-space:nowrap">After ▶</span>
+      <div class="sep" style="height:20px;margin:0 4px"></div>
+      <button class="btn btn-accent" style="font-size:12px;white-space:nowrap" onclick="acceptBA()">✓ Keep edits</button>
+      <button class="btn btn-ghost" style="font-size:12px;white-space:nowrap" onclick="discardBA()">↺ Discard</button>
+      <button class="btn btn-ghost" style="font-size:12px;padding:0 8px" title="Close" onclick="exitBA()">✕</button>
     </div>
     <div id="crop-bar">
       <span id="cdims">— × —</span>
@@ -605,8 +723,44 @@ function closeOB(){document.getElementById('ob').classList.add('h');}
 // ════════════════════════════════════════════
 //  FILE HANDLING
 // ════════════════════════════════════════════
-function openFile(){document.getElementById('fi').click();}
+// ── Open file choice popup ──
+let openPopupDismiss=null;
+function openFile(){
+  if(!S.hasImg){
+    // No photo yet — just open directly
+    document.getElementById('fi').click();
+    return;
+  }
+  // Show the choice popup anchored under the Open button
+  const btn=document.querySelector('#topbar .btn-ghost');
+  const popup=document.getElementById('open-popup');
+  const card=document.getElementById('open-popup-card');
+  const rect=btn.getBoundingClientRect();
+  card.style.position='fixed';
+  card.style.top=(rect.bottom+6)+'px';
+  card.style.left=rect.left+'px';
+  popup.classList.add('on');
+  // Dismiss on click outside
+  clearTimeout(openPopupDismiss);
+  setTimeout(()=>{
+    openPopupDismiss=null;
+    document.addEventListener('mousedown',dismissOpenPopup,{once:true});
+  },10);
+}
+function dismissOpenPopup(e){
+  const card=document.getElementById('open-popup-card');
+  if(!card.contains(e.target)) document.getElementById('open-popup').classList.remove('on');
+}
+function openAsNew(){
+  document.getElementById('open-popup').classList.remove('on');
+  document.getElementById('fi').click();
+}
+function openAsLayer(){
+  document.getElementById('open-popup').classList.remove('on');
+  document.getElementById('fi-layer').click();
+}
 function onFileInput(e){const f=e.target.files[0];if(f)loadFile(f);e.target.value='';}
+function onLayerFileInput(e){const f=e.target.files[0];if(f)addImageOverlayFromFile(f);e.target.value='';}
 function onDragOver(e){e.preventDefault();ca.classList.add('drag-over');}
 function onDragLeave(){ca.classList.remove('drag-over');}
 function onDrop(e){
@@ -614,7 +768,6 @@ function onDrop(e){
   const f=e.dataTransfer.files[0];
   if(!f)return;
   if(S.hasImg && f.type.startsWith('image/')){
-    // If already has image, treat drop as overlay
     addImageOverlayFromFile(f);
   } else if(f.type.startsWith('image/')){
     loadFile(f);
@@ -675,7 +828,7 @@ function getSliders(){
 }
 function serializeLayers(){
   return layers.map(l=>{
-    if(l.type==='base') return {...l}; // base layer is just a reference marker, origImg is stored separately
+    if(l.type==='base') return {...l}; // base pixels stored separately in origImgSrc
     const out={...l};
     if(l.type==='image'&&l.img){
       const tc=document.createElement('canvas');tc.width=l.img.width;tc.height=l.img.height;
@@ -685,9 +838,22 @@ function serializeLayers(){
     return out;
   });
 }
+function captureOrigImg(){
+  // Returns a dataURL snapshot of origImg for history
+  if(!origImg)return null;
+  const tc=document.createElement('canvas');
+  tc.width=origImg.width;tc.height=origImg.height;
+  tc.getContext('2d').drawImage(origImg,0,0);
+  return tc.toDataURL('image/png');
+}
 function pushHist(label){
   if(hIdx<hist.length-1)hist=hist.slice(0,hIdx+1);
-  hist.push({label,sliders:getSliders(),layers:serializeLayers()});
+  hist.push({
+    label,
+    sliders:getSliders(),
+    layers:serializeLayers(),
+    origImgSrc:captureOrigImg()  // ← save pixel data every time
+  });
   hIdx=hist.length-1;
   renderHistPanel();updateUndoBtns();
 }
@@ -708,9 +874,19 @@ function jumpHist(idx){
     }
     return {...l};
   });
-  // Sync sliders to selected layer (or base)
-  updateAdjustHeader();
-  renderCanvas();renderLayersPanel();renderHistPanel();updateUndoBtns();
+  // Restore origImg pixel data if saved
+  if(e.origImgSrc){
+    const img=new Image();
+    img.onload=()=>{
+      origImg=img;
+      updateAdjustHeader();
+      renderCanvas();renderLayersPanel();renderHistPanel();updateUndoBtns();
+    };
+    img.src=e.origImgSrc;
+  } else {
+    updateAdjustHeader();
+    renderCanvas();renderLayersPanel();renderHistPanel();updateUndoBtns();
+  }
 }
 function renderHistPanel(){
   const list=document.getElementById('hlist');
@@ -833,6 +1009,46 @@ function renderCanvas(){
       }
     }
 
+    else if(layer.type==='watermark'){
+      // Live draggable watermark preview
+      ctx.save();
+      ctx.globalAlpha=(layer.opacity/100)*0.85; // slightly transparent in preview
+      ctx.fillStyle=layer.color;
+      ctx.font=`bold ${layer.size}px DM Sans,Arial,sans-serif`;
+      ctx.textBaseline='middle';ctx.textAlign='center';
+      ctx.shadowColor='rgba(0,0,0,0.4)';ctx.shadowBlur=layer.size*0.12;
+      if(layer.tile){
+        const base2=layers.find(l=>l.type==='base');
+        const lw=base2?.w??canvas.width, lh=base2?.h??canvas.height;
+        const lx2=base2?.x??0, ly2=base2?.y??0;
+        const tw=ctx.measureText(layer.text).width;
+        const pad=layer.size*0.8;
+        const spacingX=tw+pad*2, spacingY=layer.size+pad;
+        const cols=Math.ceil(lw/spacingX)+2, rows=Math.ceil(lh/spacingY)+2;
+        for(let row=-1;row<=rows;row++){
+          for(let col=-1;col<=cols;col++){
+            const tx=lx2+col*spacingX+(row%2===0?0:spacingX/2);
+            const ty=ly2+row*spacingY;
+            ctx.save();ctx.translate(tx,ty);ctx.rotate(layer.rotate);
+            ctx.fillText(layer.text,0,0);ctx.restore();
+          }
+        }
+      } else {
+        ctx.save();ctx.translate(layer.x,layer.y);ctx.rotate(layer.rotate);
+        ctx.fillText(layer.text,0,0);
+        // Selection border
+        if(layer.id===selLayerId){
+          const tw=ctx.measureText(layer.text).width;
+          ctx.globalAlpha=1;ctx.strokeStyle='rgba(232,184,109,0.9)';
+          ctx.lineWidth=1.5/S.zoom;ctx.setLineDash([5/S.zoom,3/S.zoom]);
+          ctx.strokeRect(-tw/2-6/S.zoom,-layer.size/2-4/S.zoom,tw+12/S.zoom,layer.size+8/S.zoom);
+          ctx.setLineDash([]);
+        }
+        ctx.restore();
+      }
+      ctx.restore();
+    }
+
     else if(layer.type==='text'){
       const fontSize=layer.size;
       ctx.font=`${layer.weight} ${fontSize}px ${layer.font}`;
@@ -898,6 +1114,25 @@ function renderCanvas(){
       ctx.restore();
     }
     ctx.restore();
+  }
+
+  // Before/After overlay — draw original on left side of divider
+  if(baActive&&baOrigSnapshot){
+    const pct=parseFloat(document.getElementById('ba-slider').value)/100;
+    const splitX=Math.round(canvas.width*pct);
+    if(splitX>0){
+      ctx.save();
+      ctx.beginPath();ctx.rect(0,0,splitX,canvas.height);ctx.clip();
+      const base=layers.find(l=>l.type==='base');
+      const lx=base?.x??0,ly=base?.y??0,lw=base?.w??canvas.width,lh=base?.h??canvas.height;
+      ctx.drawImage(baOrigSnapshot,lx,ly,lw,lh);
+      ctx.restore();
+      // Divider line on canvas
+      ctx.save();
+      ctx.strokeStyle='rgba(232,184,109,0.95)';ctx.lineWidth=2/S.zoom;ctx.setLineDash([]);
+      ctx.beginPath();ctx.moveTo(splitX,0);ctx.lineTo(splitX,canvas.height);ctx.stroke();
+      ctx.restore();
+    }
   }
 }
 
@@ -1224,7 +1459,7 @@ canvas.addEventListener('mousedown',e=>{
       return cx>=lx&&cx<=lx+lw&&cy>=ly&&cy<=ly+lh;
     }
     if(layer.type==='image') return cx>=layer.x&&cx<=layer.x+layer.w&&cy>=layer.y&&cy<=layer.y+layer.h;
-    if(layer.type==='text'){const b=getTextBounds(layer);return cx>=b.x&&cx<=b.x+b.w&&cy>=b.y&&cy<=b.y+b.h;}
+    if(layer.type==='text'||layer.type==='watermark'){const b=getTextBounds(layer);return cx>=b.x&&cx<=b.x+b.w&&cy>=b.y&&cy<=b.y+b.h;}
     return false;
   }
   function hitResizeHandle(layer){
@@ -1339,10 +1574,51 @@ let bgrSampling=false;
 let bgrSampleColor=null;
 let bgrActiveTab='color';
 
+// ── Returns the source image and bake-back callback for the selected layer ──
+function getBGRTarget(){
+  // If a non-base image layer is selected, use that layer's img
+  const sel=selLayerId?layers.find(l=>l.id===selLayerId):null;
+  if(sel&&sel.type==='image'&&sel.img){
+    return {
+      img:sel.img,
+      w:sel.img.width, h:sel.img.height,
+      // canvas coords → source img coords
+      toSrcX:(cx)=>Math.round((cx-sel.x)/sel.w*sel.img.width),
+      toSrcY:(cy)=>Math.round((cy-sel.y)/sel.h*sel.img.height),
+      bake:(newImg)=>{
+        sel.img=newImg;
+        sel.imgW=newImg.width; sel.imgH=newImg.height;
+        renderCanvas();renderLayersPanel();
+      },
+      name: sel.name||'Image layer',
+      isBase: false
+    };
+  }
+  // Default: base layer / origImg
+  const base=layers.find(l=>l.type==='base');
+  const bx=base?.x??0, by=base?.y??0;
+  const bw=base?.w??origImg.width, bh=base?.h??origImg.height;
+  return {
+    img: origImg,
+    w: origImg.width, h: origImg.height,
+    toSrcX:(cx)=>Math.round((cx-bx)/bw*origImg.width),
+    toSrcY:(cy)=>Math.round((cy-by)/bh*origImg.height),
+    bake:(newImg)=>{
+      origImg=newImg;
+      if(base){base.x=bx;base.y=by;base.w=newImg.width;base.h=newImg.height;}
+      resetSlidersUI();
+      renderCanvas();renderLayersPanel();
+    },
+    name: base?.name||'Photo',
+    isBase: true
+  };
+}
+
 function switchBGRTab(tab,btn){
   bgrActiveTab=tab;
   document.querySelectorAll('.bgr-tab').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
+  document.getElementById('bgr-panel-auto')&&(document.getElementById('bgr-panel-auto').classList.toggle('active',tab==='auto'));
   document.getElementById('bgr-panel-color').classList.toggle('active',tab==='color');
   document.getElementById('bgr-panel-lasso').classList.toggle('active',tab==='lasso');
 }
@@ -1357,6 +1633,12 @@ function openBGRModal(){
   document.getElementById('bgr-lasso-start-btn').style.display='';
   document.getElementById('bgr-bar').style.width='0%';
   document.getElementById('bgr-progress').style.display='none';
+  // Show which layer will be targeted
+  const target=getBGRTarget();
+  const lbl=document.getElementById('bgr-target-label');
+  const nm=document.getElementById('bgr-target-name');
+  lbl.style.display='block';
+  nm.textContent=target.name;
   document.getElementById('bgr-modal').classList.add('on');
 }
 function closeBGR(){
@@ -1377,22 +1659,17 @@ canvas.addEventListener('click',e=>{
   bgrSampling=false;canvas.style.cursor='';
   const{cx,cy}=canvasCoords(e);
 
-  // Sample from origImg directly (base layer only), not the composited canvas
-  const base=layers.find(l=>l.type==='base');
-  const bx=base?.x??0, by=base?.y??0;
-  const bw=base?.w??origImg.width, bh=base?.h??origImg.height;
-  // Map canvas coords back to origImg coords
-  const ix=Math.floor((cx-bx)/bw*origImg.width);
-  const iy=Math.floor((cy-by)/bh*origImg.height);
+  // Sample from the targeted layer's source image
+  const target=getBGRTarget();
+  const ix=Math.max(0,Math.min(target.w-1,target.toSrcX(cx)));
+  const iy=Math.max(0,Math.min(target.h-1,target.toSrcY(cy)));
   const offscreen=document.createElement('canvas');
-  offscreen.width=origImg.width;offscreen.height=origImg.height;
-  offscreen.getContext('2d').drawImage(origImg,0,0);
-  const px=offscreen.getContext('2d').getImageData(
-    Math.max(0,Math.min(origImg.width-1,ix)),
-    Math.max(0,Math.min(origImg.height-1,iy)),1,1).data;
+  offscreen.width=target.w;offscreen.height=target.h;
+  offscreen.getContext('2d').drawImage(target.img,0,0);
+  const px=offscreen.getContext('2d').getImageData(ix,iy,1,1).data;
   bgrSampleColor={r:px[0],g:px[1],b:px[2]};
 
-  toast(`🎨 Sampled RGB(${px[0]},${px[1]},${px[2]}) from base photo.`);
+  toast(`🎨 Sampled RGB(${px[0]},${px[1]},${px[2]}) from ${target.name}.`);
   document.getElementById('bgr-sample-btn').textContent='✓ Color sampled — adjust & remove';
   document.getElementById('bgr-apply-btn').style.display='';
   document.getElementById('bgr-sample-btn').style.display='none';
@@ -1406,14 +1683,12 @@ function applyBGR(){
   document.getElementById('bgr-apply-btn').disabled=true;
 
   setTimeout(()=>{
-    // Work on origImg directly — never touch the composited canvas
-    const base=layers.find(l=>l.type==='base');
-    const bx=base?.x??0, by=base?.y??0;
-    const w=origImg.width, h=origImg.height;
+    const target=getBGRTarget();
+    const w=target.w, h=target.h;
     const offscreen=document.createElement('canvas');
     offscreen.width=w; offscreen.height=h;
     const offCtx=offscreen.getContext('2d');
-    offCtx.drawImage(origImg,0,0,w,h);
+    offCtx.drawImage(target.img,0,0,w,h);
     const id=offCtx.getImageData(0,0,w,h);
     const d=id.data;
     const{r:sr,g:sg,b:sb}=bgrSampleColor;
@@ -1448,17 +1723,14 @@ function applyBGR(){
 
     const newImg=new Image();
     newImg.onload=()=>{
-      origImg=newImg;
-      if(base){base.x=bx;base.y=by;base.w=newImg.width;base.h=newImg.height;}
-      resetSlidersUI();
-      renderCanvas();renderLayersPanel();
+      target.bake(newImg);
       document.getElementById('bgr-bar').style.width='100%';
       setTimeout(()=>{
         document.getElementById('bgr-progress').style.display='none';
         document.getElementById('bgr-apply-btn').disabled=false;
         closeBGR();
         pushHist('🪄 Background removed');
-        toast('🪄 Background removed! Export as PNG to keep transparency.');
+        toast(`🪄 Background removed from ${target.name}! Export as PNG.`);
         S.fmt='png';
         document.querySelectorAll('.fmtb').forEach(b=>b.classList.remove('active'));
         document.querySelector('.fmtb[onclick*="png"]').classList.add('active');
@@ -1590,21 +1862,24 @@ function applyLasso(){
   if(!fgStrokes.length){toast('Paint over the subject first!');return;}
   const feather=parseInt(document.getElementById('bgr-feather').value)||3;
 
-  const w=origImg.width, h=origImg.height;
-  const base=layers.find(l=>l.type==='base');
-  const bx=base?.x??0, by=base?.y??0;
-  const bw=base?.w??w, bh=base?.h??h;
-  const sx=w/bw, sy=h/bh;
+  const target=getBGRTarget();
+  const w=target.w, h=target.h;
+  // Map lasso canvas coords to target image coords
+  const sel=selLayerId?layers.find(l=>l.id===selLayerId):null;
+  const refLayer=(sel&&sel.type==='image')?sel:(layers.find(l=>l.type==='base'));
+  const lx=refLayer?.x??0, ly=refLayer?.y??0;
+  const lw=refLayer?.w??w, lh=refLayer?.h??h;
+  const sx=w/lw, sy=h/lh;
 
   document.getElementById('bgr-progress').style.display='block';
   document.getElementById('bgr-lasso-apply-btn').disabled=true;
 
   setTimeout(()=>{
-    // ── Step 1: Get origImg pixels ──
+    // ── Step 1: Get target layer pixels ──
     const offscreen=document.createElement('canvas');
     offscreen.width=w;offscreen.height=h;
     const offCtx=offscreen.getContext('2d');
-    offCtx.drawImage(origImg,0,0,w,h);
+    offCtx.drawImage(target.img,0,0,w,h);
     const imgData=offCtx.getImageData(0,0,w,h);
     const d=imgData.data;
 
@@ -1616,8 +1891,8 @@ function applyLasso(){
     lassoStrokes.forEach(stroke=>{
       const r2=(stroke.size/2)*sx;
       stroke.points.forEach(p=>{
-        const ix=Math.round((p.x-bx)*sx);
-        const iy=Math.round((p.y-by)*sy);
+        const ix=Math.round((p.x-lx)*sx);
+        const iy=Math.round((p.y-ly)*sy);
         const rInt=Math.ceil(r2);
         for(let dy2=-rInt;dy2<=rInt;dy2++){
           for(let dx2=-rInt;dx2<=rInt;dx2++){
@@ -1755,16 +2030,14 @@ function applyLasso(){
     out.getContext('2d').putImageData(imgData,0,0);
     const newImg=new Image();
     newImg.onload=()=>{
-      origImg=newImg;
-      if(base){base.x=bx;base.y=by;base.w=bw;base.h=bh;}
+      target.bake(newImg);
       stopLasso();
-      renderCanvas();renderLayersPanel();
       document.getElementById('bgr-bar').style.width='100%';
       setTimeout(()=>{
         document.getElementById('bgr-progress').style.display='none';
         closeBGR();
         pushHist('✂️ Smart background removed');
-        toast('✂️ Background removed! Export as PNG to keep transparency.');
+        toast(`✂️ Background removed from ${target.name}! Export as PNG.`);
         S.fmt='png';
         document.querySelectorAll('.fmtb').forEach(b=>b.classList.remove('active'));
         document.querySelector('.fmtb[onclick*="png"]').classList.add('active');
@@ -1893,12 +2166,327 @@ function applyPreset(el,key){
 }
 
 // ════════════════════════════════════════════
+//  ONE-CLICK AUTO BG REMOVE
+// ════════════════════════════════════════════
+function applyAutoBGR(){
+  if(!S.hasImg){toast('Open a photo first!');return;}
+  // Smart fixed defaults — no sliders needed
+  const tol=28, feather=1;
+  const btn=document.getElementById('bgr-auto-btn');
+  if(btn)btn.disabled=true;
+  document.getElementById('bgr-auto-progress').style.display='block';
+  document.getElementById('bgr-auto-status').textContent='Analysing image…';
+
+  setTimeout(()=>{
+    const target=getBGRTarget();
+    const w=target.w, h=target.h;
+    const offscreen=document.createElement('canvas');
+    offscreen.width=w;offscreen.height=h;
+    const offCtx=offscreen.getContext('2d');
+    offCtx.drawImage(target.img,0,0,w,h);
+    const imgData=offCtx.getImageData(0,0,w,h);
+    const d=imgData.data;
+
+    // Multi-point border sampling — sample many points around all 4 edges
+    const bgColors=[];
+    const sample=(x,y)=>{
+      const xi=Math.max(0,Math.min(w-1,x)), yi=Math.max(0,Math.min(h-1,y));
+      const i=(yi*w+xi)*4;
+      bgColors.push({r:d[i],g:d[i+1],b:d[i+2]});
+    };
+    const step=Math.max(1,Math.round(Math.min(w,h)/60));
+    for(let x=0;x<w;x+=step){sample(x,0);sample(x,h-1);}
+    for(let y=0;y<h;y+=step){sample(0,y);sample(w-1,y);}
+
+    document.getElementById('bgr-auto-status').textContent='Removing background…';
+    document.getElementById('bgr-auto-fill').style.width='20%';
+
+    // BFS flood-fill from all edges
+    const visited=new Uint8Array(w*h);
+    function colorMatch(i){
+      const r=d[i],g=d[i+1],b=d[i+2];
+      return bgColors.some(c=>Math.sqrt((r-c.r)**2+(g-c.g)**2+(b-c.b)**2)<=tol);
+    }
+    const queue=[];
+    function tryAdd(x,y){
+      if(x<0||y<0||x>=w||y>=h)return;
+      const idx=y*w+x;
+      if(visited[idx])return;
+      if(colorMatch(idx*4)){visited[idx]=1;queue.push(idx);}
+    }
+    for(let x=0;x<w;x++){tryAdd(x,0);tryAdd(x,h-1);}
+    for(let y=0;y<h;y++){tryAdd(0,y);tryAdd(w-1,y);}
+    let qi=0;
+    while(qi<queue.length){
+      const idx=queue[qi++];
+      const x2=idx%w, y2=(idx/w)|0;
+      tryAdd(x2-1,y2);tryAdd(x2+1,y2);tryAdd(x2,y2-1);tryAdd(x2,y2+1);
+      if(qi%10000===0) document.getElementById('bgr-auto-fill').style.width=Math.min(75,20+qi/(queue.length+1)*55)+'%';
+    }
+    document.getElementById('bgr-auto-fill').style.width='80%';
+    document.getElementById('bgr-auto-status').textContent='Finishing edges…';
+
+    // Apply transparency with soft edge feathering
+    for(let y=0;y<h;y++){
+      for(let x=0;x<w;x++){
+        const i=y*w+x;
+        if(!visited[i])continue;
+        if(feather>0){
+          let nearFg=false;
+          for(let dy=-feather;dy<=feather&&!nearFg;dy++)
+            for(let dx=-feather;dx<=feather&&!nearFg;dx++){
+              const nx=x+dx,ny=y+dy;
+              if(nx>=0&&ny>=0&&nx<w&&ny<h&&!visited[ny*w+nx])nearFg=true;
+            }
+          d[i*4+3]=nearFg?Math.round(d[i*4+3]*0.35):0;
+        } else {
+          d[i*4+3]=0;
+        }
+      }
+    }
+    document.getElementById('bgr-auto-fill').style.width='95%';
+
+    const out=document.createElement('canvas');out.width=w;out.height=h;
+    out.getContext('2d').putImageData(imgData,0,0);
+    const newImg=new Image();
+    newImg.onload=()=>{
+      target.bake(newImg);
+      document.getElementById('bgr-auto-fill').style.width='100%';
+      setTimeout(()=>{
+        document.getElementById('bgr-auto-progress').style.display='none';
+        if(btn)btn.disabled=false;
+        closeBGR();
+        pushHist('⚡ Auto background removed');
+        toast(`⚡ Background removed from ${target.name}! Export as PNG.`);
+        S.fmt='png';
+        document.querySelectorAll('.fmtb').forEach(b=>b.classList.remove('active'));
+        document.querySelector('.fmtb[onclick*="png"]').classList.add('active');
+      },400);
+    };
+    newImg.src=out.toDataURL('image/png');
+  },30);
+}
+
+
+// ════════════════════════════════════════════
+//  WATERMARK TOOL
+// ════════════════════════════════════════════
+let wmMode='free'; // 'free' or 'tile'
+let wmLayer=null;  // live preview layer while positioning
+let wmDragging=false;
+
+function openWM(){document.getElementById('wm-modal').classList.add('on');}
+function closeWM(){
+  document.getElementById('wm-modal').classList.remove('on');
+  cancelWMDrag();
+  setTool('move');
+}
+function setWMMode(mode,btn){
+  wmMode=mode;
+  document.querySelectorAll('#wm-mode-free,#wm-mode-tile').forEach(b=>{
+    b.classList.toggle('active',b.id==='wm-mode-'+mode);
+  });
+  const hint=document.getElementById('wm-hint');
+  hint.textContent=mode==='tile'?'⊞ Watermark will tile across the whole image.':'💡 Click OK to place watermark, then drag it anywhere on the canvas.';
+  if(wmLayer){updateWMPreview();}
+}
+function updateWMPreview(){
+  if(!wmLayer)return;
+  wmLayer.text=document.getElementById('wm-text').value||'© Watermark';
+  wmLayer.size=parseInt(document.getElementById('wm-size').value)||32;
+  wmLayer.color=document.getElementById('wm-color').value;
+  wmLayer.opacity=parseInt(document.getElementById('wm-opacity').value);
+  wmLayer.rotate=(parseInt(document.getElementById('wm-rotate').value)||0)*Math.PI/180;
+  wmLayer.tile=(wmMode==='tile');
+  renderCanvas();
+}
+function startWMDrag(){
+  if(!S.hasImg){toast('Open a photo first!');return;}
+  document.getElementById('wm-modal').classList.remove('on');
+  // Create a live watermark layer (special type)
+  wmLayer={
+    id:nextLayerId++, type:'watermark', visible:true,
+    text:document.getElementById('wm-text').value||'© Watermark',
+    size:parseInt(document.getElementById('wm-size').value)||32,
+    color:document.getElementById('wm-color').value,
+    opacity:parseInt(document.getElementById('wm-opacity').value),
+    rotate:(parseInt(document.getElementById('wm-rotate').value)||0)*Math.PI/180,
+    tile:(wmMode==='tile'),
+    x:canvas.width/2, y:canvas.height/2
+  };
+  layers.push(wmLayer);
+  selLayerId=wmLayer.id;
+  document.getElementById('wm-bar').style.display='flex';
+  renderCanvas();renderLayersPanel();
+  toast('💧 Drag the watermark to position it, then click Apply.');
+}
+function acceptWatermark(){
+  if(!wmLayer){closeWM();return;}
+  // Bake the watermark into origImg
+  const w=origImg.width, h=origImg.height;
+  const base=layers.find(l=>l.type==='base');
+  const bx=base?.x??0, by=base?.y??0, bw=base?.w??w, bh=base?.h??h;
+  const scaleX=w/bw, scaleY=h/bh;
+  const out=document.createElement('canvas');out.width=w;out.height=h;
+  const oCtx=out.getContext('2d');
+  oCtx.drawImage(origImg,0,0,w,h);
+  oCtx.save();
+  oCtx.globalAlpha=wmLayer.opacity/100;
+  oCtx.fillStyle=wmLayer.color;
+  oCtx.font=`bold ${wmLayer.size*scaleX}px DM Sans,Arial,sans-serif`;
+  oCtx.textBaseline='middle'; oCtx.textAlign='center';
+  oCtx.shadowColor='rgba(0,0,0,0.35)';
+  oCtx.shadowBlur=wmLayer.size*scaleX*0.12;
+  if(wmLayer.tile){
+    const tw=oCtx.measureText(wmLayer.text).width;
+    const pad=wmLayer.size*scaleX*0.8;
+    const spacingX=tw+pad*2, spacingY=wmLayer.size*scaleX+pad;
+    const cols=Math.ceil(w/spacingX)+2, rows=Math.ceil(h/spacingY)+2;
+    for(let row=-1;row<=rows;row++){
+      for(let col=-1;col<=cols;col++){
+        const tx=col*spacingX+(row%2===0?0:spacingX/2);
+        const ty=row*spacingY;
+        oCtx.save();oCtx.translate(tx,ty);oCtx.rotate(wmLayer.rotate);
+        oCtx.fillText(wmLayer.text,0,0);oCtx.restore();
+      }
+    }
+  } else {
+    const tx=(wmLayer.x-bx)*scaleX, ty=(wmLayer.y-by)*scaleY;
+    oCtx.save();oCtx.translate(tx,ty);oCtx.rotate(wmLayer.rotate);
+    oCtx.fillText(wmLayer.text,0,0);oCtx.restore();
+  }
+  oCtx.restore();
+  const newImg=new Image();
+  newImg.onload=()=>{
+    origImg=newImg;
+    if(base){base.x=bx;base.y=by;base.w=bw;base.h=bh;}
+    // Remove the live wmLayer
+    layers=layers.filter(l=>l!==wmLayer);
+    wmLayer=null; selLayerId=null;
+    document.getElementById('wm-bar').style.display='none';
+    renderCanvas();renderLayersPanel();
+    pushHist('💧 Watermark applied');
+    toast('💧 Watermark applied!');
+    setTool('move');
+  };
+  newImg.src=out.toDataURL('image/png');
+}
+function cancelWMDrag(){
+  if(wmLayer){layers=layers.filter(l=>l!==wmLayer);wmLayer=null;}
+  selLayerId=null;
+  document.getElementById('wm-bar').style.display='none';
+  renderCanvas();renderLayersPanel();
+}
+// ════════════════════════════════════════════
+//  BEFORE / AFTER SLIDER
+// ════════════════════════════════════════════
+let baActive=false;
+let baOrigSnapshot=null;  // canvas snapshot of origImg before entering BA mode
+let baLayerSnapshots=[];  // layer state before entering BA mode
+let baOrigImgBefore=null; // actual origImg HTMLImageElement before edits
+
+function enterBA(){
+  if(!S.hasImg){return;}
+  baActive=true;
+  // Snapshot origImg as "before"
+  const snap=document.createElement('canvas');
+  snap.width=origImg.width; snap.height=origImg.height;
+  snap.getContext('2d').drawImage(origImg,0,0);
+  baOrigSnapshot=snap;
+  // Also save the actual origImg reference for discard
+  baOrigImgBefore=origImg;
+  // Save layer stack so we can discard changes
+  baLayerSnapshots=JSON.parse(JSON.stringify(layers.map(l=>{
+    const o={...l};
+    if(l.type==='image'&&l.img){
+      const tc=document.createElement('canvas');tc.width=l.w;tc.height=l.h;
+      tc.getContext('2d').drawImage(l.img,0,0,l.w,l.h);
+      o.imgSrc=tc.toDataURL(); o.img=null;
+    }
+    return o;
+  })));
+  document.getElementById('ba-bar').classList.add('on');
+  document.getElementById('ba-divider').classList.add('on');
+  document.getElementById('ba-label-before').classList.add('on');
+  document.getElementById('ba-label-after').classList.add('on');
+  document.getElementById('ba-slider').value=50;
+  updateBADivider(50);
+  renderCanvas();
+  toast('◑ Edit freely — Before (left) vs After (right). Accept or Discard when done.');
+  initBADrag();
+}
+
+function exitBA(){
+  // Just exit without accepting or discarding — keeps current state
+  baActive=false; baOrigSnapshot=null; baLayerSnapshots=[]; baOrigImgBefore=null;
+  document.getElementById('ba-bar').classList.remove('on');
+  document.getElementById('ba-divider').classList.remove('on');
+  document.getElementById('ba-label-before').classList.remove('on');
+  document.getElementById('ba-label-after').classList.remove('on');
+  document.querySelectorAll('.tbtn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('t-move')?.classList.add('active');
+  S.tool='move';
+  ca.className=ca.className.replace(/\b(tm|tc2)\b/g,'').trim()+' tm';
+  renderCanvas();
+}
+
+function acceptBA(){
+  // Keep all current edits, just exit the mode
+  pushHist('✓ Accepted edits');
+  exitBA();
+  toast('✓ Edits kept!');
+}
+
+function discardBA(){
+  // Restore origImg and layers to what they were when BA was entered
+  if(!baOrigImgBefore){exitBA();return;}
+  origImg=baOrigImgBefore;
+  // Restore layers
+  layers=baLayerSnapshots.map(l=>{
+    if(l.imgSrc){const img=new Image();img.src=l.imgSrc;return{...l,img};}
+    return{...l};
+  });
+  selLayerId=null;
+  updateAdjustHeader();
+  exitBA();
+  renderCanvas();renderLayersPanel();
+  toast('↺ Edits discarded — back to before.');
+}
+
+function updateBADivider(pct){
+  const rect=canvas.getBoundingClientRect();
+  const cwRect=cw.getBoundingClientRect();
+  const relLeft=cwRect.left-document.getElementById('canvas-area').getBoundingClientRect().left;
+  const divX=relLeft+rect.width*(pct/100);
+  const div=document.getElementById('ba-divider');
+  div.style.left=divX+'px';
+  renderCanvas();
+}
+
+function initBADrag(){
+  const handle=document.getElementById('ba-handle');
+  const slider=document.getElementById('ba-slider');
+  handle.onmousedown=e=>{
+    e.preventDefault();
+    const onMove=e2=>{
+      const caRect=document.getElementById('canvas-area').getBoundingClientRect();
+      const cwRect=cw.getBoundingClientRect();
+      const relX=e2.clientX-cwRect.left;
+      const pct=Math.max(0,Math.min(100,relX/canvas.getBoundingClientRect().width*100));
+      slider.value=pct;
+      updateBADivider(pct);
+    };
+    const onUp=()=>{window.removeEventListener('mousemove',onMove);window.removeEventListener('mouseup',onUp);};
+    window.addEventListener('mousemove',onMove);
+    window.addEventListener('mouseup',onUp);
+  };
+}
+
+// ════════════════════════════════════════════
 //  TOOLS
 // ════════════════════════════════════════════
 const TOOL_PANE={move:'adjust',adjust:'adjust',filter:'adjust',crop:'adjust',text:'layers',overlay:'layers',bgr:'adjust',history:'history'};
 function setTool(tool){
-  // Adjust and Filter are panel-switchers only — they open the adjust pane
-  // but don't change the active interaction tool
   if(tool==='adjust'||tool==='filter'){
     document.querySelectorAll('.tbtn').forEach(b=>b.classList.remove('active'));
     document.getElementById('t-'+tool)?.classList.add('active');
@@ -1907,6 +2495,8 @@ function setTool(tool){
     if(tab)switchPane(tab);
     return;
   }
+  // Exit before/after mode when switching away
+  if(S.tool==='ba'&&tool!=='ba') exitBA();
   if(S.tool==='crop'&&tool!=='crop')cancelCrop();
   S.tool=tool;
   document.querySelectorAll('.tbtn').forEach(b=>b.classList.remove('active'));
@@ -1920,6 +2510,8 @@ function setTool(tool){
   if(tool==='crop'){if(!S.hasImg){toast('Open a photo first!');setTool('move');return;}startCrop();}
   if(tool==='text'){if(!S.hasImg){toast('Open a photo first!');return;}openTxtModal(null);}
   if(tool==='bgr'){openBGRModal();}
+  if(tool==='wm'){if(!S.hasImg){toast('Open a photo first!');setTool('move');return;}openWM();}
+  if(tool==='ba'){if(!S.hasImg){toast('Open a photo first!');setTool('move');return;}enterBA();}
 }
 function switchPane(btn){
   document.querySelectorAll('.ptab').forEach(t=>t.classList.remove('active'));
