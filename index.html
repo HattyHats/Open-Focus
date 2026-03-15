@@ -282,81 +282,45 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 }
 .hatty-link:hover{border-color:var(--accent);background:var(--accent-glow);color:var(--accent-hover);}
 *{scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
-/* Mobile elements hidden by default on desktop */
-#mob-toolbar{display:none;}
-#mob-sheet{display:none;}
-
 @media(max-width:700px){
-  /* ── Variables ── */
-  :root{--mob-toolbar-h:60px;--mob-sheet-h:55vh;}
-
-  /* ── Top bar: keep only logo, open, export, undo ── */
-  #topbar{padding:0 8px;gap:5px;height:48px;}
+  /* Top bar — compact */
+  #topbar{padding:0 8px;gap:6px;height:48px;flex-wrap:nowrap;}
   #topbar .sep,#topbar .zoom-ctrl,#topbar #docname,
   #topbar .hatty-link,#topbar .hatty-credit,
   #topbar button[onclick="showOB()"],
-  #topbar button[onclick="doRedo()"]{ display:none!important; }
-  #topbar .logo-text{font-size:15px;}
-  #topbar .logo-icon{width:26px;height:26px;font-size:13px;}
-  #ubtn{font-size:12px!important;padding:0 8px!important;}
-
-  /* ── Main: no left toolstrip ── */
+  #topbar button[onclick="doRedo()"]{display:none!important;}
+  .logo-text{font-size:14px;}
+  .logo-icon{width:24px;height:24px;font-size:12px;}
+  /* Toolstrip — horizontal across bottom */
   #main{flex-direction:column;}
   #toolstrip{
-    display:none; /* hidden — replaced by bottom bar */
-  }
-  #rp{display:none;} /* hidden — replaced by bottom sheet */
-  #sb{display:none;} /* hide status bar */
-
-  /* ── Canvas area: full width, leave room for bottom toolbar ── */
-  #canvas-area{flex:1;overflow:hidden;}
-
-  /* ── Bottom toolbar (mobile toolstrip) ── */
-  #mob-toolbar{
-    display:flex;height:var(--mob-toolbar-h);
-    background:var(--surface);border-top:1px solid var(--border);
-    overflow-x:auto;overflow-y:hidden;flex-shrink:0;
-    align-items:center;padding:0 4px;gap:2px;
+    width:100%;height:56px;flex-direction:row;border-right:none;
+    border-top:1px solid var(--border);padding:0 4px;gap:0;
+    overflow-x:auto;overflow-y:hidden;flex-shrink:0;order:2;
     -webkit-overflow-scrolling:touch;scrollbar-width:none;
   }
-  #mob-toolbar::-webkit-scrollbar{display:none;}
-  .mob-tbtn{
-    min-width:52px;height:52px;display:flex;flex-direction:column;
-    align-items:center;justify-content:center;gap:3px;
-    border-radius:var(--rs);cursor:pointer;color:var(--text-muted);
-    border:none;background:none;font-family:var(--font-b);flex-shrink:0;
-    -webkit-tap-highlight-color:transparent;
+  #toolstrip::-webkit-scrollbar{display:none;}
+  #canvas-area{order:1;flex:1;}
+  .tbtn{width:52px;height:52px;flex-shrink:0;}
+  .tbtn.active::before{left:50%;top:auto;bottom:-2px;transform:translateX(-50%);
+    width:24px;height:3px;border-radius:3px 3px 0 0;}
+  .tsep{width:1px;height:32px;margin:0 2px;}
+  /* Right panel — show as scrollable overlay when needed */
+  #rp{
+    position:fixed;bottom:56px;left:0;right:0;
+    width:100%;height:auto;max-height:55vh;
+    border-left:none;border-top:1px solid var(--border-light);
+    border-radius:14px 14px 0 0;z-index:150;
+    display:none;overflow-y:auto;
   }
-  .mob-tbtn.active{background:var(--accent-glow);color:var(--accent);}
-  .mob-tbtn .ticon{font-size:20px;line-height:1;}
-  .mob-tbtn .tlabel{font-size:9px;font-weight:500;text-transform:uppercase;letter-spacing:.3px;}
-  .mob-tsep{width:1px;height:32px;background:var(--border);margin:0 3px;flex-shrink:0;}
-
-  /* ── Bottom sheet (replaces right panel) ── */
-  #mob-sheet{
-    display:flex!important;position:fixed;bottom:var(--mob-toolbar-h);left:0;right:0;
-    height:var(--mob-sheet-h);background:var(--surface);
-    border-top:1px solid var(--border-light);border-radius:14px 14px 0 0;
-    transform:translateY(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);
-    z-index:200;flex-direction:column;overflow:hidden;
-  }
-  #mob-sheet.open{transform:translateY(0);}
-  #mob-sheet-handle{width:36px;height:4px;background:var(--border-light);border-radius:2px;margin:10px auto 6px;flex-shrink:0;}
-  #mob-sheet-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);text-align:center;padding:0 0 8px;flex-shrink:0;}
-  #mob-sheet-body{flex:1;overflow-y:auto;padding:0 14px 16px;display:flex;flex-direction:column;}
-  /* Mobile sheet tab bar */
-  #mob-sheet-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;padding:0 14px;}
-  .mob-stab{flex:1;height:38px;border:none;background:none;color:var(--text-dim);font-family:var(--font-b);font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;border-bottom:2px solid transparent;transition:var(--tr);}
-  .mob-stab.active{color:var(--accent);border-bottom-color:var(--accent);}
-  /* Mobile panes */
-  .mob-pane{display:none;flex-direction:column;gap:14px;padding-top:12px;}
-  .mob-pane.mob-pane-active{display:flex;}
-
-  /* ── Modals: full screen on mobile ── */
+  #rp.mob-open{display:flex;}
+  /* Status bar — hide */
+  #sb{display:none;}
+  /* Modals slide up from bottom */
   .modal-bg{align-items:flex-end;}
-  .mcard{width:100%!important;max-width:100%!important;border-radius:16px 16px 0 0!important;max-height:85vh;overflow-y:auto;}
-
-  /* ── Bigger touch targets on canvas ── */
+  .mcard{width:100%!important;max-width:100%!important;
+    border-radius:16px 16px 0 0!important;max-height:88vh;overflow-y:auto;}
+  /* Bigger crop handles */
   .ch{width:20px!important;height:20px!important;}
   .ch.tl{top:-10px!important;left:-10px!important;}
   .ch.tr{top:-10px!important;right:-10px!important;}
@@ -366,14 +330,12 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
   .ch.bc{bottom:-10px!important;left:calc(50% - 10px)!important;}
   .ch.lc{left:-10px!important;top:calc(50% - 10px)!important;}
   .ch.rc{right:-10px!important;top:calc(50% - 10px)!important;}
-
-  /* ── Crop / BA / WM bars reposition above toolbar ── */
-  #crop-bar{bottom:calc(var(--mob-toolbar-h) + 8px)!important;}
-  #ba-bar{bottom:var(--mob-toolbar-h)!important;}
-  #wm-bar{bottom:var(--mob-toolbar-h)!important;}
-
-  /* ── Toast above toolbar ── */
-  #toast{bottom:calc(var(--mob-toolbar-h) + 10px)!important;}
+  /* Bars above toolstrip */
+  #crop-bar,#ba-bar,#wm-bar{bottom:64px!important;}
+  #toast{bottom:70px!important;}
+  /* Panel tabs bigger for touch */
+  .ptab{height:44px;font-size:12px;}
+  .pbody{padding:12px;}
 }
 </style>
 </head>
@@ -753,38 +715,6 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
         <button class="btn btn-ghost" style="width:100%;margin-top:4px;justify-content:center;font-size:12px" onclick="resetAll()">↺ Reset to original</button>
       </div>
     </div>
-  </div>
-</div>
-
-<!-- MOBILE BOTTOM TOOLBAR -->
-<div id="mob-toolbar">
-  <button class="mob-tbtn active" id="mt-move" onclick="setTool('move');mobSheetClose()"><div class="ticon">✥</div><div class="tlabel">Move</div></button>
-  <button class="mob-tbtn" id="mt-crop" onclick="setTool('crop');mobSheetClose()"><div class="ticon">⛶</div><div class="tlabel">Crop</div></button>
-  <div class="mob-tsep"></div>
-  <button class="mob-tbtn" id="mt-adjust" onclick="mobOpenSheet('adjust')"><div class="ticon">🎚</div><div class="tlabel">Adjust</div></button>
-  <button class="mob-tbtn" id="mt-filter" onclick="mobOpenSheet('adjust')"><div class="ticon">✨</div><div class="tlabel">Filter</div></button>
-  <div class="mob-tsep"></div>
-  <button class="mob-tbtn" id="mt-text" onclick="setTool('text');mobSheetClose()"><div class="ticon">T</div><div class="tlabel">Text</div></button>
-  <button class="mob-tbtn" id="mt-layers" onclick="mobOpenSheet('layers')"><div class="ticon">◫</div><div class="tlabel">Layers</div></button>
-  <div class="mob-tsep"></div>
-  <button class="mob-tbtn" id="mt-bgr" onclick="setTool('bgr');mobSheetClose()"><div class="ticon">🪄</div><div class="tlabel">BG Remove</div></button>
-  <button class="mob-tbtn" id="mt-wm" onclick="setTool('wm');mobSheetClose()"><div class="ticon">💧</div><div class="tlabel">Watermark</div></button>
-  <div class="mob-tsep"></div>
-  <button class="mob-tbtn" id="mt-ba" onclick="setTool('ba');mobSheetClose()"><div class="ticon">◑</div><div class="tlabel">Before/After</div></button>
-  <div class="mob-tsep"></div>
-  <button class="mob-tbtn" onclick="mobOpenSheet('history')"><div class="ticon">↺</div><div class="tlabel">History</div></button>
-</div>
-
-<!-- MOBILE BOTTOM SHEET — contains the real right panel permanently -->
-<div id="mob-sheet">
-  <div id="mob-sheet-handle" onclick="mobSheetClose()"></div>
-  <div id="mob-sheet-tabs">
-    <button class="mob-stab active" data-p="adjust" onclick="mobSwitchTab(this,'adjust')">Adjust</button>
-    <button class="mob-stab" data-p="layers" onclick="mobSwitchTab(this,'layers')">Layers</button>
-    <button class="mob-stab" data-p="history" onclick="mobSwitchTab(this,'history')">History</button>
-  </div>
-  <div id="mob-sheet-body">
-    <!-- pane-adjust, pane-layers, pane-history rendered here via JS -->
   </div>
 </div>
 
@@ -2908,227 +2838,65 @@ document.addEventListener('paste',e=>{
 });
 
 // ════════════════════════════════════════════
-//  MOBILE SUPPORT
+//  MOBILE — simple panel toggle + touch pan
 // ════════════════════════════════════════════
-const isMobile=()=>window.innerWidth<=700;
-let mobSheetPane=null;
+const isMob=()=>window.innerWidth<=700;
 
-// ── Build the mobile sheet panes once on load ──
-function buildMobSheet(){
-  const body=document.getElementById('mob-sheet-body');
-  if(!body)return;
-  // Copy each pane's innerHTML into a mobile pane div
-  ['adjust','layers','history'].forEach(pane=>{
-    const src=document.getElementById('pane-'+pane);
-    if(!src)return;
-    const div=document.createElement('div');
-    div.id='mob-pane-'+pane;
-    div.className='mob-pane'+(pane==='adjust'?' mob-pane-active':'');
-    div.innerHTML=src.innerHTML;
-    body.appendChild(div);
-  });
-  // Wire up all sliders in the mobile adjust pane
-  const mobAdjust=document.getElementById('mob-pane-adjust');
-  if(mobAdjust){
-    Object.keys(DSLIDERS).forEach(k=>{
-      const sl=mobAdjust.querySelector('[id="s-'+k+'"]');
-      const vl=mobAdjust.querySelector('[id="v-'+k+'"]');
-      if(sl){
-        // Sync initial value
-        const realSl=document.getElementById('s-'+k);
-        if(realSl) sl.value=realSl.value;
-        if(vl){const rv=document.getElementById('v-'+k);if(rv)vl.textContent=rv.textContent;}
-        sl.oninput=function(){
-          // Update both mobile display and real slider, then call slide()
-          if(vl) vl.textContent=parseInt(this.value)>0?'+'+this.value:this.value;
-          const realSl2=document.getElementById('s-'+k);
-          if(realSl2) realSl2.value=this.value;
-          slide(k,this.value);
-        };
-      }
-    });
-    // Wire Quick Fix button
-    const qf=mobAdjust.querySelector('.qfbtn');
-    if(qf) qf.onclick=()=>quickFix();
-    // Wire preset buttons
-    mobAdjust.querySelectorAll('.pi').forEach(pi=>{
-      const orig=pi.getAttribute('onclick');
-      if(orig) pi.onclick=()=>eval(orig); // re-evaluate the onclick from original
-    });
-  }
-  // Wire layer panel buttons (add text, add overlay)
-  const mobLayers=document.getElementById('mob-pane-layers');
-  if(mobLayers){
-    const addText=mobLayers.querySelector('.ladd');
-    if(addText) addText.onclick=()=>openTxtModal(null);
-    const addImg=mobLayers.querySelectorAll('.ladd')[1];
-    if(addImg) addImg.onclick=()=>document.getElementById('overlay-fi').click();
+// Toggle right panel overlay when tapping Adjust/Filter/Layers/History tools
+const _origSetTool2=setTool;
+function setTool(tool){
+  _origSetTool2(tool);
+  if(!isMob())return;
+  const rp2=document.getElementById('rp');
+  // These tools open the panel overlay
+  const panelTools=['adjust','filter','overlay','history'];
+  if(panelTools.includes(tool)){
+    rp2.classList.toggle('mob-open');
+  } else {
+    rp2.classList.remove('mob-open');
   }
 }
 
-// Keep mobile sliders in sync when values change from other sources
-function syncMobSliders(){
-  const mobAdjust=document.getElementById('mob-pane-adjust');
-  if(!mobAdjust)return;
-  Object.keys(DSLIDERS).forEach(k=>{
-    const sl=mobAdjust.querySelector('[id="s-'+k+'"]');
-    const vl=mobAdjust.querySelector('[id="v-'+k+'"]');
-    const realSl=document.getElementById('s-'+k);
-    const realVl=document.getElementById('v-'+k);
-    if(sl&&realSl) sl.value=realSl.value;
-    if(vl&&realVl) vl.textContent=realVl.textContent;
-  });
-}
-
-// Keep mobile layers panel in sync
-function syncMobLayers(){
-  const mobLayers=document.getElementById('mob-pane-layers');
-  if(!mobLayers)return;
-  const realLL=document.getElementById('ll');
-  const mobLL=mobLayers.querySelector('.ll');
-  if(realLL&&mobLL) mobLL.innerHTML=realLL.innerHTML;
-  // Rewire click handlers on cloned layer rows
-  mobLL&&mobLL.querySelectorAll('.li').forEach(li=>{
-    const id=parseInt(li.dataset.id);
-    if(!id)return;
-    li.onclick=()=>selectLayer(id);
-    const vis=li.querySelector('.lvis');
-    if(vis) vis.onclick=e=>{e.stopPropagation();const l=layers.find(x=>x.id===id);if(l){l.visible=!l.visible;renderCanvas();renderLayersPanel();}};
-    const del=li.querySelector('.ldel');
-    if(del) del.onclick=e=>{e.stopPropagation();deleteLayer(id);};
-  });
-}
-
-function mobSwitchTab(btn,pane){
-  document.querySelectorAll('.mob-stab').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  document.querySelectorAll('.mob-pane').forEach(p=>p.classList.remove('mob-pane-active'));
-  const mp=document.getElementById('mob-pane-'+pane);
-  if(mp) mp.classList.add('mob-pane-active');
-  mobSheetPane=pane;
-  if(pane==='adjust') syncMobSliders();
-  if(pane==='layers') syncMobLayers();
-  if(pane==='history'){
-    const mobHist=document.getElementById('mob-pane-history');
-    const realHist=document.getElementById('pane-history');
-    if(mobHist&&realHist) mobHist.innerHTML=realHist.innerHTML;
-  }
-}
-
-function mobOpenSheet(pane){
-  if(!isMobile())return;
-  const sheet=document.getElementById('mob-sheet');
-  if(sheet.classList.contains('open')&&mobSheetPane===pane){mobSheetClose();return;}
-  mobSheetPane=pane;
-  // Switch to the right tab
-  const tab=document.querySelector(`.mob-stab[data-p="${pane}"]`);
-  if(tab) mobSwitchTab(tab,pane);
-  else{ if(pane==='adjust') syncMobSliders(); if(pane==='layers') syncMobLayers(); }
-  sheet.classList.add('open');
-  document.querySelectorAll('.mob-tbtn').forEach(b=>b.classList.remove('active'));
-  const mb=document.getElementById('mt-'+pane);
-  if(mb)mb.classList.add('active');
-}
-function mobSheetClose(){
-  document.getElementById('mob-sheet').classList.remove('open');
-  mobSheetPane=null;
-}
-
-// Patch renderLayersPanel to also sync mobile layers
-const _origRLP=renderLayersPanel;
-function renderLayersPanel(){
-  _origRLP();
-  if(isMobile()&&mobSheetPane==='layers') syncMobLayers();
-}
-window.renderLayersPanel=renderLayersPanel;
-
-// Patch loadSlidersFromLayer to also sync mobile sliders
-const _origLSFL=loadSlidersFromLayer;
-function loadSlidersFromLayer(layer){
-  _origLSFL(layer);
-  if(isMobile()) syncMobSliders();
-}
-window.loadSlidersFromLayer=loadSlidersFromLayer;
-
-// Close sheet on canvas tap
+// Tapping the canvas closes the panel
 canvas.addEventListener('touchstart',()=>{
-  if(mobSheetPane&&!layerDrag&&!layerResizing) mobSheetClose();
+  if(isMob()) document.getElementById('rp').classList.remove('mob-open');
 },{passive:true});
 
-// Keep mobile toolbar in sync with setTool
-const _origSetTool=setTool;
-function setToolMob(tool){
-  _origSetTool(tool);
-  if(!isMobile())return;
-  document.querySelectorAll('.mob-tbtn').forEach(b=>b.classList.remove('active'));
-  const mob=document.getElementById('mt-'+tool);
-  if(mob)mob.classList.add('active');
+// Touch pan on canvas (direct, no synthetic events)
+let tcStart=null,tcPanOrig=null,tcPinchDist=null,tcPinchZoom=null;
+function tcDist(t){
+  const dx=t[0].clientX-t[1].clientX,dy=t[0].clientY-t[1].clientY;
+  return Math.sqrt(dx*dx+dy*dy);
 }
-window.setTool=setToolMob;
-
-// ── Touch events for canvas pan & layer drag ──
-let touchStart=null,touchPanOrigin=null;
-let pinchStartDist=null,pinchStartZoom=null;
-function getTouchDist(t){const dx=t[0].clientX-t[1].clientX,dy=t[0].clientY-t[1].clientY;return Math.sqrt(dx*dx+dy*dy);}
-
 canvas.addEventListener('touchstart',e=>{
-  if(S.tool==='crop'||S.tool==='bgr')return;
   if(e.touches.length===1){
     const t=e.touches[0];
-    touchStart={x:t.clientX,y:t.clientY};
-    touchPanOrigin={panX:S.panX,panY:S.panY};
-    const me=new MouseEvent('mousedown',{clientX:t.clientX,clientY:t.clientY,bubbles:true});
-    canvas.dispatchEvent(me);
+    tcStart={x:t.clientX,y:t.clientY};
+    tcPanOrig={x:S.panX,y:S.panY};
   } else if(e.touches.length===2){
-    pinchStartDist=getTouchDist(e.touches);
-    pinchStartZoom=S.zoom;
-    touchStart=null;layerDrag=null;layerResizing=null;
+    tcPinchDist=tcDist(e.touches);
+    tcPinchZoom=S.zoom;
+    tcStart=null;
   }
 },{passive:true});
 
 canvas.addEventListener('touchmove',e=>{
   e.preventDefault();
-  if(e.touches.length===1&&touchStart){
+  if(e.touches.length===1&&tcStart&&!layerDrag){
     const t=e.touches[0];
-    const dx=t.clientX-touchStart.x,dy=t.clientY-touchStart.y;
-    if(layerDrag||layerResizing){
-      window.dispatchEvent(new MouseEvent('mousemove',{clientX:t.clientX,clientY:t.clientY,bubbles:true}));
-    } else {
-      S.panX=(touchPanOrigin?.panX||0)+dx;
-      S.panY=(touchPanOrigin?.panY||0)+dy;
-      positionCanvas();
-    }
-  } else if(e.touches.length===2&&pinchStartDist){
-    const dist=getTouchDist(e.touches);
-    S.zoom=Math.max(0.05,Math.min(4,pinchStartZoom*dist/pinchStartDist));
+    S.panX=tcPanOrig.x+(t.clientX-tcStart.x);
+    S.panY=tcPanOrig.y+(t.clientY-tcStart.y);
+    positionCanvas();
+  } else if(e.touches.length===2&&tcPinchDist){
+    const d=tcDist(e.touches);
+    S.zoom=Math.max(0.05,Math.min(4,tcPinchZoom*d/tcPinchDist));
     applyZoom();
   }
 },{passive:false});
 
-canvas.addEventListener('touchend',e=>{
-  if(layerDrag||layerResizing) window.dispatchEvent(new MouseEvent('mouseup',{bubbles:true}));
-  touchStart=null;touchPanOrigin=null;pinchStartDist=null;
+canvas.addEventListener('touchend',()=>{
+  tcStart=null;tcPanOrig=null;tcPinchDist=null;
 },{passive:true});
-
-// Lasso touch support
-function addLassoTouchEvents(){
-  if(!lassoCanvas)return;
-  ['touchstart','touchmove'].forEach(type=>{
-    lassoCanvas.addEventListener(type,e=>{
-      e.preventDefault();
-      const t=e.touches[0];
-      lassoCanvas.dispatchEvent(new MouseEvent(type==='touchstart'?'mousedown':'mousemove',{clientX:t.clientX,clientY:t.clientY}));
-    },{passive:false});
-  });
-  lassoCanvas.addEventListener('touchend',()=>{
-    lassoCanvas.dispatchEvent(new MouseEvent('mouseup'));
-  },{passive:true});
-}
-const _origStartLasso2=window.startLasso||startLasso;
-window.startLasso=function(){_origStartLasso2();setTimeout(addLassoTouchEvents,50);};
-
-// ── Init mobile sheet on load ──
-if(isMobile()) buildMobSheet();
 
 // ════════════════════════════════════════════
 //  INIT
