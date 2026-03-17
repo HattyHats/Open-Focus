@@ -476,15 +476,6 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
   .tbtn.active::before{left:50%;top:auto;bottom:-2px;transform:translateX(-50%);
     width:24px;height:3px;border-radius:3px 3px 0 0;}
   .tsep{width:1px;height:32px;margin:0 2px;}
-  /* Right panel — show as scrollable overlay when needed */
-  #rp{
-    position:fixed;bottom:56px;left:0;right:0;
-    width:100%;height:auto;max-height:55vh;
-    border-left:none;border-top:1px solid var(--border-light);
-    border-radius:14px 14px 0 0;z-index:150;
-    display:none;overflow-y:auto;
-  }
-  #rp.mob-open{display:flex;}
   /* Status bar — hide */
   #sb{display:none;}
   /* Modals slide up from bottom */
@@ -3033,31 +3024,8 @@ document.addEventListener('paste',e=>{
 });
 
 // ════════════════════════════════════════════
-//  MOBILE — simple panel toggle + touch pan
+//  MOBILE — touch pan & pinch zoom only
 // ════════════════════════════════════════════
-const isMob=()=>window.innerWidth<=700;
-
-// Toggle right panel overlay when tapping Adjust/Filter/Layers/History tools
-const _origSetTool2=setTool;
-function setTool(tool){
-  _origSetTool2(tool);
-  if(!isMob())return;
-  const rp2=document.getElementById('rp');
-  // These tools open the panel overlay
-  const panelTools=['adjust','filter','overlay','history'];
-  if(panelTools.includes(tool)){
-    rp2.classList.toggle('mob-open');
-  } else {
-    rp2.classList.remove('mob-open');
-  }
-}
-
-// Tapping the canvas closes the panel
-canvas.addEventListener('touchstart',()=>{
-  if(isMob()) document.getElementById('rp').classList.remove('mob-open');
-},{passive:true});
-
-// Touch pan on canvas (direct, no synthetic events)
 let tcStart=null,tcPanOrig=null,tcPinchDist=null,tcPinchZoom=null;
 function tcDist(t){
   const dx=t[0].clientX-t[1].clientX,dy=t[0].clientY-t[1].clientY;
