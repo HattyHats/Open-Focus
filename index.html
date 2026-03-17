@@ -941,10 +941,9 @@ const ca=document.getElementById('canvas-area');
 function enterApp(){
   const w=document.getElementById('welcome');
   w.classList.add('hide');
-  // After fade-out animation completes, remove it entirely and show onboarding
+  w.style.pointerEvents='none'; // immediately stop blocking clicks
   setTimeout(()=>{
     w.style.display='none';
-    // Show the quick-start onboarding tour
     showOB();
   },500);
 }
