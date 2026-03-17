@@ -161,11 +161,13 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
   gap:0;
 }
 #welcome.hide{
-  animation:welcome-fade-out .5s ease forwards;
+  animation:welcome-fade-out .45s ease forwards;
   pointer-events:none;
 }
 @keyframes welcome-fade-out{
-  to{opacity:0;transform:scale(1.03);}
+  0%{opacity:1;transform:scale(1);}
+  99%{opacity:0;transform:scale(1.03);display:flex;}
+  100%{opacity:0;display:none;visibility:hidden;}
 }
 
 /* Logo — fades in smoothly first */
@@ -322,7 +324,8 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 #wl-enter button:active{transform:scale(.97);}
 
 /* ONBOARDING (kept for ? Help button) */
-#ob{position:fixed;inset:0;background:rgba(10,9,8,.85);backdrop-filter:blur(8px);z-index:1000;display:flex;align-items:center;justify-content:center;}
+#ob{position:fixed;inset:0;background:rgba(10,9,8,.85);backdrop-filter:blur(8px);z-index:1000;display:none;align-items:center;justify-content:center;}
+#ob.on{display:flex;}
 #ob.h{display:none;}
 .ocard{background:var(--surface);border:1px solid var(--border-light);border-radius:16px;padding:36px 40px;max-width:480px;width:90%;text-align:center;box-shadow:0 32px 80px rgba(0,0,0,.6);}
 .osteps{display:flex;justify-content:center;gap:8px;margin-bottom:28px;}
@@ -396,9 +399,9 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 #ba-label-after{position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.55);color:#fff;font-size:11px;font-weight:600;padding:3px 8px;border-radius:3px;pointer-events:none;display:none;}
 #ba-label-before.on,#ba-label-after.on{display:block;}
 /* ── Open file choice popup ── */
-#open-popup{position:fixed;top:0;left:0;right:0;bottom:0;z-index:500;display:none;align-items:flex-start;justify-content:flex-start;pointer-events:none;}
-#open-popup.on{display:flex;pointer-events:all;}
-#open-popup-card{background:var(--panel);border:1px solid var(--border-light);border-radius:var(--r);box-shadow:0 8px 32px rgba(0,0,0,0.5);padding:6px;min-width:200px;pointer-events:all;}
+#open-popup{position:fixed;z-index:500;display:none;}
+#open-popup.on{display:block;}
+#open-popup-card{background:var(--panel);border:1px solid var(--border-light);border-radius:var(--r);box-shadow:0 8px 32px rgba(0,0,0,0.5);padding:6px;min-width:200px;}
 .op-btn{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border-radius:var(--rs);border:none;background:none;color:var(--text);cursor:pointer;font-family:var(--font-b);font-size:13px;text-align:left;transition:var(--tr);}
 .op-btn:hover{background:var(--surface);}
 .op-btn .op-icon{font-size:16px;width:22px;text-align:center;}
@@ -940,12 +943,12 @@ const ca=document.getElementById('canvas-area');
 // ════════════════════════════════════════════
 function enterApp(){
   const w=document.getElementById('welcome');
+  w.style.pointerEvents='none'; // stop blocking clicks immediately
   w.classList.add('hide');
-  w.style.pointerEvents='none'; // immediately stop blocking clicks
   setTimeout(()=>{
-    w.style.display='none';
+    w.remove(); // remove from DOM entirely — no more blocking
     showOB();
-  },500);
+  },450);
 }
 
 // ════════════════════════════════════════════
@@ -956,7 +959,7 @@ const OSTEPS=[
   {t:"Adjust & enhance",b:"Use <strong>⚡ Quick Fix</strong> or the sliders in the Adjust panel. Every change is undoable."},
   {t:"Add text & layers",b:"Click the <strong>T Text</strong> tool to add captions, or use <strong>Layers</strong> to stack images. Export when done!"}
 ];
-function showOB(){S.obStep=0;document.getElementById('ob').classList.remove('h');renderOB();}
+function showOB(){const ob=document.getElementById('ob');ob.style.display='flex';S.obStep=0;renderOB();}
 function renderOB(){
   const s=OSTEPS[S.obStep];
   document.getElementById('ostep').textContent=`Step ${S.obStep+1} of 3`;
@@ -966,7 +969,7 @@ function renderOB(){
   ['od1','od2','od3'].forEach((id,i)=>document.getElementById(id).classList.toggle('active',i===S.obStep));
 }
 function nextOB(){if(S.obStep<2){S.obStep++;renderOB();}else{closeOB();}}
-function closeOB(){document.getElementById('ob').classList.add('h');}
+function closeOB(){const ob=document.getElementById('ob');ob.style.display='none';}
 
 // ════════════════════════════════════════════
 //  FILE HANDLING
@@ -982,11 +985,9 @@ function openFile(){
   // Show the choice popup anchored under the Open button
   const btn=document.querySelector('#topbar .btn-ghost');
   const popup=document.getElementById('open-popup');
-  const card=document.getElementById('open-popup-card');
   const rect=btn.getBoundingClientRect();
-  card.style.position='fixed';
-  card.style.top=(rect.bottom+6)+'px';
-  card.style.left=rect.left+'px';
+  popup.style.top=(rect.bottom+6)+'px';
+  popup.style.left=rect.left+'px';
   popup.classList.add('on');
   // Dismiss on click outside
   clearTimeout(openPopupDismiss);
