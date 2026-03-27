@@ -60,6 +60,7 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);height:100
 #canvas-area.tm #cw.pg{cursor:grabbing;}
 #canvas-area.tc2 #cw{cursor:crosshair;}
 #canvas-area.teye #cw{cursor:crosshair;}
+#canvas-area.tblur #cw{cursor:crosshair;}
 /* CROP OVERLAY */
 #cro{position:absolute;inset:0;display:none;pointer-events:none;}
 #cro.on{display:block;pointer-events:all;}
@@ -162,7 +163,7 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
   position:fixed;inset:0;z-index:2000;
   background:#0a0908;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:0;
+  gap:0;overflow:hidden;
 }
 #welcome.hide{
   animation:welcome-fade-out .45s ease forwards;
@@ -173,6 +174,31 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
   99%{opacity:0;transform:scale(1.03);display:flex;}
   100%{opacity:0;display:none;visibility:hidden;}
 }
+/* Animated background */
+#wl-bg{
+  position:absolute;inset:0;z-index:0;
+  opacity:0;animation:wl-bg-in 1.2s ease .2s forwards;
+}
+@keyframes wl-bg-in{from{opacity:0;}to{opacity:1;}}
+#wl-bg svg{width:100%;height:100%;}
+/* Floating photo-editing shapes */
+.wl-float{animation:wl-float-anim 6s ease-in-out infinite;}
+.wl-float-b{animation:wl-float-anim 8s ease-in-out 1s infinite;}
+.wl-float-c{animation:wl-float-anim 7s ease-in-out 2.5s infinite;}
+@keyframes wl-float-anim{
+  0%,100%{transform:translateY(0);}
+  50%{transform:translateY(-18px);}
+}
+.wl-spin-slow{animation:wl-spin 20s linear infinite;}
+.wl-spin-med{animation:wl-spin 14s linear infinite reverse;}
+@keyframes wl-spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+/* Welcome blur overlay over background */
+#wl-overlay{
+  position:absolute;inset:0;z-index:1;
+  background:radial-gradient(ellipse 60% 70% at 50% 50%, transparent 20%, rgba(10,9,8,.82) 80%);
+}
+/* All welcome content sits above bg */
+#welcome>*:not(#wl-bg):not(#wl-overlay){position:relative;z-index:2;}
 
 /* Logo — fades in smoothly first */
 #wl-logo{
@@ -360,6 +386,16 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 .resize-mode-btn{flex:1;height:34px;border-radius:var(--rs);border:1px solid var(--border-light);background:transparent;color:var(--text-muted);font-family:var(--font-b);font-size:12.5px;font-weight:500;cursor:pointer;transition:var(--tr);}
 .resize-mode-btn:hover{border-color:var(--accent);color:var(--accent);}
 .resize-mode-btn.active{background:var(--accent-glow);border-color:var(--accent);color:var(--accent);}
+/* Border/Frame modal */
+.border-style-opt{display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;padding:6px;border-radius:var(--rs);border:2px solid transparent;transition:var(--tr);}
+.border-style-opt:hover{border-color:var(--border-light);}
+.border-style-opt.active{border-color:var(--accent);background:var(--accent-glow);}
+.bso-preview{width:48px;height:36px;background:var(--panel);border-radius:3px;box-sizing:border-box;}
+.bso-label{font-size:10px;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;}
+.border-style-opt.active .bso-label{color:var(--accent);}
+.border-swatch{width:28px;height:28px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:var(--tr);flex-shrink:0;}
+.border-swatch:hover{transform:scale(1.1);}
+.border-swatch.active{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-glow);}
 .fmtb:hover,.fmtb.active{border-color:var(--accent);color:var(--accent);background:var(--accent-glow);}
 .eprests{display:flex;flex-direction:column;gap:5px;margin-bottom:16px;}
 .epr{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-radius:var(--rs);border:1px solid var(--border);cursor:pointer;transition:var(--tr);}
@@ -512,6 +548,232 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 
 <!-- WELCOME SCREEN -->
 <div id="welcome">
+  <!-- Animated photo-editing background -->
+  <div id="wl-bg">
+    <svg viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="bgGlow1" cx="15%" cy="28%" r="35%">
+          <stop offset="0%" stop-color="rgba(232,184,109,0.07)"/>
+          <stop offset="100%" stop-color="rgba(232,184,109,0)"/>
+        </radialGradient>
+        <radialGradient id="bgGlow2" cx="88%" cy="22%" r="30%">
+          <stop offset="0%" stop-color="rgba(109,168,232,0.07)"/>
+          <stop offset="100%" stop-color="rgba(109,168,232,0)"/>
+        </radialGradient>
+        <radialGradient id="bgGlow3" cx="70%" cy="85%" r="28%">
+          <stop offset="0%" stop-color="rgba(192,132,252,0.06)"/>
+          <stop offset="100%" stop-color="rgba(192,132,252,0)"/>
+        </radialGradient>
+      </defs>
+
+      <!-- Ambient glows -->
+      <rect width="1200" height="700" fill="url(#bgGlow1)"/>
+      <rect width="1200" height="700" fill="url(#bgGlow2)"/>
+      <rect width="1200" height="700" fill="url(#bgGlow3)"/>
+
+      <!-- Large aperture / camera iris — top left, slowly spinning -->
+      <g transform="translate(155,175)" class="wl-spin-slow" style="transform-origin:0px 0px">
+        <circle cx="0" cy="0" r="118" fill="none" stroke="rgba(232,184,109,0.08)" stroke-width="1"/>
+        <circle cx="0" cy="0" r="90" fill="none" stroke="rgba(232,184,109,0.12)" stroke-width="1"/>
+        <circle cx="0" cy="0" r="62" fill="none" stroke="rgba(232,184,109,0.16)" stroke-width="1"/>
+        <circle cx="0" cy="0" r="38" fill="rgba(232,184,109,0.05)" stroke="rgba(232,184,109,0.22)" stroke-width="1.5"/>
+        <g opacity="0.18">
+          <ellipse cx="0" cy="-68" rx="13" ry="34" fill="rgba(232,184,109,0.7)" transform="rotate(0)"/>
+          <ellipse cx="0" cy="-68" rx="13" ry="34" fill="rgba(232,184,109,0.7)" transform="rotate(45)"/>
+          <ellipse cx="0" cy="-68" rx="13" ry="34" fill="rgba(232,184,109,0.7)" transform="rotate(90)"/>
+          <ellipse cx="0" cy="-68" rx="13" ry="34" fill="rgba(232,184,109,0.7)" transform="rotate(135)"/>
+          <ellipse cx="0" cy="-68" rx="13" ry="34" fill="rgba(232,184,109,0.7)" transform="rotate(180)"/>
+          <ellipse cx="0" cy="-68" rx="13" ry="34" fill="rgba(232,184,109,0.7)" transform="rotate(225)"/>
+          <ellipse cx="0" cy="-68" rx="13" ry="34" fill="rgba(232,184,109,0.7)" transform="rotate(270)"/>
+          <ellipse cx="0" cy="-68" rx="13" ry="34" fill="rgba(232,184,109,0.7)" transform="rotate(315)"/>
+        </g>
+        <!-- tick marks -->
+        <g stroke="rgba(232,184,109,0.3)" stroke-width="1">
+          <line x1="0" y1="-95" x2="0" y2="-105" transform="rotate(0)"/>
+          <line x1="0" y1="-95" x2="0" y2="-105" transform="rotate(30)"/>
+          <line x1="0" y1="-95" x2="0" y2="-105" transform="rotate(60)"/>
+          <line x1="0" y1="-95" x2="0" y2="-105" transform="rotate(90)"/>
+          <line x1="0" y1="-95" x2="0" y2="-105" transform="rotate(120)"/>
+          <line x1="0" y1="-95" x2="0" y2="-105" transform="rotate(150)"/>
+          <line x1="0" y1="-95" x2="0" y2="-105" transform="rotate(180)"/>
+          <line x1="0" y1="-95" x2="0" y2="-105" transform="rotate(210)"/>
+          <line x1="0" y1="-95" x2="0" y2="-105" transform="rotate(240)"/>
+          <line x1="0" y1="-95" x2="0" y2="-105" transform="rotate(270)"/>
+          <line x1="0" y1="-95" x2="0" y2="-105" transform="rotate(300)"/>
+          <line x1="0" y1="-95" x2="0" y2="-105" transform="rotate(330)"/>
+        </g>
+      </g>
+
+      <!-- Color wheel — top right, spinning opposite -->
+      <g transform="translate(1065,145)" class="wl-spin-med" style="transform-origin:0px 0px">
+        <circle cx="0" cy="0" r="98" fill="none" stroke="rgba(109,190,232,0.07)" stroke-width="1"/>
+        <path d="M0,0 L0,-80 A80,80 0 0,1 69.28,-40 Z" fill="rgba(232,184,109,0.2)"/>
+        <path d="M0,0 L69.28,-40 A80,80 0 0,1 69.28,40 Z" fill="rgba(232,123,109,0.2)"/>
+        <path d="M0,0 L69.28,40 A80,80 0 0,1 0,80 Z" fill="rgba(192,132,252,0.2)"/>
+        <path d="M0,0 L0,80 A80,80 0 0,1 -69.28,40 Z" fill="rgba(109,190,232,0.2)"/>
+        <path d="M0,0 L-69.28,40 A80,80 0 0,1 -69.28,-40 Z" fill="rgba(109,190,140,0.2)"/>
+        <path d="M0,0 L-69.28,-40 A80,80 0 0,1 0,-80 Z" fill="rgba(232,184,109,0.14)"/>
+        <circle cx="0" cy="0" r="32" fill="rgba(10,9,8,0.65)" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+        <!-- Inner ring counter-spin hint -->
+        <circle cx="0" cy="0" r="20" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="4,4"/>
+      </g>
+
+      <!-- Camera body silhouette — far left mid -->
+      <g transform="translate(28,310)" opacity="0.22" class="wl-float-c">
+        <rect x="0" y="20" width="120" height="80" rx="8" fill="rgba(40,38,36,0.9)" stroke="rgba(232,184,109,0.4)" stroke-width="1.2"/>
+        <rect x="30" y="8" width="60" height="24" rx="5" fill="rgba(40,38,36,0.9)" stroke="rgba(232,184,109,0.3)" stroke-width="1"/>
+        <!-- Lens circle -->
+        <circle cx="60" cy="60" r="28" fill="none" stroke="rgba(232,184,109,0.5)" stroke-width="1.5"/>
+        <circle cx="60" cy="60" r="20" fill="rgba(109,168,232,0.15)" stroke="rgba(232,184,109,0.3)" stroke-width="1"/>
+        <circle cx="60" cy="60" r="10" fill="rgba(10,9,8,0.6)" stroke="rgba(232,184,109,0.2)" stroke-width="1"/>
+        <!-- Shutter button -->
+        <circle cx="100" cy="18" r="7" fill="rgba(232,184,109,0.5)" stroke="rgba(232,184,109,0.2)" stroke-width="1"/>
+        <!-- View finder -->
+        <rect x="85" y="10" width="22" height="14" rx="2" fill="rgba(109,168,232,0.15)" stroke="rgba(232,184,109,0.3)" stroke-width="0.8"/>
+      </g>
+
+      <!-- Floating image frame with histogram — left -->
+      <g transform="translate(82,430)" class="wl-float">
+        <rect x="0" y="0" width="190" height="138" rx="6" fill="rgba(26,25,23,0.75)" stroke="rgba(232,184,109,0.22)" stroke-width="1.5"/>
+        <rect x="10" y="10" width="170" height="90" rx="3" fill="rgba(109,168,232,0.06)"/>
+        <!-- Sky gradient hint -->
+        <rect x="10" y="10" width="170" height="45" rx="3" fill="rgba(109,168,232,0.08)"/>
+        <!-- Mountains silhouette -->
+        <polygon points="18,100 55,58 80,74 115,48 150,65 178,100" fill="rgba(109,168,232,0.18)"/>
+        <polygon points="18,100 40,70 65,80 88,62 115,72 140,55 178,100" fill="rgba(109,168,232,0.1)"/>
+        <!-- Sun -->
+        <circle cx="148" cy="30" r="14" fill="rgba(232,184,109,0.18)"/>
+        <circle cx="148" cy="30" r="9" fill="rgba(232,184,109,0.25)"/>
+        <!-- Histogram -->
+        <rect x="10" y="108" width="170" height="1" fill="rgba(58,55,52,0.8)"/>
+        <rect x="16" y="88" width="7" height="20" rx="1" fill="rgba(109,168,232,0.35)"/>
+        <rect x="27" y="76" width="7" height="32" rx="1" fill="rgba(109,168,232,0.45)"/>
+        <rect x="38" y="66" width="7" height="42" rx="1" fill="rgba(109,168,232,0.55)"/>
+        <rect x="49" y="72" width="7" height="36" rx="1" fill="rgba(109,168,232,0.45)"/>
+        <rect x="60" y="82" width="7" height="26" rx="1" fill="rgba(109,168,232,0.35)"/>
+        <rect x="71" y="78" width="7" height="30" rx="1" fill="rgba(109,168,232,0.4)"/>
+        <rect x="82" y="70" width="7" height="38" rx="1" fill="rgba(232,184,109,0.45)"/>
+        <rect x="93" y="64" width="7" height="44" rx="1" fill="rgba(232,184,109,0.55)"/>
+        <rect x="104" y="74" width="7" height="34" rx="1" fill="rgba(232,184,109,0.4)"/>
+        <rect x="115" y="84" width="7" height="24" rx="1" fill="rgba(232,184,109,0.3)"/>
+        <rect x="126" y="90" width="7" height="18" rx="1" fill="rgba(232,123,109,0.3)"/>
+        <rect x="137" y="80" width="7" height="28" rx="1" fill="rgba(232,123,109,0.35)"/>
+        <rect x="148" y="85" width="7" height="23" rx="1" fill="rgba(232,123,109,0.25)"/>
+        <rect x="159" y="94" width="7" height="14" rx="1" fill="rgba(232,123,109,0.2)"/>
+        <!-- Label -->
+        <text x="15" y="130" font-family="sans-serif" font-size="8" fill="rgba(138,129,120,0.6)" letter-spacing="0.5">HISTOGRAM</text>
+      </g>
+
+      <!-- Adjustment sliders panel — bottom right -->
+      <g transform="translate(958,455)" class="wl-float-b">
+        <rect x="0" y="0" width="215" height="185" rx="8" fill="rgba(26,25,23,0.8)" stroke="rgba(58,55,52,0.9)" stroke-width="1"/>
+        <rect x="0" y="0" width="215" height="30" rx="8" fill="rgba(33,31,29,0.9)" stroke="none"/>
+        <rect x="0" y="22" width="215" height="8" rx="0" fill="rgba(33,31,29,0.9)"/>
+        <text x="14" y="20" font-family="sans-serif" font-size="10" fill="rgba(232,184,109,0.8)" font-weight="600" letter-spacing="1.2">ADJUST</text>
+        <!-- 5 slider rows -->
+        <text x="14" y="52" font-family="sans-serif" font-size="9" fill="rgba(200,190,180,0.5)">Brightness</text>
+        <rect x="14" y="57" width="187" height="3" rx="1.5" fill="rgba(58,55,52,0.9)"/>
+        <rect x="14" y="57" width="124" height="3" rx="1.5" fill="rgba(232,184,109,0.65)"/>
+        <circle cx="138" cy="58.5" r="5.5" fill="rgba(232,184,109,1)" stroke="rgba(26,25,23,0.8)" stroke-width="1.5"/>
+
+        <text x="14" y="80" font-family="sans-serif" font-size="9" fill="rgba(200,190,180,0.5)">Contrast</text>
+        <rect x="14" y="85" width="187" height="3" rx="1.5" fill="rgba(58,55,52,0.9)"/>
+        <rect x="14" y="85" width="76" height="3" rx="1.5" fill="rgba(109,190,232,0.65)"/>
+        <circle cx="90" cy="86.5" r="5.5" fill="rgba(109,190,232,1)" stroke="rgba(26,25,23,0.8)" stroke-width="1.5"/>
+
+        <text x="14" y="108" font-family="sans-serif" font-size="9" fill="rgba(200,190,180,0.5)">Saturation</text>
+        <rect x="14" y="113" width="187" height="3" rx="1.5" fill="rgba(58,55,52,0.9)"/>
+        <rect x="14" y="113" width="155" height="3" rx="1.5" fill="rgba(109,190,140,0.65)"/>
+        <circle cx="169" cy="114.5" r="5.5" fill="rgba(109,190,140,1)" stroke="rgba(26,25,23,0.8)" stroke-width="1.5"/>
+
+        <text x="14" y="136" font-family="sans-serif" font-size="9" fill="rgba(200,190,180,0.5)">Warmth</text>
+        <rect x="14" y="141" width="187" height="3" rx="1.5" fill="rgba(58,55,52,0.9)"/>
+        <rect x="14" y="141" width="58" height="3" rx="1.5" fill="rgba(232,123,109,0.65)"/>
+        <circle cx="72" cy="142.5" r="5.5" fill="rgba(232,123,109,1)" stroke="rgba(26,25,23,0.8)" stroke-width="1.5"/>
+
+        <text x="14" y="164" font-family="sans-serif" font-size="9" fill="rgba(200,190,180,0.5)">Vignette</text>
+        <rect x="14" y="169" width="187" height="3" rx="1.5" fill="rgba(58,55,52,0.9)"/>
+        <rect x="14" y="169" width="100" height="3" rx="1.5" fill="rgba(192,132,252,0.65)"/>
+        <circle cx="114" cy="170.5" r="5.5" fill="rgba(192,132,252,1)" stroke="rgba(26,25,23,0.8)" stroke-width="1.5"/>
+      </g>
+
+      <!-- Filter badges — mid left floating -->
+      <g transform="translate(248,520)" class="wl-float-b" opacity="0.85">
+        <rect x="0" y="0" width="72" height="24" rx="12" fill="rgba(232,184,109,0.15)" stroke="rgba(232,184,109,0.35)" stroke-width="1"/>
+        <text x="36" y="16" font-family="sans-serif" font-size="9" fill="rgba(232,184,109,0.9)" text-anchor="middle" font-weight="600">✨ Warm Film</text>
+      </g>
+      <g transform="translate(332,548)" class="wl-float-c" opacity="0.75">
+        <rect x="0" y="0" width="66" height="24" rx="12" fill="rgba(109,168,232,0.15)" stroke="rgba(109,168,232,0.35)" stroke-width="1"/>
+        <text x="33" y="16" font-family="sans-serif" font-size="9" fill="rgba(109,168,232,0.9)" text-anchor="middle" font-weight="600">💫 Cool Neon</text>
+      </g>
+      <g transform="translate(248,572)" class="wl-float" opacity="0.7">
+        <rect x="0" y="0" width="76" height="24" rx="12" fill="rgba(109,190,140,0.15)" stroke="rgba(109,190,140,0.35)" stroke-width="1"/>
+        <text x="38" y="16" font-family="sans-serif" font-size="9" fill="rgba(109,190,140,0.9)" text-anchor="middle" font-weight="600">🌅 Golden Hour</text>
+      </g>
+
+      <!-- Layer stack — bottom center -->
+      <g transform="translate(495,510)" class="wl-float-c">
+        <rect x="24" y="48" width="200" height="38" rx="5" fill="rgba(26,25,23,0.8)" stroke="rgba(46,43,40,0.8)" stroke-width="1"/>
+        <rect x="12" y="28" width="200" height="38" rx="5" fill="rgba(33,31,29,0.88)" stroke="rgba(52,49,46,0.8)" stroke-width="1"/>
+        <rect x="0" y="8" width="200" height="38" rx="5" fill="rgba(42,40,38,0.94)" stroke="rgba(232,184,109,0.38)" stroke-width="1"/>
+        <!-- Layer icons -->
+        <rect x="8" y="14" width="22" height="22" rx="3" fill="rgba(109,168,232,0.22)" stroke="rgba(109,168,232,0.15)" stroke-width="0.5"/>
+        <text x="19" y="29" font-family="sans-serif" font-size="11" text-anchor="middle" fill="rgba(109,168,232,0.7)">T</text>
+        <text x="40" y="26" font-family="sans-serif" font-size="10" fill="rgba(240,236,230,0.85)" font-weight="500">Caption text</text>
+        <text x="40" y="38" font-family="sans-serif" font-size="8.5" fill="rgba(90,85,80,0.8)">Text · 80%</text>
+        <!-- Second layer -->
+        <rect x="20" y="34" width="22" height="22" rx="3" fill="rgba(232,184,109,0.15)"/>
+        <text x="31" y="49" font-family="sans-serif" font-size="10" text-anchor="middle" fill="rgba(232,184,109,0.5)">◫</text>
+        <text x="52" y="46" font-family="sans-serif" font-size="10" fill="rgba(200,190,180,0.6)">overlay.png</text>
+        <!-- Third layer -->
+        <rect x="32" y="54" width="22" height="22" rx="3" fill="rgba(109,190,140,0.12)"/>
+        <text x="43" y="69" font-family="sans-serif" font-size="10" text-anchor="middle" fill="rgba(109,190,140,0.5)">📷</text>
+        <text x="64" y="66" font-family="sans-serif" font-size="10" fill="rgba(138,129,120,0.6)">Photo · 100%</text>
+      </g>
+
+      <!-- Crop guides — upper right area -->
+      <g transform="translate(790,55)" opacity="0.18" class="wl-float-b">
+        <rect x="0" y="0" width="165" height="125" fill="none" stroke="rgba(232,184,109,0.7)" stroke-width="1.5"/>
+        <line x1="55" y1="0" x2="55" y2="125" stroke="rgba(255,255,255,0.5)" stroke-width="0.8" stroke-dasharray="3,3"/>
+        <line x1="110" y1="0" x2="110" y2="125" stroke="rgba(255,255,255,0.5)" stroke-width="0.8" stroke-dasharray="3,3"/>
+        <line x1="0" y1="42" x2="165" y2="42" stroke="rgba(255,255,255,0.5)" stroke-width="0.8" stroke-dasharray="3,3"/>
+        <line x1="0" y1="83" x2="165" y2="83" stroke="rgba(255,255,255,0.5)" stroke-width="0.8" stroke-dasharray="3,3"/>
+        <rect x="-5" y="-5" width="12" height="12" rx="2" fill="rgba(232,184,109,0.9)"/>
+        <rect x="158" y="-5" width="12" height="12" rx="2" fill="rgba(232,184,109,0.9)"/>
+        <rect x="-5" y="118" width="12" height="12" rx="2" fill="rgba(232,184,109,0.9)"/>
+        <rect x="158" y="118" width="12" height="12" rx="2" fill="rgba(232,184,109,0.9)"/>
+        <rect x="76" y="-5" width="12" height="12" rx="2" fill="rgba(232,184,109,0.7)"/>
+        <rect x="76" y="118" width="12" height="12" rx="2" fill="rgba(232,184,109,0.7)"/>
+      </g>
+
+      <!-- Eyedropper tooltip mockup — right mid -->
+      <g transform="translate(910,290)" class="wl-float" opacity="0.7">
+        <rect x="0" y="0" width="148" height="60" rx="8" fill="rgba(26,25,23,0.9)" stroke="rgba(58,55,52,0.9)" stroke-width="1"/>
+        <rect x="10" y="10" width="36" height="36" rx="6" fill="rgba(232,120,80,0.8)" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/>
+        <text x="56" y="24" font-family="sans-serif" font-size="12" fill="rgba(240,236,230,0.9)" font-weight="700" letter-spacing="0.5">#E87850</text>
+        <text x="56" y="38" font-family="sans-serif" font-size="9" fill="rgba(138,129,120,0.8)">rgb(232, 120, 80)</text>
+        <text x="74" y="54" font-family="sans-serif" font-size="8" fill="rgba(90,85,80,0.7)" text-anchor="middle">Click to copy hex</text>
+      </g>
+
+      <!-- Bokeh circles — scattered -->
+      <circle cx="350" cy="75" r="4" fill="rgba(232,184,109,0.28)"/>
+      <circle cx="350" cy="75" r="8" fill="none" stroke="rgba(232,184,109,0.1)" stroke-width="1"/>
+      <circle cx="860" cy="310" r="5" fill="rgba(109,168,232,0.22)"/>
+      <circle cx="860" cy="310" r="10" fill="none" stroke="rgba(109,168,232,0.08)" stroke-width="1"/>
+      <circle cx="200" cy="600" r="3" fill="rgba(109,190,140,0.28)"/>
+      <circle cx="1100" cy="420" r="4" fill="rgba(192,132,252,0.22)"/>
+      <circle cx="620" cy="460" r="2.5" fill="rgba(232,184,109,0.2)"/>
+      <circle cx="445" cy="155" r="3.5" fill="rgba(232,123,109,0.18)"/>
+      <circle cx="940" cy="570" r="2.5" fill="rgba(109,190,232,0.25)"/>
+      <circle cx="710" cy="85" r="2" fill="rgba(232,184,109,0.2)"/>
+      <circle cx="315" cy="390" r="3" fill="rgba(109,168,232,0.18)"/>
+      <circle cx="1050" cy="310" r="2" fill="rgba(109,190,140,0.2)"/>
+      <circle cx="480" cy="605" r="3.5" fill="rgba(192,132,252,0.15)"/>
+    </svg>
+  </div>
+  <!-- Radial vignette over background -->
+  <div id="wl-overlay"></div>
+
   <img id="wl-logo" src="open-focus.png" alt="OpenFocus" onerror="this.style.display='none'">
   <div id="wl-title"><span class="wl-glyph" data-text="Open">Open</span><span class="wl-glyph wl-glyph-focus" data-text="Focus">Focus</span></div>
   <div id="wl-tagline">An Open Source Photo Editor<br>Made Just For You</div>
@@ -688,6 +950,20 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
   <button class="btn btn-ghost" style="font-size:12px" onclick="cancelWMDrag()">✕ Cancel</button>
 </div>
 
+<!-- BLUR BRUSH BAR -->
+<div id="blur-bar" style="position:absolute;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);display:none;align-items:center;gap:12px;padding:8px 16px;z-index:30;flex-wrap:wrap;">
+  <span style="font-size:12px;color:var(--text-muted);white-space:nowrap">🖌 Paint blur — drag over any area</span>
+  <div style="display:flex;align-items:center;gap:7px;flex:1;min-width:180px;">
+    <span style="font-size:11px;color:var(--text-dim);white-space:nowrap">Size</span>
+    <input type="range" id="blur-brush-size" min="10" max="150" value="40" style="flex:1;max-width:120px">
+    <span style="font-size:11px;color:var(--text-muted);white-space:nowrap">Strength</span>
+    <input type="range" id="blur-brush-strength" min="4" max="40" value="14" style="flex:1;max-width:100px">
+  </div>
+  <button class="btn btn-ghost" style="font-size:12px" onclick="undoLastBlurStroke()" id="blur-undo-btn">↩ Undo stroke</button>
+  <button class="btn btn-accent" style="font-size:12px;white-space:nowrap" onclick="applyBlurBrush()">✓ Apply blur</button>
+  <button class="btn btn-ghost" style="font-size:12px" onclick="cancelBlurBrush()">✕ Cancel</button>
+</div>
+
 <!-- EXPORT MODAL -->
 <div class="modal-bg" id="em">
   <div class="mcard">
@@ -756,6 +1032,66 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
   </div>
 </div>
 
+<!-- BORDER / FRAME MODAL -->
+<div class="modal-bg" id="border-modal">
+  <div class="mcard" style="width:380px;">
+    <div class="mtitle">🖼 Border & Frame</div>
+
+    <!-- Style presets -->
+    <div style="font-size:11px;color:var(--text-muted);margin-bottom:7px;text-transform:uppercase;letter-spacing:.5px;font-weight:500">Style</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:16px;" id="border-style-grid">
+      <div class="border-style-opt active" data-style="solid" onclick="setBorderStyle(this,'solid')">
+        <div class="bso-preview" style="border:6px solid #e8b86d;"></div>
+        <div class="bso-label">Solid</div>
+      </div>
+      <div class="border-style-opt" data-style="padding" onclick="setBorderStyle(this,'padding')">
+        <div class="bso-preview" style="background:#fff;padding:4px;"><div style="background:#888;width:100%;height:100%;"></div></div>
+        <div class="bso-label">Padding</div>
+      </div>
+      <div class="border-style-opt" data-style="polaroid" onclick="setBorderStyle(this,'polaroid')">
+        <div class="bso-preview" style="background:#fff;padding:4px 4px 10px 4px;"><div style="background:#888;width:100%;height:100%;"></div></div>
+        <div class="bso-label">Polaroid</div>
+      </div>
+      <div class="border-style-opt" data-style="double" onclick="setBorderStyle(this,'double')">
+        <div class="bso-preview" style="border:5px solid #e8b86d;outline:2px solid #e8b86d;outline-offset:-8px;"></div>
+        <div class="bso-label">Double</div>
+      </div>
+    </div>
+
+    <!-- Size -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+      <span style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;font-weight:500">Size</span>
+      <span id="border-size-val" style="font-size:12px;color:var(--accent);font-weight:500">40px</span>
+    </div>
+    <input type="range" id="border-size" min="4" max="200" value="40" style="width:100%;margin-bottom:16px" oninput="onBorderSize(this.value)">
+
+    <!-- Color (hidden for polaroid) -->
+    <div id="border-color-row" style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+      <span style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;font-weight:500">Color</span>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;" id="border-color-swatches">
+        <div class="border-swatch active" style="background:#ffffff;" onclick="setBorderColor(this,'#ffffff')" title="White"></div>
+        <div class="border-swatch" style="background:#000000;" onclick="setBorderColor(this,'#000000')" title="Black"></div>
+        <div class="border-swatch" style="background:#e8b86d;" onclick="setBorderColor(this,'#e8b86d')" title="Gold"></div>
+        <div class="border-swatch" style="background:#6dbe8c;" onclick="setBorderColor(this,'#6dbe8c')" title="Green"></div>
+        <div class="border-swatch" style="background:#6da8e8;" onclick="setBorderColor(this,'#6da8e8')" title="Blue"></div>
+        <div class="border-swatch" style="background:#e87b6d;" onclick="setBorderColor(this,'#e87b6d')" title="Red"></div>
+        <div class="border-swatch" style="background:#c084fc;" onclick="setBorderColor(this,'#c084fc')" title="Purple"></div>
+        <input type="color" id="border-custom-color" value="#ffffff" title="Custom color"
+          style="width:28px;height:28px;border-radius:50%;border:2px solid var(--border-light);cursor:pointer;padding:0;background:none;"
+          oninput="setBorderColorCustom(this.value)">
+      </div>
+    </div>
+
+    <!-- Live preview label -->
+    <div id="border-preview-label" style="font-size:11.5px;color:var(--text-dim);text-align:center;margin-bottom:4px;"></div>
+
+    <div class="macts">
+      <button class="btn btn-ghost" onclick="closeBorderModal()">Cancel</button>
+      <button class="btn btn-accent" onclick="applyBorder()">✓ Add border</button>
+    </div>
+  </div>
+</div>
+
 <!-- OPEN FILE CHOICE POPUP -->
 <div id="open-popup">
   <div id="open-popup-card">
@@ -777,6 +1113,7 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
   <div class="sep"></div>
   <button class="btn btn-ghost" onclick="openFile()">📂 Open</button>
   <button class="btn btn-ghost" onclick="openResize()">⤡ Resize</button>
+  <button class="btn btn-ghost" onclick="openBorderModal()">🖼 Frame</button>
   <button class="btn btn-outline" onclick="openEM()">⬇ Export</button>
   <div class="sep"></div>
   <button class="btn btn-ghost" id="ubtn" onclick="doUndo()" disabled>↩ Undo</button>
@@ -818,6 +1155,7 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
     <div class="tsep"></div>
     <button class="tbtn" id="t-ba" onclick="setTool('ba')" title="Before / After"><div class="ticon">◑</div><div class="tlabel">Before/After</div></button>
     <button class="tbtn" id="t-eye" onclick="setTool('eye')" title="Eyedropper / Color Picker (I)"><div class="ticon">🔬</div><div class="tlabel">Picker</div></button>
+    <button class="tbtn" id="t-blurbrush" onclick="setTool('blurbrush')" title="Blur Brush — paint blur on specific areas"><div class="ticon">🖌</div><div class="tlabel">Blur</div></button>
   </div>
 
   <!-- CANVAS -->
@@ -936,9 +1274,14 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
         </div>
         <div class="psec">
           <h4>Detail</h4>
+          <div class="srow"><div class="shdr"><span class="slbl">Blur</span><span class="sval" id="v-bl">0</span></div><input type="range" min="0" max="100" value="0" id="s-bl" oninput="slide('bl',this.value)"></div>
           <div class="srow"><div class="shdr"><span class="slbl">Clarity</span><span class="sval" id="v-cl">0</span></div><input type="range" min="-100" max="100" value="0" id="s-cl" oninput="slide('cl',this.value)"></div>
           <div class="srow"><div class="shdr"><span class="slbl">Sharpness</span><span class="sval" id="v-sp">0</span></div><input type="range" min="0" max="100" value="0" id="s-sp" oninput="slide('sp',this.value)"></div>
           <div class="srow"><div class="shdr"><span class="slbl">Vignette</span><span class="sval" id="v-vi">0</span></div><input type="range" min="-100" max="0" value="0" id="s-vi" oninput="slide('vi',this.value)"></div>
+        </div>
+        <div class="psec">
+          <button class="qfbtn" onclick="setTool('blurbrush')" style="background:linear-gradient(135deg,rgba(109,168,232,.15),rgba(109,190,232,.1));">🖌 Blur Brush — paint blur on specific areas</button>
+          <div class="tip"><strong>Blur Brush</strong> — paint over faces, backgrounds, or any area to selectively blur it. Great for privacy.</div>
         </div>
         <div class="psec">
           <h4>Presets</h4>
@@ -1012,7 +1355,7 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 // ════════════════════════════════════════════
 //  CORE STATE
 // ════════════════════════════════════════════
-const DSLIDERS={br:0,co:0,hi:0,sh:0,sa:0,wa:0,ti:0,cl:0,sp:0,vi:0};
+const DSLIDERS={br:0,co:0,hi:0,sh:0,sa:0,wa:0,ti:0,cl:0,sp:0,vi:0,bl:0};
 let S={tool:'move',zoom:1,hasImg:false,fmt:'jpg',expPreset:'original',obStep:0,panX:0,panY:0};
 
 // LAYER STACK
@@ -1295,6 +1638,17 @@ function applyAdjustments(srcCanvas, adj){
   if(sp>0){
     x.save();x.globalAlpha=sp/100*0.5;x.globalCompositeOperation='overlay';
     x.filter=`blur(${1+sp/100}px)`;x.drawImage(c,0,0);x.restore();
+  }
+  // Blur (global)
+  const bl=s.bl||0;
+  if(bl>0){
+    const blurPx=bl/100*18; // 0–18px blur range
+    const blurred=document.createElement('canvas');blurred.width=c.width;blurred.height=c.height;
+    const bx=blurred.getContext('2d');
+    bx.filter=`blur(${blurPx}px)`;
+    bx.drawImage(c,0,0);
+    x.clearRect(0,0,c.width,c.height);
+    x.drawImage(blurred,0,0);
   }
   return c;
 }
@@ -2916,9 +3270,227 @@ canvas.addEventListener('click',e=>{
 });
 
 // ════════════════════════════════════════════
+//  BLUR BRUSH
+// ════════════════════════════════════════════
+let blurBrushActive=false;
+let blurBrushDrawing=false;
+let blurStrokes=[]; // array of {points, size, strength}
+let blurCurrentStroke=null;
+let blurOverlayCanvas=null;
+let blurOverlayCtx=null;
+
+function startBlurBrush(){
+  blurBrushActive=true;
+  blurStrokes=[];blurCurrentStroke=null;blurBrushDrawing=false;
+  blurOverlayCanvas=document.getElementById('lasso-overlay');
+  // Match internal resolution to image size
+  blurOverlayCanvas.width=canvas.width;
+  blurOverlayCanvas.height=canvas.height;
+  // Match CSS display size to the main canvas element (they share the same cw transform)
+  blurOverlayCanvas.style.width=canvas.width+'px';
+  blurOverlayCanvas.style.height=canvas.height+'px';
+  blurOverlayCanvas.classList.add('on');
+  blurOverlayCanvas.style.pointerEvents='all';
+  blurOverlayCtx=blurOverlayCanvas.getContext('2d');
+  document.getElementById('blur-bar').style.display='flex';
+  document.getElementById('blur-undo-btn').disabled=true;
+  toast('🖌 Paint over areas to blur. Click Apply when done.');
+  attachBlurBrushEvents();
+}
+
+function attachBlurBrushEvents(){
+  blurOverlayCanvas.onmousedown=e=>{
+    e.preventDefault();
+    blurBrushDrawing=true;
+    const pt=blurCanvasCoords(e);
+    const size=blurBrushScaledSize();
+    const strength=parseInt(document.getElementById('blur-brush-strength').value)||8;
+    blurCurrentStroke={points:[pt],size,strength};
+    blurStrokes.push(blurCurrentStroke);
+    document.getElementById('blur-undo-btn').disabled=false;
+    drawBlurOverlay();
+  };
+  blurOverlayCanvas.onmousemove=e=>{
+    if(!blurBrushDrawing||!blurCurrentStroke)return;
+    blurCurrentStroke.points.push(blurCanvasCoords(e));
+    drawBlurOverlay();
+  };
+  blurOverlayCanvas.onmouseup=()=>{blurBrushDrawing=false;blurCurrentStroke=null;};
+  blurOverlayCanvas.onmouseleave=()=>{blurBrushDrawing=false;blurCurrentStroke=null;};
+  blurOverlayCanvas.ontouchstart=e=>{
+    e.preventDefault();
+    blurBrushDrawing=true;
+    const pt=blurTouchCoords(e.touches[0]);
+    const size=blurBrushScaledSize();
+    const strength=parseInt(document.getElementById('blur-brush-strength').value)||8;
+    blurCurrentStroke={points:[pt],size,strength};
+    blurStrokes.push(blurCurrentStroke);
+    document.getElementById('blur-undo-btn').disabled=false;
+    drawBlurOverlay();
+  };
+  blurOverlayCanvas.ontouchmove=e=>{
+    e.preventDefault();
+    if(!blurBrushDrawing||!blurCurrentStroke)return;
+    blurCurrentStroke.points.push(blurTouchCoords(e.touches[0]));
+    drawBlurOverlay();
+  };
+  blurOverlayCanvas.ontouchend=()=>{blurBrushDrawing=false;blurCurrentStroke=null;};
+}
+
+function blurCanvasCoords(e){
+  // Use main canvas rect for accurate coordinate mapping (overlay shares same transform)
+  const rect=canvas.getBoundingClientRect();
+  return{
+    x:(e.clientX-rect.left)*(canvas.width/rect.width),
+    y:(e.clientY-rect.top)*(canvas.height/rect.height)
+  };
+}
+function blurTouchCoords(t){
+  const rect=canvas.getBoundingClientRect();
+  return{
+    x:(t.clientX-rect.left)*(canvas.width/rect.width),
+    y:(t.clientY-rect.top)*(canvas.height/rect.height)
+  };
+}
+// Returns brush size scaled from screen pixels to image pixels
+function blurBrushScaledSize(){
+  const rect=canvas.getBoundingClientRect();
+  const screenToImg=canvas.width/rect.width;
+  return parseInt(document.getElementById('blur-brush-size').value)*screenToImg;
+}
+
+function drawBlurOverlay(){
+  blurOverlayCtx.clearRect(0,0,blurOverlayCanvas.width,blurOverlayCanvas.height);
+  blurStrokes.forEach(stroke=>{
+    if(!stroke.points.length)return;
+    blurOverlayCtx.save();
+    blurOverlayCtx.lineCap='round';blurOverlayCtx.lineJoin='round';
+    blurOverlayCtx.strokeStyle='rgba(100,180,255,0.35)';
+    blurOverlayCtx.lineWidth=stroke.size;
+    blurOverlayCtx.beginPath();
+    blurOverlayCtx.moveTo(stroke.points[0].x,stroke.points[0].y);
+    stroke.points.forEach(p=>blurOverlayCtx.lineTo(p.x,p.y));
+    blurOverlayCtx.stroke();
+    // Thin border for clarity
+    blurOverlayCtx.strokeStyle='rgba(100,180,255,0.7)';
+    blurOverlayCtx.lineWidth=2;
+    blurOverlayCtx.beginPath();
+    blurOverlayCtx.moveTo(stroke.points[0].x,stroke.points[0].y);
+    stroke.points.forEach(p=>blurOverlayCtx.lineTo(p.x,p.y));
+    blurOverlayCtx.stroke();
+    blurOverlayCtx.restore();
+  });
+}
+
+function undoLastBlurStroke(){
+  if(!blurStrokes.length)return;
+  blurStrokes.pop();
+  drawBlurOverlay();
+  if(!blurStrokes.length)document.getElementById('blur-undo-btn').disabled=true;
+}
+
+function applyBlurBrush(){
+  if(!blurStrokes.length){toast('Paint some areas first!');return;}
+
+  const target=getBGRTarget();
+  const w=target.w, h=target.h;
+
+  // Source pixels
+  const srcC=document.createElement('canvas');srcC.width=w;srcC.height=h;
+  srcC.getContext('2d').drawImage(target.img,0,0,w,h);
+
+  // Strength
+  const avgStrength=blurStrokes.reduce((s,st)=>s+st.strength,0)/blurStrokes.length;
+  const blurPx=Math.max(2,avgStrength);
+
+  // Build blurred version — draw on oversized canvas to avoid edge-clip artifacts
+  const pad=Math.ceil(blurPx*2);
+  const bigC=document.createElement('canvas');bigC.width=w+pad*2;bigC.height=h+pad*2;
+  const bigCtx=bigC.getContext('2d');
+  bigCtx.filter=`blur(${blurPx}px)`;
+  bigCtx.drawImage(srcC,pad,pad);
+  bigCtx.filter='none';
+
+  // Crop back to original size
+  const blurredC=document.createElement('canvas');blurredC.width=w;blurredC.height=h;
+  blurredC.getContext('2d').drawImage(bigC,-pad,-pad);
+
+  // Build alpha mask — TRANSPARENT background, WHITE (opaque) strokes
+  // destination-in uses the ALPHA channel of the mask, not luminance
+  const base=layers.find(l=>l.type==='base');
+  const bx=base?.x??0,by=base?.y??0,bw=base?.w??canvas.width,bh=base?.h??canvas.height;
+  const scaleX=w/bw, scaleY=h/bh;
+
+  const maskC=document.createElement('canvas');maskC.width=w;maskC.height=h;
+  const mCtx=maskC.getContext('2d');
+  // Leave background transparent (default) — only paint where user brushed
+  blurStrokes.forEach(stroke=>{
+    mCtx.save();
+    mCtx.lineCap='round';mCtx.lineJoin='round';
+    mCtx.strokeStyle='rgba(255,255,255,1)'; // fully opaque white = full blur there
+    mCtx.lineWidth=stroke.size*scaleX;
+    mCtx.beginPath();
+    stroke.points.forEach((p,i)=>{
+      const sx=(p.x-bx)*scaleX, sy=(p.y-by)*scaleY;
+      if(i===0)mCtx.moveTo(sx,sy); else mCtx.lineTo(sx,sy);
+    });
+    // Single point — draw a dot
+    if(stroke.points.length===1){
+      const sx=(stroke.points[0].x-bx)*scaleX, sy=(stroke.points[0].y-by)*scaleY;
+      mCtx.arc(sx,sy,stroke.size*scaleX/2,0,Math.PI*2);
+      mCtx.fillStyle='rgba(255,255,255,1)';
+      mCtx.fill();
+    }
+    mCtx.stroke();
+    mCtx.restore();
+  });
+
+  // Clip blurred layer to mask using alpha
+  const blurMasked=document.createElement('canvas');blurMasked.width=w;blurMasked.height=h;
+  const bmCtx=blurMasked.getContext('2d');
+  bmCtx.drawImage(blurredC,0,0);
+  bmCtx.globalCompositeOperation='destination-in'; // now correctly uses alpha of maskC
+  bmCtx.drawImage(maskC,0,0);
+
+  // Final: original + masked-blur on top
+  const outC=document.createElement('canvas');outC.width=w;outC.height=h;
+  const oCtx=outC.getContext('2d');
+  oCtx.drawImage(srcC,0,0);       // sharp original everywhere
+  oCtx.drawImage(blurMasked,0,0); // blurred only in painted alpha regions
+
+  const newImg=new Image();
+  newImg.onload=()=>{
+    target.bake(newImg);
+    cleanupBlurBrush();
+    pushHist('🖌 Blur brush applied');
+    toast('🖌 Blur applied!');
+  };
+  newImg.src=outC.toDataURL('image/png');
+}
+
+function cancelBlurBrush(){
+  cleanupBlurBrush();
+  setTool('move');
+}
+
+function cleanupBlurBrush(){
+  blurBrushActive=false;blurStrokes=[];blurCurrentStroke=null;blurBrushDrawing=false;
+  if(blurOverlayCanvas){
+    blurOverlayCanvas.classList.remove('on');
+    blurOverlayCanvas.style.pointerEvents='none';
+    blurOverlayCanvas.onmousedown=null;blurOverlayCanvas.onmousemove=null;
+    blurOverlayCanvas.onmouseup=null;blurOverlayCanvas.onmouseleave=null;
+    blurOverlayCanvas.ontouchstart=null;blurOverlayCanvas.ontouchmove=null;
+    blurOverlayCanvas.ontouchend=null;
+    blurOverlayCtx&&blurOverlayCtx.clearRect(0,0,blurOverlayCanvas.width,blurOverlayCanvas.height);
+  }
+  document.getElementById('blur-bar').style.display='none';
+}
+
+// ════════════════════════════════════════════
 //  TOOLS
 // ════════════════════════════════════════════
-const TOOL_PANE={move:'adjust',adjust:'adjust',filter:'adjust',crop:'adjust',text:'layers',overlay:'layers',bgr:'adjust',history:'history',eye:'adjust'};
+const TOOL_PANE={move:'adjust',adjust:'adjust',filter:'adjust',crop:'adjust',text:'layers',overlay:'layers',bgr:'adjust',history:'history',eye:'adjust',blurbrush:'adjust'};
 function setTool(tool){
   if(tool==='adjust'||tool==='filter'){
     document.querySelectorAll('.tbtn').forEach(b=>b.classList.remove('active'));
@@ -2928,18 +3500,19 @@ function setTool(tool){
     if(tab)switchPane(tab);
     return;
   }
-  // Exit before/after mode when switching away
   if(S.tool==='ba'&&tool!=='ba') exitBA();
   if(S.tool==='crop'&&tool!=='crop')cancelCrop();
   if(S.tool==='eye'&&tool!=='eye') stopEyedropper();
+  if(S.tool==='blurbrush'&&tool!=='blurbrush') cancelBlurBrush();
   S.tool=tool;
   document.querySelectorAll('.tbtn').forEach(b=>b.classList.remove('active'));
   document.getElementById('t-'+tool)?.classList.add('active');
   document.getElementById('sttool').textContent=tool.charAt(0).toUpperCase()+tool.slice(1);
-  ca.className=ca.className.replace(/\b(tm|tc2|teye)\b/g,'').trim();
+  ca.className=ca.className.replace(/\b(tm|tc2|teye|tblur)\b/g,'').trim();
   if(tool==='move')ca.classList.add('tm');
   if(tool==='crop')ca.classList.add('tc2');
   if(tool==='eye')ca.classList.add('teye');
+  if(tool==='blurbrush')ca.classList.add('tblur');
   const pane=TOOL_PANE[tool];
   if(pane){const tab=document.querySelector(`.ptab[data-p="${pane}"]`);if(tab)switchPane(tab);}
   if(tool==='crop'){if(!S.hasImg){toast('Open a photo first!');setTool('move');return;}startCrop();}
@@ -2948,6 +3521,7 @@ function setTool(tool){
   if(tool==='wm'){if(!S.hasImg){toast('Open a photo first!');setTool('move');return;}openWM();}
   if(tool==='ba'){if(!S.hasImg){toast('Open a photo first!');setTool('move');return;}enterBA();}
   if(tool==='eye'){if(!S.hasImg){toast('Open a photo first!');setTool('move');return;}startEyedropper();}
+  if(tool==='blurbrush'){if(!S.hasImg){toast('Open a photo first!');setTool('move');return;}startBlurBrush();}
 }
 function switchPane(btn){
   document.querySelectorAll('.ptab').forEach(t=>t.classList.remove('active'));
@@ -3416,6 +3990,144 @@ function applyResize(){
 }
 
 // ════════════════════════════════════════════
+//  BORDER & FRAME
+// ════════════════════════════════════════════
+let borderStyle='solid';
+let borderColor='#ffffff';
+let borderSize=40;
+
+function openBorderModal(){
+  if(!S.hasImg){toast('Open a photo first!');return;}
+  // Reset to defaults
+  borderStyle='solid';borderColor='#ffffff';borderSize=40;
+  document.querySelectorAll('.border-style-opt').forEach(el=>el.classList.remove('active'));
+  document.querySelector('.border-style-opt[data-style="solid"]').classList.add('active');
+  document.querySelectorAll('.border-swatch').forEach(el=>el.classList.remove('active'));
+  document.querySelector('.border-swatch[style*="#ffffff"]').classList.add('active');
+  document.getElementById('border-size').value=40;
+  document.getElementById('border-size-val').textContent='40px';
+  document.getElementById('border-custom-color').value='#ffffff';
+  document.getElementById('border-color-row').style.display='flex';
+  updateBorderPreviewLabel();
+  document.getElementById('border-modal').classList.add('on');
+}
+function closeBorderModal(){document.getElementById('border-modal').classList.remove('on');}
+
+function setBorderStyle(el,style){
+  borderStyle=style;
+  document.querySelectorAll('.border-style-opt').forEach(e=>e.classList.remove('active'));
+  el.classList.add('active');
+  // Polaroid always uses white — hide color picker
+  const isPolaroid=style==='polaroid';
+  document.getElementById('border-color-row').style.display=isPolaroid?'none':'flex';
+  if(isPolaroid)borderColor='#ffffff';
+  updateBorderPreviewLabel();
+}
+
+function setBorderColor(el,color){
+  borderColor=color;
+  document.querySelectorAll('.border-swatch').forEach(e=>e.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('border-custom-color').value=color;
+  updateBorderPreviewLabel();
+}
+function setBorderColorCustom(color){
+  borderColor=color;
+  document.querySelectorAll('.border-swatch').forEach(e=>e.classList.remove('active'));
+  updateBorderPreviewLabel();
+}
+
+function onBorderSize(val){
+  borderSize=parseInt(val);
+  document.getElementById('border-size-val').textContent=val+'px';
+  updateBorderPreviewLabel();
+}
+
+function updateBorderPreviewLabel(){
+  const w=canvas.width,h=canvas.height;
+  let nw=w,nh=h;
+  if(borderStyle==='polaroid'){nw=w+borderSize*2;nh=h+borderSize*2+Math.round(borderSize*1.8);}
+  else{nw=w+borderSize*2;nh=h+borderSize*2;}
+  document.getElementById('border-preview-label').textContent=`Canvas will expand: ${w}×${h} → ${nw}×${nh} px`;
+}
+
+function applyBorder(){
+  if(!S.hasImg){closeBorderModal();return;}
+  const sw=canvas.width, sh=canvas.height;
+  const pad=borderSize;
+  let nw,nh,photoX,photoY;
+
+  if(borderStyle==='polaroid'){
+    const bottom=Math.round(pad*1.8); // bigger bottom margin like real polaroid
+    nw=sw+pad*2; nh=sh+pad*2+bottom;
+    photoX=pad; photoY=pad;
+  } else {
+    nw=sw+pad*2; nh=sh+pad*2;
+    photoX=pad; photoY=pad;
+  }
+
+  // Render current canvas cleanly
+  const srcC=document.createElement('canvas');srcC.width=sw;srcC.height=sh;
+  compositeClean(srcC.getContext('2d'),sw,sh);
+
+  const outC=document.createElement('canvas');outC.width=nw;outC.height=nh;
+  const oCtx=outC.getContext('2d');
+
+  if(borderStyle==='solid'){
+    oCtx.fillStyle=borderColor;
+    oCtx.fillRect(0,0,nw,nh);
+    oCtx.drawImage(srcC,photoX,photoY);
+  }
+  else if(borderStyle==='padding'){
+    oCtx.fillStyle=borderColor;
+    oCtx.fillRect(0,0,nw,nh);
+    oCtx.drawImage(srcC,photoX,photoY);
+  }
+  else if(borderStyle==='polaroid'){
+    // White card background
+    oCtx.fillStyle='#ffffff';
+    oCtx.fillRect(0,0,nw,nh);
+    // Subtle shadow on photo
+    oCtx.shadowColor='rgba(0,0,0,0.12)';
+    oCtx.shadowBlur=Math.round(pad*0.4);
+    oCtx.shadowOffsetY=Math.round(pad*0.1);
+    oCtx.drawImage(srcC,photoX,photoY);
+    oCtx.shadowColor='transparent';oCtx.shadowBlur=0;oCtx.shadowOffsetY=0;
+  }
+  else if(borderStyle==='double'){
+    // Outer border
+    oCtx.fillStyle=borderColor;
+    oCtx.fillRect(0,0,nw,nh);
+    oCtx.drawImage(srcC,photoX,photoY);
+    // Inner border line (drawn on top, inset from photo edge)
+    const inset=Math.max(3,Math.round(pad*0.25));
+    oCtx.strokeStyle=borderColor;
+    oCtx.lineWidth=Math.max(2,Math.round(pad*0.12));
+    oCtx.globalAlpha=0.55;
+    oCtx.strokeRect(photoX+inset,photoY+inset,sw-inset*2,sh-inset*2);
+    oCtx.globalAlpha=1;
+  }
+
+  const newImg=new Image();
+  newImg.onload=()=>{
+    origImg=newImg;
+    canvas.width=nw;canvas.height=nh;
+    const base=layers.find(l=>l.type==='base');
+    if(base){base.x=0;base.y=0;base.w=nw;base.h=nh;}
+    // Shift all non-base layers so they stay with the photo
+    layers.forEach(l=>{if(l.type!=='base'){l.x+=photoX;l.y+=photoY;}});
+    S.panX=0;S.panY=0;
+    resetSlidersUI();renderCanvas();zFit();
+    document.getElementById('stsize').textContent=`${nw} × ${nh}`;
+    renderLayersPanel();
+    closeBorderModal();
+    pushHist(`🖼 Added ${borderStyle} border`);
+    toast(`🖼 ${borderStyle.charAt(0).toUpperCase()+borderStyle.slice(1)} border added!`);
+  };
+  newImg.src=outC.toDataURL('image/png');
+}
+
+// ════════════════════════════════════════════
 //  EXPORT
 // ════════════════════════════════════════════
 function openEM(){document.getElementById('em').classList.add('on');}
@@ -3502,7 +4214,7 @@ document.addEventListener('keydown',e=>{
     if(e.key==='='||e.key==='+'){e.preventDefault();zIn();}
     if(e.key==='-'){e.preventDefault();zOut();}
   }
-  if(e.key==='Escape'){closeOB();closeEM();closeTxtModal();closeBGR();closeResize();if(cropOn)cancelCrop();if(eyeActive)setTool('move');}
+  if(e.key==='Escape'){closeOB();closeEM();closeTxtModal();closeBGR();closeResize();closeBorderModal();if(cropOn)cancelCrop();if(eyeActive)setTool('move');if(blurBrushActive)cancelBlurBrush();}
   if(e.key==='Enter'&&cropOn){e.preventDefault();applyCrop();}
   if(e.key==='Delete'||e.key==='Backspace'){
     if(selLayerId){deleteLayer(selLayerId);}
