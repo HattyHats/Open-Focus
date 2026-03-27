@@ -61,6 +61,20 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);height:100
 #canvas-area.tc2 #cw{cursor:crosshair;}
 #canvas-area.teye #cw{cursor:crosshair;}
 #canvas-area.tblur #cw{cursor:crosshair;}
+/* Vertical zoom slider */
+#zoom-slider-wrap{
+  position:absolute;right:14px;top:50%;transform:translateY(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  z-index:25;background:var(--surface);border:1px solid var(--border-light);
+  border-radius:10px;padding:8px 6px;box-shadow:0 2px 12px rgba(0,0,0,.4);
+  opacity:0;transition:opacity .2s;pointer-events:none;
+}
+#canvas-area.has-img #zoom-slider-wrap{opacity:.75;pointer-events:all;}
+#canvas-area.has-img #zoom-slider-wrap:hover{opacity:1;}
+.zoom-sl-btn{width:22px;height:22px;border-radius:5px;border:1px solid var(--border);background:var(--panel);color:var(--text-muted);font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;transition:var(--tr);flex-shrink:0;}
+.zoom-sl-btn:hover{border-color:var(--accent);color:var(--accent);}
+#zoom-slider{height:120px;width:4px;cursor:pointer;accent-color:var(--accent);}
+#zoom-slider-label{font-size:10px;color:var(--text-dim);font-family:var(--font-b);white-space:nowrap;}
 /* CROP OVERLAY */
 #cro{position:absolute;inset:0;display:none;pointer-events:none;}
 #cro.on{display:block;pointer-events:all;}
@@ -396,6 +410,16 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 .border-swatch{width:28px;height:28px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:var(--tr);flex-shrink:0;}
 .border-swatch:hover{transform:scale(1.1);}
 .border-swatch.active{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-glow);}
+/* Sticker picker */
+.sticker-cats{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px;}
+.sticker-cat-btn{padding:5px 10px;border-radius:20px;border:1px solid var(--border-light);background:transparent;color:var(--text-muted);font-family:var(--font-b);font-size:12px;cursor:pointer;transition:var(--tr);}
+.sticker-cat-btn:hover{border-color:var(--accent);color:var(--accent);}
+.sticker-cat-btn.active{background:var(--accent-glow);border-color:var(--accent);color:var(--accent);}
+.sticker-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;max-height:260px;overflow-y:auto;padding:4px 0;}
+.sticker-grid::-webkit-scrollbar{width:4px;}.sticker-grid::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.sticker-btn{aspect-ratio:1;border-radius:var(--rs);border:none;background:none;font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:var(--tr);padding:4px;}
+.sticker-btn:hover{background:var(--panel);transform:scale(1.2);}
+.sticker-btn:active{transform:scale(0.95);}
 .fmtb:hover,.fmtb.active{border-color:var(--accent);color:var(--accent);background:var(--accent-glow);}
 .eprests{display:flex;flex-direction:column;gap:5px;margin-bottom:16px;}
 .epr{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-radius:var(--rs);border:1px solid var(--border);cursor:pointer;transition:var(--tr);}
@@ -936,7 +960,7 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
       <button class="wm-pos-btn active" id="wm-mode-free" onclick="setWMMode('free',this)" style="flex:1;padding:7px">✋ Drag freely</button>
       <button class="wm-pos-btn" id="wm-mode-tile" onclick="setWMMode('tile',this)" style="flex:1;padding:7px">⊞ Tile all over</button>
     </div>
-    <div style="font-size:11px;color:var(--text-muted);margin-bottom:12px;padding:6px 8px;background:var(--panel);border-radius:var(--rs)" id="wm-hint">💡 Click OK to place watermark, then drag it anywhere on the canvas.</div>
+    <div style="font-size:11px;color:var(--text-muted);margin-bottom:12px;padding:6px 8px;background:var(--panel);border-radius:var(--rs)" id="wm-hint">💡 Click OK to place watermark, then drag it into position. It'll be added as an editable layer — move, resize, or delete it any time.</div>
     <div class="macts">
       <button class="btn btn-ghost" onclick="closeWM()">Cancel</button>
       <button class="btn btn-accent" onclick="startWMDrag()">OK — place it →</button>
@@ -945,8 +969,8 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 </div>
 <!-- Watermark accept bar (shown while dragging watermark on canvas) -->
 <div id="wm-bar" style="position:absolute;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);display:none;align-items:center;justify-content:center;gap:10px;padding:8px 16px;z-index:30">
-  <span style="font-size:12px;color:var(--text-muted)">💧 Drag watermark to position</span>
-  <button class="btn btn-accent" style="font-size:12px" onclick="acceptWatermark()">✓ Apply watermark</button>
+  <span style="font-size:12px;color:var(--text-muted)">💧 Drag watermark to position, then click Add as Layer</span>
+  <button class="btn btn-accent" style="font-size:12px" onclick="acceptWatermark()">✓ Add as Layer</button>
   <button class="btn btn-ghost" style="font-size:12px" onclick="cancelWMDrag()">✕ Cancel</button>
 </div>
 
@@ -1092,6 +1116,26 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
   </div>
 </div>
 
+<!-- STICKER PICKER MODAL -->
+<div class="modal-bg" id="sticker-modal">
+  <div class="mcard" style="width:420px;">
+    <div class="mtitle">⭐ Add Sticker</div>
+    <!-- Category tabs -->
+    <div class="sticker-cats" id="sticker-cats"></div>
+    <!-- Size control -->
+    <div style="display:flex;align-items:center;gap:10px;margin:10px 0 12px;">
+      <span style="font-size:11px;color:var(--text-muted);white-space:nowrap;text-transform:uppercase;letter-spacing:.4px;font-weight:500">Size</span>
+      <input type="range" id="sticker-size" min="40" max="400" value="120" style="flex:1">
+      <span id="sticker-size-val" style="font-size:12px;color:var(--accent);font-weight:500;min-width:36px;text-align:right">120px</span>
+    </div>
+    <!-- Emoji grid -->
+    <div class="sticker-grid" id="sticker-grid"></div>
+    <div class="macts">
+      <button class="btn btn-ghost" onclick="closeStickerPicker()">Close</button>
+    </div>
+  </div>
+</div>
+
 <!-- OPEN FILE CHOICE POPUP -->
 <div id="open-popup">
   <div id="open-popup-card">
@@ -1216,6 +1260,15 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
         <button class="btn btn-accent" style="font-size:12px" onclick="applyCrop()">✓ Apply Crop</button>
       </div>
     </div>
+    <!-- Vertical zoom slider -->
+    <div id="zoom-slider-wrap">
+      <button class="zoom-sl-btn" onclick="zIn()" title="Zoom in">+</button>
+      <input type="range" id="zoom-slider" min="5" max="400" value="100" step="1"
+        orient="vertical" style="writing-mode:vertical-lr;direction:rtl;"
+        oninput="onZoomSlider(this.value)">
+      <button class="zoom-sl-btn" onclick="zOut()" title="Zoom out">−</button>
+      <span id="zoom-slider-label">100%</span>
+    </div>
   </div>
 
   <!-- RIGHT PANEL (desktop only — hidden on mobile, content mirrored to mob-sheet) -->
@@ -1236,7 +1289,7 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
           <button class="lbtn" onclick="selLayerId=null;updateAdjustHeader();renderCanvas();renderLayersPanel()" title="Clear focus" style="font-size:11px">✕</button>
         </div>
         <div id="adj-img-note" class="on" style="display:none">ℹ️ Sliders adjust the selected image layer's brightness, contrast etc. Presets bake into the image.</div>
-        <div class="psec">
+        <div class="psec" id="adjust-top-anchor">
           <button class="qfbtn" onclick="quickFix()">⚡ Quick Fix — Auto-enhance</button>
           <div class="tip"><strong>Not sure?</strong> Quick Fix nudges everything in the right direction. Fine-tune after — undo is always there.</div>
         </div>
@@ -1284,7 +1337,7 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
           <div class="tip"><strong>Blur Brush</strong> — paint over faces, backgrounds, or any area to selectively blur it. Great for privacy.</div>
         </div>
         <div class="psec">
-          <h4>Presets</h4>
+          <h4 id="presets-anchor">Presets</h4>
           <div class="pgrid">
             <div class="pi active" onclick="applyPreset(this,'none')"><div class="pthumb" style="background:#2a2826">🏔</div><div class="pname">Original</div></div>
             <div class="pi" onclick="applyPreset(this,'sp')"><div class="pthumb" style="background:linear-gradient(135deg,#3d2d2d,#4a3535)">🌸</div><div class="pname">Soft Portrait</div></div>
@@ -1303,6 +1356,7 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
           <div class="ll" id="ll"></div>
           <button class="ladd" onclick="openTxtModal(null)">＋ Add text</button>
           <button class="ladd" style="margin-top:3px" onclick="document.getElementById('overlay-fi').click()">＋ Add image overlay</button>
+          <button class="ladd" style="margin-top:3px" onclick="openStickerPicker()">＋ Add sticker</button>
         </div>
         <!-- Selected layer properties -->
         <div class="layer-props" id="layer-props">
@@ -1654,15 +1708,33 @@ function applyAdjustments(srcCanvas, adj){
 }
 
 function renderImageLayerToCanvas(layer){
-  // Render an image-type layer with its adjustments into an offscreen canvas
-  const tmp=document.createElement('canvas');
-  tmp.width=layer.w;tmp.height=layer.h;
-  tmp.getContext('2d').drawImage(layer.img,0,0,layer.w,layer.h);
+  // Render at display size (layer.w × layer.h), not source resolution.
+  // This is what gets drawn to screen — rendering full 4K source on every frame is wasteful.
+  const w=Math.max(1,Math.round(layer.w));
+  const h=Math.max(1,Math.round(layer.h));
+  const tmp=document.createElement('canvas');tmp.width=w;tmp.height=h;
+  tmp.getContext('2d').drawImage(layer.img,0,0,w,h);
   if(layer.adjustments&&Object.values(layer.adjustments).some(v=>v!==0)){
     return applyAdjustments(tmp,layer.adjustments);
   }
   return tmp;
 }
+
+// ── Adjustment cache — avoids rerunning the pixel loop when nothing changed ──
+let _adjCache={key:null, canvas:null};
+function getCachedAdjusted(layer){
+  const adj=layer.adjustments||DSLIDERS;
+  // Cache key: origImg src + adjustment values + display size
+  const lw=layer.w??canvas.width, lh=layer.h??canvas.height;
+  const key=origImg.src.slice(-20)+JSON.stringify(adj)+lw+'x'+lh;
+  if(_adjCache.key===key&&_adjCache.canvas) return _adjCache.canvas;
+  const raw=document.createElement('canvas');raw.width=lw;raw.height=lh;
+  raw.getContext('2d').drawImage(origImg,0,0,lw,lh);
+  const result=applyAdjustments(raw,adj);
+  _adjCache={key,canvas:result};
+  return result;
+}
+function invalidateAdjCache(){_adjCache={key:null,canvas:null};}
 
 // ── Shared clean compositor — draws all layers onto any ctx without UI overlays ──
 // Used by renderCanvas (to the live canvas) and applyCrop (to a scratch canvas).
@@ -1674,13 +1746,21 @@ function compositeClean(targetCtx, targetW, targetH){
     targetCtx.globalAlpha=layer.opacity/100;
     if(layer.type==='base'){
       const lx=layer.x??0,ly=layer.y??0,lw=layer.w??targetW,lh=layer.h??targetH;
-      const raw=document.createElement('canvas');raw.width=lw;raw.height=lh;
-      raw.getContext('2d').drawImage(origImg,0,0,lw,lh);
-      const adjusted=applyAdjustments(raw,layer.adjustments||DSLIDERS);
+      const adjusted=getCachedAdjusted(layer);
       targetCtx.drawImage(adjusted,lx,ly,lw,lh);
     } else if(layer.type==='image'&&layer.img){
       const adjImg=renderImageLayerToCanvas(layer);
-      targetCtx.drawImage(adjImg,layer.x,layer.y,layer.w,layer.h);
+      if(layer._previewRotate){
+        // Live preview — draw rotated around layer center
+        targetCtx.save();
+        const cx=layer.x+layer.w/2, cy=layer.y+layer.h/2;
+        targetCtx.translate(cx,cy);
+        targetCtx.rotate(layer._previewRotate);
+        targetCtx.drawImage(adjImg,-layer.w/2,-layer.h/2,layer.w,layer.h);
+        targetCtx.restore();
+      } else {
+        targetCtx.drawImage(adjImg,layer.x,layer.y,layer.w,layer.h);
+      }
     } else if(layer.type==='watermark'){
       targetCtx.save();
       targetCtx.globalAlpha=(layer.opacity/100)*0.85;
@@ -1736,26 +1816,32 @@ function renderCanvas(){
   layers.forEach(layer=>{
     if(!layer.visible)return;
     ctx.save();
-    if(layer.type==='base'&&layer.id===selLayerId){
+    if((layer.type==='base'||layer.type==='image')&&layer.id===selLayerId){
       const lx=layer.x??0,ly=layer.y??0,lw=layer.w??canvas.width,lh=layer.h??canvas.height;
       ctx.globalAlpha=1;
-      ctx.strokeStyle='rgba(232,184,109,0.6)';ctx.lineWidth=3/S.zoom;
-      ctx.setLineDash([8/S.zoom,4/S.zoom]);
-      ctx.strokeRect(lx+1/S.zoom,ly+1/S.zoom,lw-2/S.zoom,lh-2/S.zoom);
+      const isImg=layer.type==='image';
+      // If previewing rotation, rotate the selection box around layer center
+      if(layer._previewRotate){
+        ctx.translate(lx+lw/2,ly+lh/2);
+        ctx.rotate(layer._previewRotate);
+        ctx.translate(-(lx+lw/2),-(ly+lh/2));
+      }
+      ctx.strokeStyle=isImg?'rgba(232,184,109,0.9)':'rgba(232,184,109,0.6)';
+      ctx.lineWidth=(isImg?2:3)/S.zoom;
+      ctx.setLineDash([(isImg?6:8)/S.zoom,(isImg?3:4)/S.zoom]);
+      ctx.strokeRect(lx+(isImg?0:1/S.zoom),ly+(isImg?0:1/S.zoom),lw-(isImg?0:2/S.zoom),lh-(isImg?0:2/S.zoom));
       ctx.setLineDash([]);
-      const hs=8/S.zoom;
-      ctx.fillStyle='rgba(232,184,109,0.6)';
-      ctx.fillRect(lx+lw-hs,ly+lh-hs,hs*2,hs*2);
-    }
-    else if(layer.type==='image'&&layer.img&&layer.id===selLayerId){
-      ctx.globalAlpha=1;
-      ctx.strokeStyle='rgba(232,184,109,0.9)';ctx.lineWidth=2/S.zoom;
-      ctx.setLineDash([6/S.zoom,3/S.zoom]);
-      ctx.strokeRect(layer.x,layer.y,layer.w,layer.h);
-      ctx.setLineDash([]);
-      const hs=8/S.zoom;
-      ctx.fillStyle='rgba(232,184,109,0.9)';
-      ctx.fillRect(layer.x+layer.w-hs,layer.y+layer.h-hs,hs*2,hs*2);
+      const hs=7/S.zoom;
+      ctx.fillStyle=isImg?'rgba(232,184,109,0.95)':'rgba(232,184,109,0.7)';
+      ctx.strokeStyle='rgba(20,18,16,0.7)';ctx.lineWidth=1/S.zoom;
+      const pts=[
+        [lx,ly],[lx+lw/2,ly],[lx+lw,ly],
+        [lx,ly+lh/2],                  [lx+lw,ly+lh/2],
+        [lx,ly+lh],[lx+lw/2,ly+lh],[lx+lw,ly+lh]
+      ];
+      pts.forEach(([px,py])=>{
+        ctx.beginPath();ctx.arc(px,py,hs,0,Math.PI*2);ctx.fill();ctx.stroke();
+      });
     }
     else if(layer.type==='watermark'&&layer.id===selLayerId&&!layer.tile){
       ctx.save();ctx.translate(layer.x,layer.y);ctx.rotate(layer.rotate);
@@ -2109,13 +2195,16 @@ function onOverlayInput(e){
   if(f)addImageOverlayFromFile(f);
   e.target.value='';
 }
+let _addingOverlay=false; // guard against double-add
 function addImageOverlayFromFile(f){
   if(!S.hasImg){toast('Open a base photo first!');return;}
+  if(_addingOverlay)return;
+  _addingOverlay=true;
   const r=new FileReader();
   r.onload=e2=>{
     const img=new Image();
     img.onload=()=>{
-      // Scale to fit within canvas while keeping aspect ratio, default to 50% of canvas width
+      _addingOverlay=false;
       const maxW=canvas.width*0.5;
       const ratio=Math.min(maxW/img.width,1);
       const w=Math.round(img.width*ratio);
@@ -2124,7 +2213,8 @@ function addImageOverlayFromFile(f){
         id:nextLayerId++,type:'image',name:f.name||'Image',
         visible:true,opacity:100,
         img,imgW:img.width,imgH:img.height,
-        x:Math.round((canvas.width-w)/2),y:Math.round((canvas.height-h)/2),w,h
+        x:Math.round((canvas.width-w)/2),y:Math.round((canvas.height-h)/2),w,h,
+        adjustments:{...DSLIDERS}
       };
       layers.push(layer);
       selLayerId=layer.id;
@@ -2134,8 +2224,10 @@ function addImageOverlayFromFile(f){
       if(tab)switchPane(tab);
       toast('🖼 Image overlay added! Drag to move it.');
     };
+    img.onerror=()=>{_addingOverlay=false;};
     img.src=e2.target.result;
   };
+  r.onerror=()=>{_addingOverlay=false;};
   r.readAsDataURL(f);
 }
 
@@ -2145,9 +2237,25 @@ function addImageOverlayFromFile(f){
 let layerDrag=null;
 let layerDragStart=null;
 let layerAtDragStart=null;
-let layerResizing=null; // 'br' handle
-const SNAP_THRESHOLD=8; // canvas pixels
-let guides={h:false,v:false}; // active center guides
+let layerResizing=null; // handle name: 'tl','tc','tr','lc','rc','bl','bc','br'
+const SNAP_THRESHOLD=8;
+let guides={h:false,v:false};
+
+// Returns which resize handle was hit, or null
+function getResizeHandle(layer,cx,cy){
+  if(layer.type!=='image'&&layer.type!=='base')return null;
+  const lx=layer.x??0,ly=layer.y??0,lw=layer.w??canvas.width,lh=layer.h??canvas.height;
+  const hs=12/S.zoom;
+  const handles={
+    tl:{x:lx,y:ly}, tc:{x:lx+lw/2,y:ly}, tr:{x:lx+lw,y:ly},
+    lc:{x:lx,y:ly+lh/2},                  rc:{x:lx+lw,y:ly+lh/2},
+    bl:{x:lx,y:ly+lh}, bc:{x:lx+lw/2,y:ly+lh}, br:{x:lx+lw,y:ly+lh}
+  };
+  for(const [name,pos] of Object.entries(handles)){
+    if(cx>=pos.x-hs&&cx<=pos.x+hs&&cy>=pos.y-hs&&cy<=pos.y+hs)return name;
+  }
+  return null;
+}
 
 canvas.addEventListener('mousedown',e=>{
   if(!S.hasImg)return;
@@ -2155,7 +2263,6 @@ canvas.addEventListener('mousedown',e=>{
   if(S.tool==='bgr')return;
   const {cx,cy}=canvasCoords(e);
 
-  // Helper: does a point hit a layer?
   function hitTest(layer){
     if(!layer.visible)return false;
     if(layer.type==='base'){
@@ -2166,50 +2273,65 @@ canvas.addEventListener('mousedown',e=>{
     if(layer.type==='text'||layer.type==='watermark'){const b=getTextBounds(layer);return cx>=b.x&&cx<=b.x+b.w&&cy>=b.y&&cy<=b.y+b.h;}
     return false;
   }
-  function hitResizeHandle(layer){
-    if(layer.type!=='image'&&layer.type!=='base')return false;
-    const lx=layer.x??0,ly=layer.y??0,lw=layer.w??canvas.width,lh=layer.h??canvas.height;
-    const hs=12/S.zoom;
-    return cx>=lx+lw-hs&&cx<=lx+lw+hs&&cy>=ly+lh-hs&&cy<=ly+lh+hs;
-  }
   function startLayerDrag(layer){
     selLayerId=layer.id;
     layerDrag=layer.id;
     layerDragStart={cx,cy};
     layerAtDragStart={x:layer.x??0,y:layer.y??0};
-    e.preventDefault();renderLayersPanel();
+    e.preventDefault();
+    // Switch panel to reflect the selected layer
+    updateAdjustHeader();
+    if(layer.type==='text'){
+      // Text layers: show Layers pane so user sees edit/opacity controls
+      const tab=document.querySelector('.ptab[data-p="layers"]');
+      if(tab)switchPane(tab);
+    } else {
+      // Image/base layers: show Adjust pane with sliders loaded for this layer
+      const tab=document.querySelector('.ptab[data-p="adjust"]');
+      if(tab)switchPane(tab);
+    }
+    renderLayersPanel();
   }
-  function startLayerResize(layer){
+  function startLayerResize(layer,handle){
     selLayerId=layer.id;
-    layerResizing=layer.id;
+    layerResizing=handle;
     layerDragStart={cx,cy};
     layerAtDragStart={x:layer.x??0,y:layer.y??0,w:layer.w??canvas.width,h:layer.h??canvas.height};
-    e.preventDefault();renderLayersPanel();
+    e.preventDefault();
+    updateAdjustHeader();
+    if(layer.type==='text'){
+      const tab=document.querySelector('.ptab[data-p="layers"]');
+      if(tab)switchPane(tab);
+    } else {
+      const tab=document.querySelector('.ptab[data-p="adjust"]');
+      if(tab)switchPane(tab);
+    }
+    renderLayersPanel();
   }
 
-  // 1. If a layer is selected, try to interact with it first
+  // 1. Selected layer gets priority
   if(selLayerId){
     const sel=layers.find(l=>l.id===selLayerId);
     if(sel&&sel.visible){
-      if(hitResizeHandle(sel)){startLayerResize(sel);return;}
+      const handle=getResizeHandle(sel,cx,cy);
+      if(handle){startLayerResize(sel,handle);return;}
       if(hitTest(sel)){startLayerDrag(sel);return;}
     }
   }
 
-  // 2. Otherwise hit-test from top of stack down, pick topmost hit
+  // 2. Top of stack down
   for(let i=layers.length-1;i>=0;i--){
     const layer=layers[i];
     if(!layer.visible)continue;
-    if(hitResizeHandle(layer)){startLayerResize(layer);return;}
-    if(hitTest(layer)){
-      startLayerDrag(layer);return;
-    }
+    const handle=getResizeHandle(layer,cx,cy);
+    if(handle){startLayerResize(layer,handle);return;}
+    if(hitTest(layer)){startLayerDrag(layer);return;}
   }
 
-  // 3. Clicked empty space
   selLayerId=null;renderCanvas();renderLayersPanel();
 });
 
+let _rafPending=false;
 window.addEventListener('mousemove',e=>{
   if(layerDrag){
     const {cx,cy}=canvasCoords(e);
@@ -2222,34 +2344,44 @@ window.addEventListener('mousemove',e=>{
       const cxC=canvas.width/2;
       const cyC=canvas.height/2;
 
-      // Check center alignment: layer center vs canvas center
       const layerCX=nx+lw/2;
       const layerCY=ny+lh/2;
       const snapH=Math.abs(layerCY-cyC)<SNAP_THRESHOLD/S.zoom;
       const snapV=Math.abs(layerCX-cxC)<SNAP_THRESHOLD/S.zoom;
 
-      // Snap into place
       if(snapV) nx=cxC-lw/2;
       if(snapH) ny=cyC-lh/2;
 
       guides.h=snapH;
       guides.v=snapV;
-
       layer.x=nx;
       layer.y=ny;
-      renderCanvas();
+      if(!_rafPending){_rafPending=true;requestAnimationFrame(()=>{renderCanvas();_rafPending=false;});}
     }
   }
   if(layerResizing){
     const {cx,cy}=canvasCoords(e);
-    const layer=layers.find(l=>l.id===layerResizing);
+    const layer=layers.find(l=>l.id===selLayerId);
     if(layer){
-      const newW=Math.max(20,layerAtDragStart.w+(cx-layerDragStart.cx));
-      const aspect=layerAtDragStart.h/layerAtDragStart.w;
-      layer.w=Math.round(newW);
-      layer.h=Math.round(newW*aspect);
-      if(layer.type!=='image') layer.x=layerAtDragStart.x; // keep x stable for base resize
-      renderCanvas();
+      const dx=cx-layerDragStart.cx, dy=cy-layerDragStart.cy;
+      const ox=layerAtDragStart.x, oy=layerAtDragStart.y;
+      const ow=layerAtDragStart.w, oh=layerAtDragStart.h;
+      const aspect=oh/ow;
+      const h=layerResizing;
+      let nx=ox,ny=oy,nw=ow,nh=oh;
+
+      if(h==='br'){nw=Math.max(20,ow+dx);nh=Math.round(nw*aspect);}
+      else if(h==='bl'){nw=Math.max(20,ow-dx);nh=Math.round(nw*aspect);nx=ox+ow-nw;}
+      else if(h==='tr'){nw=Math.max(20,ow+dx);nh=Math.round(nw*aspect);ny=oy+oh-nh;}
+      else if(h==='tl'){nw=Math.max(20,ow-dx);nh=Math.round(nw*aspect);nx=ox+ow-nw;ny=oy+oh-nh;}
+      else if(h==='rc'){nw=Math.max(20,ow+dx);nh=oh;}
+      else if(h==='lc'){nw=Math.max(20,ow-dx);nx=ox+ow-nw;nh=oh;}
+      else if(h==='bc'){nh=Math.max(20,oh+dy);nw=ow;}
+      else if(h==='tc'){nh=Math.max(20,oh-dy);ny=oy+oh-nh;nw=ow;}
+
+      layer.x=Math.round(nx);layer.y=Math.round(ny);
+      layer.w=Math.round(nw);layer.h=Math.round(nh);
+      if(!_rafPending){_rafPending=true;requestAnimationFrame(()=>{renderCanvas();_rafPending=false;});}
     }
   }
 });
@@ -2760,16 +2892,18 @@ function getAdjTarget(){
   return layers.find(l=>l.id===selLayerId)||layers.find(l=>l.type==='base');
 }
 
+let _slideRaf=null;
 function slide(k,v){
   const n=parseInt(v);
   document.getElementById('v-'+k).textContent=n>0?`+${n}`:String(n);
-  // Write to the target layer's adjustments
   const target=getAdjTarget();
   if(target){
     if(!target.adjustments)target.adjustments={...DSLIDERS};
     target.adjustments[k]=n;
   }
-  renderCanvas();
+  invalidateAdjCache(); // adjustments changed — must recompute
+  if(_slideRaf)return;
+  _slideRaf=requestAnimationFrame(()=>{renderCanvas();_slideRaf=null;});
 }
 
 // Load slider UI from a layer's adjustments object
@@ -2805,7 +2939,7 @@ function updateAdjustHeader(){
 }
 
 function resetSlidersUI(){
-  // Reset base layer adjustments
+  invalidateAdjCache();
   const base=layers.find(l=>l.type==='base');
   if(base)base.adjustments={...DSLIDERS};
   loadSlidersFromLayer(base);
@@ -3026,22 +3160,23 @@ function startWMDrag(){
 }
 function acceptWatermark(){
   if(!wmLayer){closeWM();return;}
-  // Bake the watermark into origImg
-  const w=origImg.width, h=origImg.height;
-  const base=layers.find(l=>l.type==='base');
-  const bx=base?.x??0, by=base?.y??0, bw=base?.w??w, bh=base?.h??h;
-  const scaleX=w/bw, scaleY=h/bh;
-  const out=document.createElement('canvas');out.width=w;out.height=h;
-  const oCtx=out.getContext('2d');
-  oCtx.drawImage(origImg,0,0,w,h);
-  oCtx.save();
-  oCtx.globalAlpha=wmLayer.opacity/100;
-  oCtx.fillStyle=wmLayer.color;
-  oCtx.font=`bold ${wmLayer.size*scaleX}px DM Sans,Arial,sans-serif`;
-  oCtx.textBaseline='middle'; oCtx.textAlign='center';
-  oCtx.shadowColor='rgba(0,0,0,0.35)';
-  oCtx.shadowBlur=wmLayer.size*scaleX*0.12;
+
+  // TILED mode — bake into origImg (can't be a movable layer)
   if(wmLayer.tile){
+    const w=origImg.width, h=origImg.height;
+    const base=layers.find(l=>l.type==='base');
+    const bx=base?.x??0, by=base?.y??0, bw=base?.w??w, bh=base?.h??h;
+    const scaleX=w/bw;
+    const out=document.createElement('canvas');out.width=w;out.height=h;
+    const oCtx=out.getContext('2d');
+    oCtx.drawImage(origImg,0,0,w,h);
+    oCtx.save();
+    oCtx.globalAlpha=wmLayer.opacity/100;
+    oCtx.fillStyle=wmLayer.color;
+    oCtx.font=`bold ${wmLayer.size*scaleX}px DM Sans,Arial,sans-serif`;
+    oCtx.textBaseline='middle';oCtx.textAlign='center';
+    oCtx.shadowColor='rgba(0,0,0,0.35)';
+    oCtx.shadowBlur=wmLayer.size*scaleX*0.12;
     const tw=oCtx.measureText(wmLayer.text).width;
     const pad=wmLayer.size*scaleX*0.8;
     const spacingX=tw+pad*2, spacingY=wmLayer.size*scaleX+pad;
@@ -3054,26 +3189,92 @@ function acceptWatermark(){
         oCtx.fillText(wmLayer.text,0,0);oCtx.restore();
       }
     }
-  } else {
-    const tx=(wmLayer.x-bx)*scaleX, ty=(wmLayer.y-by)*scaleY;
-    oCtx.save();oCtx.translate(tx,ty);oCtx.rotate(wmLayer.rotate);
-    oCtx.fillText(wmLayer.text,0,0);oCtx.restore();
+    oCtx.restore();
+    const newImg=new Image();
+    newImg.onload=()=>{
+      origImg=newImg;
+      if(base){base.x=bx;base.y=by;base.w=bw;base.h=bh;}
+      layers=layers.filter(l=>l!==wmLayer);
+      wmLayer=null;selLayerId=null;
+      document.getElementById('wm-bar').style.display='none';
+      renderCanvas();renderLayersPanel();
+      pushHist('💧 Tiled watermark applied');
+      toast('💧 Tiled watermark applied!');
+      setTool('move');
+    };
+    newImg.src=out.toDataURL('image/png');
+    return;
   }
-  oCtx.restore();
-  const newImg=new Image();
-  newImg.onload=()=>{
-    origImg=newImg;
-    if(base){base.x=bx;base.y=by;base.w=bw;base.h=bh;}
-    // Remove the live wmLayer
-    layers=layers.filter(l=>l!==wmLayer);
-    wmLayer=null; selLayerId=null;
+
+  // FREE mode — render watermark text to an image canvas, then add as a proper image layer.
+  // This avoids all text-measurement hit-test complexity and makes it draggable/resizable
+  // exactly like any other image overlay.
+  const tmpC=document.createElement('canvas');
+  // Measure text first
+  const tmpCtx=tmpC.getContext('2d');
+  const fontSize=wmLayer.size;
+  tmpCtx.font=`bold ${fontSize}px DM Sans,Arial,sans-serif`;
+  const textW=Math.ceil(tmpCtx.measureText(wmLayer.text).width)+fontSize; // padding
+  const textH=Math.ceil(fontSize*1.6);
+  tmpC.width=Math.max(1,textW);
+  tmpC.height=Math.max(1,textH);
+
+  // Render text centered on this canvas
+  tmpCtx.font=`bold ${fontSize}px DM Sans,Arial,sans-serif`;
+  tmpCtx.fillStyle=wmLayer.color;
+  tmpCtx.globalAlpha=1;
+  tmpCtx.textAlign='center';
+  tmpCtx.textBaseline='middle';
+  tmpCtx.shadowColor='rgba(0,0,0,0.4)';
+  tmpCtx.shadowBlur=fontSize*0.12;
+  tmpCtx.fillText(wmLayer.text,textW/2,textH/2);
+
+  const wmImg=new Image();
+  wmImg.onload=()=>{
+    // Place image layer centered where the user dragged
+    const lw=Math.round(textW);
+    const lh=Math.round(textH);
+    const lx=Math.round(wmLayer.x-lw/2);
+    const ly=Math.round(wmLayer.y-lh/2);
+
+    const imageLayer={
+      id:wmLayer.id,
+      type:'image',
+      name:'💧 '+wmLayer.text,
+      visible:true,
+      opacity:wmLayer.opacity,
+      img:wmImg,
+      imgW:lw, imgH:lh,
+      x:lx, y:ly, w:lw, h:lh,
+      adjustments:{...DSLIDERS}
+    };
+
+    // Replace wmLayer in stack with the image layer
+    const idx=layers.findIndex(l=>l.id===wmLayer.id);
+    if(idx!==-1) layers[idx]=imageLayer;
+    else layers.push(imageLayer);
+
+    const savedId=wmLayer.id;
+    wmLayer=null;
+    selLayerId=savedId;
     document.getElementById('wm-bar').style.display='none';
+
+    // Switch to layers pane
+    const tab=document.querySelector('.ptab[data-p="layers"]');
+    if(tab)switchPane(tab);
+
+    // Set move tool state directly (avoid setTool switching pane)
+    S.tool='move';
+    document.querySelectorAll('.tbtn').forEach(b=>b.classList.remove('active'));
+    document.getElementById('t-move')?.classList.add('active');
+    document.getElementById('sttool').textContent='Move';
+    ca.className=ca.className.replace(/\b(tm|tc2|teye|tblur)\b/g,'').trim()+' tm';
+
     renderCanvas();renderLayersPanel();
-    pushHist('💧 Watermark applied');
-    toast('💧 Watermark applied!');
-    setTool('move');
+    pushHist('💧 Watermark added as layer');
+    toast('💧 Watermark added! Drag, resize or delete it in the Layers panel.');
   };
-  newImg.src=out.toDataURL('image/png');
+  wmImg.src=tmpC.toDataURL('image/png');
 }
 function cancelWMDrag(){
   if(wmLayer){layers=layers.filter(l=>l!==wmLayer);wmLayer=null;}
@@ -3492,36 +3693,51 @@ function cleanupBlurBrush(){
 // ════════════════════════════════════════════
 const TOOL_PANE={move:'adjust',adjust:'adjust',filter:'adjust',crop:'adjust',text:'layers',overlay:'layers',bgr:'adjust',history:'history',eye:'adjust',blurbrush:'adjust'};
 function setTool(tool){
-  if(tool==='adjust'||tool==='filter'){
-    document.querySelectorAll('.tbtn').forEach(b=>b.classList.remove('active'));
-    document.getElementById('t-'+tool)?.classList.add('active');
-    document.getElementById('sttool').textContent=tool==='adjust'?'Adjust':'Filter';
-    const tab=document.querySelector('.ptab[data-p="adjust"]');
-    if(tab)switchPane(tab);
-    return;
-  }
+  // Clean up any active exclusive modes whenever switching tools
   if(S.tool==='ba'&&tool!=='ba') exitBA();
-  if(S.tool==='crop'&&tool!=='crop')cancelCrop();
+  if(S.tool==='crop'&&tool!=='crop') cancelCrop();
   if(S.tool==='eye'&&tool!=='eye') stopEyedropper();
   if(S.tool==='blurbrush'&&tool!=='blurbrush') cancelBlurBrush();
+
   S.tool=tool;
   document.querySelectorAll('.tbtn').forEach(b=>b.classList.remove('active'));
   document.getElementById('t-'+tool)?.classList.add('active');
-  document.getElementById('sttool').textContent=tool.charAt(0).toUpperCase()+tool.slice(1);
+  document.getElementById('sttool').textContent=
+    tool==='adjust'?'Adjust':tool==='filter'?'Filter':tool.charAt(0).toUpperCase()+tool.slice(1);
+
+  // Canvas cursor class
   ca.className=ca.className.replace(/\b(tm|tc2|teye|tblur)\b/g,'').trim();
-  if(tool==='move')ca.classList.add('tm');
-  if(tool==='crop')ca.classList.add('tc2');
-  if(tool==='eye')ca.classList.add('teye');
-  if(tool==='blurbrush')ca.classList.add('tblur');
+  if(tool==='move'||tool==='adjust'||tool==='filter') ca.classList.add('tm');
+  if(tool==='crop') ca.classList.add('tc2');
+  if(tool==='eye') ca.classList.add('teye');
+  if(tool==='blurbrush') ca.classList.add('tblur');
+
+  // Switch right panel to correct tab
   const pane=TOOL_PANE[tool];
   if(pane){const tab=document.querySelector(`.ptab[data-p="${pane}"]`);if(tab)switchPane(tab);}
-  if(tool==='crop'){if(!S.hasImg){toast('Open a photo first!');setTool('move');return;}startCrop();}
+
+  // Scroll adjust pane to the right section
+  if(tool==='adjust'){
+    requestAnimationFrame(()=>{
+      const el=document.getElementById('adjust-top-anchor');
+      if(el)el.scrollIntoView({block:'start',behavior:'smooth'});
+    });
+  }
+  if(tool==='filter'){
+    requestAnimationFrame(()=>{
+      const el=document.getElementById('presets-anchor');
+      if(el)el.scrollIntoView({block:'start',behavior:'smooth'});
+    });
+  }
+
+  // Tool-specific actions
+  if(tool==='crop'){if(!S.hasImg){toast('Open a photo first!');S.tool='move';ca.className=ca.className.replace(/\btc2\b/g,'').trim()+' tm';return;}startCrop();}
   if(tool==='text'){if(!S.hasImg){toast('Open a photo first!');return;}openTxtModal(null);}
   if(tool==='bgr'){openBGRModal();}
-  if(tool==='wm'){if(!S.hasImg){toast('Open a photo first!');setTool('move');return;}openWM();}
-  if(tool==='ba'){if(!S.hasImg){toast('Open a photo first!');setTool('move');return;}enterBA();}
-  if(tool==='eye'){if(!S.hasImg){toast('Open a photo first!');setTool('move');return;}startEyedropper();}
-  if(tool==='blurbrush'){if(!S.hasImg){toast('Open a photo first!');setTool('move');return;}startBlurBrush();}
+  if(tool==='wm'){if(!S.hasImg){toast('Open a photo first!');S.tool='move';return;}openWM();}
+  if(tool==='ba'){if(!S.hasImg){toast('Open a photo first!');S.tool='move';return;}enterBA();}
+  if(tool==='eye'){if(!S.hasImg){toast('Open a photo first!');S.tool='move';return;}startEyedropper();}
+  if(tool==='blurbrush'){if(!S.hasImg){toast('Open a photo first!');S.tool='move';return;}startBlurBrush();}
 }
 function switchPane(btn){
   document.querySelectorAll('.ptab').forEach(t=>t.classList.remove('active'));
@@ -3597,7 +3813,28 @@ function bakeRotation(deg){
 
 function rotateCW(){
   if(!S.hasImg){toast('Open a photo first!');return;}
-  // 90° CW: use fast exact method (no floating point blur)
+  // If a non-base image layer is selected, rotate that layer instead
+  const sel=selLayerId?layers.find(l=>l.id===selLayerId):null;
+  if(sel&&sel.type==='image'&&sel.img){
+    const sw=sel.img.width, sh=sel.img.height;
+    const tmp=document.createElement('canvas');tmp.width=sh;tmp.height=sw;
+    const tCtx=tmp.getContext('2d');
+    tCtx.translate(sh/2,sw/2);tCtx.rotate(Math.PI/2);
+    tCtx.drawImage(sel.img,-sw/2,-sh/2);
+    const newImg=new Image();
+    newImg.onload=()=>{
+      sel.img=newImg;
+      // Swap w/h and keep center in same place
+      const cx=sel.x+sel.w/2, cy=sel.y+sel.h/2;
+      sel.w=Math.round(sel.w*(sh/sw)); sel.h=Math.round(sel.h*(sw/sh));
+      sel.x=Math.round(cx-sel.w/2); sel.y=Math.round(cy-sel.h/2);
+      renderCanvas();renderLayersPanel();pushHist('↻ Layer rotated 90° CW');
+      toast('↻ Layer rotated 90° CW');
+    };
+    newImg.src=tmp.toDataURL('image/png');
+    return;
+  }
+  // Otherwise rotate the base photo
   const sw=origImg.width, sh=origImg.height;
   const tmp=document.createElement('canvas');tmp.width=sh;tmp.height=sw;
   const tCtx=tmp.getContext('2d');
@@ -3620,6 +3857,25 @@ function rotateCW(){
 
 function rotateCCW(){
   if(!S.hasImg){toast('Open a photo first!');return;}
+  const sel=selLayerId?layers.find(l=>l.id===selLayerId):null;
+  if(sel&&sel.type==='image'&&sel.img){
+    const sw=sel.img.width, sh=sel.img.height;
+    const tmp=document.createElement('canvas');tmp.width=sh;tmp.height=sw;
+    const tCtx=tmp.getContext('2d');
+    tCtx.translate(sh/2,sw/2);tCtx.rotate(-Math.PI/2);
+    tCtx.drawImage(sel.img,-sw/2,-sh/2);
+    const newImg=new Image();
+    newImg.onload=()=>{
+      sel.img=newImg;
+      const cx=sel.x+sel.w/2, cy=sel.y+sel.h/2;
+      sel.w=Math.round(sel.w*(sh/sw)); sel.h=Math.round(sel.h*(sw/sh));
+      sel.x=Math.round(cx-sel.w/2); sel.y=Math.round(cy-sel.h/2);
+      renderCanvas();renderLayersPanel();pushHist('↺ Layer rotated 90° CCW');
+      toast('↺ Layer rotated 90° CCW');
+    };
+    newImg.src=tmp.toDataURL('image/png');
+    return;
+  }
   const sw=origImg.width, sh=origImg.height;
   const tmp=document.createElement('canvas');tmp.width=sh;tmp.height=sw;
   const tCtx=tmp.getContext('2d');
@@ -3642,6 +3898,17 @@ function rotateCCW(){
 
 function flipH(){
   if(!S.hasImg){toast('Open a photo first!');return;}
+  const sel=selLayerId?layers.find(l=>l.id===selLayerId):null;
+  if(sel&&sel.type==='image'&&sel.img){
+    const sw=sel.img.width, sh=sel.img.height;
+    const tmp=document.createElement('canvas');tmp.width=sw;tmp.height=sh;
+    const tCtx=tmp.getContext('2d');
+    tCtx.translate(sw,0);tCtx.scale(-1,1);tCtx.drawImage(sel.img,0,0);
+    const newImg=new Image();
+    newImg.onload=()=>{sel.img=newImg;renderCanvas();renderLayersPanel();pushHist('⇔ Layer flipped H');toast('⇔ Layer flipped horizontally');};
+    newImg.src=tmp.toDataURL('image/png');
+    return;
+  }
   const sw=origImg.width, sh=origImg.height;
   const tmp=document.createElement('canvas');tmp.width=sw;tmp.height=sh;
   const tCtx=tmp.getContext('2d');
@@ -3661,6 +3928,17 @@ function flipH(){
 
 function flipV(){
   if(!S.hasImg){toast('Open a photo first!');return;}
+  const sel=selLayerId?layers.find(l=>l.id===selLayerId):null;
+  if(sel&&sel.type==='image'&&sel.img){
+    const sw=sel.img.width, sh=sel.img.height;
+    const tmp=document.createElement('canvas');tmp.width=sw;tmp.height=sh;
+    const tCtx=tmp.getContext('2d');
+    tCtx.translate(0,sh);tCtx.scale(1,-1);tCtx.drawImage(sel.img,0,0);
+    const newImg=new Image();
+    newImg.onload=()=>{sel.img=newImg;renderCanvas();renderLayersPanel();pushHist('⇕ Layer flipped V');toast('⇕ Layer flipped vertically');};
+    newImg.src=tmp.toDataURL('image/png');
+    return;
+  }
   const sw=origImg.width, sh=origImg.height;
   const tmp=document.createElement('canvas');tmp.width=sw;tmp.height=sh;
   const tCtx=tmp.getContext('2d');
@@ -3678,27 +3956,67 @@ function flipV(){
   newImg.src=tmp.toDataURL('image/png');
 }
 
-// Free rotate slider — live preview via CSS transform, bakes on Apply
+// Free rotate slider — live preview, bakes on Apply
 function onRotateSlider(val){
   freeRotateAngle=parseInt(val);
   document.getElementById('v-rot').textContent=val+'°';
-  // Live CSS preview — fast, no pixel bake
-  canvas.style.transform=`rotate(${val}deg)`;
+  const sel=selLayerId?layers.find(l=>l.id===selLayerId):null;
+  if(sel&&sel.type==='image'&&sel.img){
+    // Store preview angle on the layer — renderCanvas will draw it rotated
+    sel._previewRotate=freeRotateAngle*Math.PI/180;
+    renderCanvas();
+  } else {
+    // Fall back to CSS transform on the whole canvas
+    canvas.style.transform=`rotate(${val}deg)`;
+  }
 }
 
 function applyFreeRotate(){
   if(!freeRotateAngle){toast('Slider is at 0° — nothing to apply.');return;}
   const angle=freeRotateAngle;
-  canvas.style.transform=''; // clear preview
+  const sel=selLayerId?layers.find(l=>l.id===selLayerId):null;
+
+  // Reset UI
   document.getElementById('s-rot').value=0;
   document.getElementById('v-rot').textContent='0°';
   freeRotateAngle=0;
-  bakeRotation(angle);
-  // pushHist after bakeRotation's async onload completes — slight delay
-  setTimeout(()=>{
-    renderLayersPanel();pushHist(`↻ Rotated ${angle}°`);
-    toast(`↻ Rotated ${angle}°`);
-  },80);
+
+  if(sel&&sel.type==='image'&&sel.img){
+    // Clear preview state
+    delete sel._previewRotate;
+    // Bake rotation into the layer's img
+    const rad=angle*Math.PI/180;
+    const sw=sel.img.width, sh=sel.img.height;
+    const nw=Math.round(Math.abs(sw*Math.cos(rad))+Math.abs(sh*Math.sin(rad)));
+    const nh=Math.round(Math.abs(sw*Math.sin(rad))+Math.abs(sh*Math.cos(rad)));
+    const tmp=document.createElement('canvas');tmp.width=nw;tmp.height=nh;
+    const tCtx=tmp.getContext('2d');
+    tCtx.translate(nw/2,nh/2);tCtx.rotate(rad);
+    tCtx.drawImage(sel.img,-sw/2,-sh/2);
+    const newImg=new Image();
+    newImg.onload=()=>{
+      // Keep the visual center in the same place on canvas
+      const cx=sel.x+sel.w/2, cy=sel.y+sel.h/2;
+      const scaleW=sel.w/sw, scaleH=sel.h/sh;
+      sel.img=newImg;
+      sel.w=Math.round(nw*scaleW);
+      sel.h=Math.round(nh*scaleH);
+      sel.x=Math.round(cx-sel.w/2);
+      sel.y=Math.round(cy-sel.h/2);
+      renderCanvas();renderLayersPanel();
+      pushHist(`↻ Layer rotated ${angle}°`);
+      toast(`↻ Layer rotated ${angle}°`);
+    };
+    newImg.src=tmp.toDataURL('image/png');
+  } else {
+    // Base photo — clear CSS preview and bake
+    canvas.style.transform='';
+    bakeRotation(angle);
+    setTimeout(()=>{
+      renderLayersPanel();pushHist(`↻ Rotated ${angle}°`);
+      toast(`↻ Rotated ${angle}°`);
+    },80);
+  }
 }
 
 function cancelFreeRotate(){
@@ -3706,6 +4024,12 @@ function cancelFreeRotate(){
   canvas.style.transform='';
   document.getElementById('s-rot').value=0;
   document.getElementById('v-rot').textContent='0°';
+  // Clear any preview rotation on selected layer
+  const sel=selLayerId?layers.find(l=>l.id===selLayerId):null;
+  if(sel&&sel._previewRotate!==undefined){
+    delete sel._previewRotate;
+    renderCanvas();
+  }
 }
 
 // ════════════════════════════════════════════
@@ -3868,9 +4192,121 @@ function applyZoom(){
   cw.style.width=canvas.width+'px';
   cw.style.height=canvas.height+'px';
   positionCanvas();
-  document.getElementById('zlbl').textContent=`${Math.round(S.zoom*100)}%`;
+  const pct=Math.round(S.zoom*100);
+  document.getElementById('zlbl').textContent=`${pct}%`;
+  // Sync vertical slider (range 5–400)
+  const sl=document.getElementById('zoom-slider');
+  if(sl)sl.value=Math.max(5,Math.min(400,pct));
+  const lbl=document.getElementById('zoom-slider-label');
+  if(lbl)lbl.textContent=`${pct}%`;
+}
+function onZoomSlider(val){
+  S.zoom=Math.max(0.05,Math.min(4,parseInt(val)/100));
+  applyZoom();
 }
 ca.addEventListener('wheel',e=>{if(!S.hasImg)return;e.preventDefault();if(e.deltaY<0)zIn();else zOut();},{passive:false});
+
+// ════════════════════════════════════════════
+//  STICKERS / EMOJI OVERLAYS
+// ════════════════════════════════════════════
+const STICKER_CATS={
+  '😀 Smileys': ['😀','😂','🥹','😍','🥰','😎','🤩','😜','🤪','😏','🙄','😤','😭','😱','🥳','😇','🤓','🫠','🫡','🤯','🥸','😈','👻','💀','🤡','🎭'],
+  '❤️ Hearts':  ['❤️','🧡','💛','💚','💙','💜','🖤','🤍','💔','❤️‍🔥','💕','💞','💓','💗','💖','💘','💝','💟','♥️','🫀','💌','💋','🫦'],
+  '⭐ Stars':   ['⭐','🌟','✨','💫','🌠','🎇','🎆','🔥','💥','❄️','🌈','⚡','🌊','🍃','🌸','🌺','🌻','🌹','🌷','🪷','🌙','☀️','🌤'],
+  '👍 Gestures':['👍','👎','👌','✌️','🤞','🤙','👏','🙌','🤜','🤛','✊','👊','🫶','🤝','🙏','👋','🫳','💪','🦾','☝️','👆','👇','👉','👈'],
+  '🐶 Animals': ['🐶','🐱','🐭','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐙','🦋','🐝','🦄','🐲','🦖','🦕','🐳','🦈','🦅','🦜'],
+  '🎉 Fun':     ['🎉','🎊','🎈','🎁','🏆','🥇','🎯','🎮','🎸','🎵','🎶','🎤','🎬','🎨','🖼','📸','📷','🎠','🎡','🎢','🧨','🪅','🎪','🎭'],
+  '🍕 Food':    ['🍕','🍔','🌮','🌯','🍜','🍣','🍩','🍪','🎂','🍰','🧁','🍭','🍦','🍺','🍻','🥂','☕','🧋','🍵','🥤','🍾','🧃','🥐','🍫'],
+  '🌍 Nature':  ['🌍','🌲','🌴','🌵','🍀','🌿','🍁','🍂','🍄','🌾','🐚','🪸','🪨','🏔','🌋','🏝','🌅','🌄','🌃','🌉','🌌','🌠','🌁','⛅'],
+  '💎 Objects': ['💎','👑','🏅','🎖','🔑','🗝','💡','🔮','🪄','🎩','🧲','⚗️','🔭','🛸','🚀','✈️','🚢','🎸','📱','💻','🖥','⌚','📡','🛡'],
+  '🔣 Symbols': ['✅','❌','⭕','❓','❗','💯','🔴','🟠','🟡','🟢','🔵','🟣','⚫','⚪','🔸','🔹','▶️','⏩','🔁','🔀','⬆️','⬇️','➡️','↩️'],
+};
+
+let stickerActiveCat=Object.keys(STICKER_CATS)[0];
+
+function openStickerPicker(){
+  if(!S.hasImg){toast('Open a photo first!');return;}
+  document.getElementById('sticker-size').value=120;
+  document.getElementById('sticker-size-val').textContent='120px';
+  renderStickerCats();
+  renderStickerGrid(stickerActiveCat);
+  document.getElementById('sticker-modal').classList.add('on');
+}
+function closeStickerPicker(){
+  document.getElementById('sticker-modal').classList.remove('on');
+}
+
+function renderStickerCats(){
+  const el=document.getElementById('sticker-cats');
+  el.innerHTML='';
+  Object.keys(STICKER_CATS).forEach(cat=>{
+    const btn=document.createElement('button');
+    btn.className='sticker-cat-btn'+(cat===stickerActiveCat?' active':'');
+    btn.textContent=cat;
+    btn.onclick=()=>{
+      stickerActiveCat=cat;
+      document.querySelectorAll('.sticker-cat-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      renderStickerGrid(cat);
+    };
+    el.appendChild(btn);
+  });
+  // Size slider listener
+  document.getElementById('sticker-size').oninput=function(){
+    document.getElementById('sticker-size-val').textContent=this.value+'px';
+  };
+}
+
+function renderStickerGrid(cat){
+  const grid=document.getElementById('sticker-grid');
+  grid.innerHTML='';
+  STICKER_CATS[cat].forEach(emoji=>{
+    const btn=document.createElement('button');
+    btn.className='sticker-btn';
+    btn.textContent=emoji;
+    btn.title=emoji;
+    btn.onclick=()=>addSticker(emoji);
+    grid.appendChild(btn);
+  });
+}
+
+function addSticker(emoji){
+  const sizePx=parseInt(document.getElementById('sticker-size').value)||120;
+  // Render emoji to an offscreen canvas at 2x for crisp display
+  const res=sizePx*2;
+  const oc=document.createElement('canvas');oc.width=res;oc.height=res;
+  const ox=oc.getContext('2d');
+  ox.font=`${res*0.78}px serif`;
+  ox.textAlign='center';ox.textBaseline='middle';
+  ox.fillText(emoji,res/2,res/2+res*0.04);
+
+  const img=new Image();
+  img.onload=()=>{
+    // Place at center of canvas
+    const cx=Math.round((canvas.width-sizePx)/2);
+    const cy=Math.round((canvas.height-sizePx)/2);
+    const layer={
+      id:nextLayerId++,
+      type:'image',
+      name:emoji+' Sticker',
+      visible:true,
+      opacity:100,
+      img,
+      x:cx,y:cy,
+      w:sizePx,h:sizePx,
+      adjustments:{...DSLIDERS}
+    };
+    layers.push(layer);
+    selLayerId=layer.id;
+    renderCanvas();renderLayersPanel();
+    pushHist(`${emoji} Sticker added`);
+    // Switch to Layers tab so user can see and interact
+    const tab=document.querySelector('.ptab[data-p="layers"]');
+    if(tab)switchPane(tab);
+    toast(`${emoji} Sticker added — drag to reposition!`);
+  };
+  img.src=oc.toDataURL('image/png');
+}
 
 // ════════════════════════════════════════════
 //  RESIZE
@@ -4214,7 +4650,7 @@ document.addEventListener('keydown',e=>{
     if(e.key==='='||e.key==='+'){e.preventDefault();zIn();}
     if(e.key==='-'){e.preventDefault();zOut();}
   }
-  if(e.key==='Escape'){closeOB();closeEM();closeTxtModal();closeBGR();closeResize();closeBorderModal();if(cropOn)cancelCrop();if(eyeActive)setTool('move');if(blurBrushActive)cancelBlurBrush();}
+  if(e.key==='Escape'){closeOB();closeEM();closeTxtModal();closeBGR();closeResize();closeBorderModal();closeStickerPicker();if(cropOn)cancelCrop();if(eyeActive)setTool('move');if(blurBrushActive)cancelBlurBrush();}
   if(e.key==='Enter'&&cropOn){e.preventDefault();applyCrop();}
   if(e.key==='Delete'||e.key==='Backspace'){
     if(selLayerId){deleteLayer(selLayerId);}
