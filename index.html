@@ -109,7 +109,9 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);height:100
 .pbody::-webkit-scrollbar{width:4px;}.pbody::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
 .psec h4{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim);margin-bottom:10px;}
 .pane{display:none;}.pane.active{display:flex;flex-direction:column;gap:16px;}
-/* SLIDERS */
+/* Mobile-only elements — hidden by default on desktop */
+#mob-sheet{display:none;}
+#mob-panel-btn{display:none;}
 .srow{margin-bottom:11px;}
 .shdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
 .slbl{font-size:12.5px;color:var(--text-muted);}.sval{font-size:12px;color:var(--accent);font-weight:500;min-width:30px;text-align:right;}
@@ -521,50 +523,101 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 .hatty-link:hover{border-color:var(--accent);background:var(--accent-glow);color:var(--accent-hover);}
 *{scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
 @media(max-width:700px){
-  /* Top bar — compact */
-  #topbar{padding:0 8px;gap:6px;height:48px;flex-wrap:nowrap;}
+  /* ── Top bar ── */
+  #topbar{padding:0 8px;gap:5px;height:48px;flex-wrap:nowrap;overflow:hidden;}
   #topbar .sep,#topbar .zoom-ctrl,#topbar #docname,
   #topbar .hatty-link,#topbar .hatty-credit,
   #topbar button[onclick="showOB()"],
-  #topbar button[onclick="doRedo()"]{display:none!important;}
-  .logo-text{font-size:14px;}
-  .logo-icon{width:24px;height:24px;font-size:12px;}
-  /* Toolstrip — horizontal across bottom */
+  #topbar button[onclick="doRedo()"],
+  #topbar button[onclick="openResize()"],
+  #topbar button[onclick="openBorderModal()"]{display:none!important;}
+  .logo-text{font-size:13px;}
+  .logo-icon{width:22px;height:22px;font-size:11px;}
+  #topbar .btn{height:30px;padding:0 9px;font-size:12px;}
+  /* Show mobile panel toggle button */
+  #mob-panel-btn{display:flex!important;}
+
+  /* ── Layout ── */
   #main{flex-direction:column;}
+  #canvas-area{order:1;flex:1;min-height:0;}
+
+  /* ── Toolstrip — horizontal bottom ── */
   #toolstrip{
-    width:100%;height:56px;flex-direction:row;border-right:none;
+    width:100%;height:54px;flex-direction:row;border-right:none;
     border-top:1px solid var(--border);padding:0 4px;gap:0;
     overflow-x:auto;overflow-y:hidden;flex-shrink:0;order:2;
     -webkit-overflow-scrolling:touch;scrollbar-width:none;
   }
   #toolstrip::-webkit-scrollbar{display:none;}
-  #canvas-area{order:1;flex:1;}
-  .tbtn{width:52px;height:52px;flex-shrink:0;}
+  .tbtn{width:54px;height:52px;flex-shrink:0;}
   .tbtn.active::before{left:50%;top:auto;bottom:-2px;transform:translateX(-50%);
     width:24px;height:3px;border-radius:3px 3px 0 0;}
   .tsep{width:1px;height:32px;margin:0 2px;}
-  /* Status bar — hide */
+
+  /* ── Right panel — hidden on mobile (replaced by bottom sheet) ── */
+  #rp{display:none!important;}
+
+  /* ── Zoom slider — hidden on mobile ── */
+  #zoom-slider-wrap{display:none!important;}
+
+  /* ── Status bar — hide ── */
   #sb{display:none;}
-  /* Modals slide up from bottom */
+
+  /* ── Bottom sheet ── */
+  #mob-sheet{
+    position:fixed;bottom:0;left:0;right:0;
+    background:var(--surface);
+    border-top:1px solid var(--border-light);
+    border-radius:16px 16px 0 0;
+    z-index:400;
+    transform:translateY(100%);
+    transition:transform .3s cubic-bezier(.32,0,.67,0);
+    max-height:72vh;
+    display:flex;flex-direction:column;
+    box-shadow:0 -8px 40px rgba(0,0,0,.5);
+  }
+  #mob-sheet.open{transform:translateY(0);transition:transform .3s cubic-bezier(.33,1,.68,1);}
+  #mob-sheet-drag{
+    width:100%;height:28px;display:flex;align-items:center;justify-content:center;
+    cursor:pointer;flex-shrink:0;
+  }
+  #mob-sheet-drag::before{
+    content:'';width:36px;height:4px;background:var(--border-light);border-radius:2px;
+  }
+  #mob-sheet-tabs{
+    display:flex;border-bottom:1px solid var(--border);flex-shrink:0;
+  }
+  #mob-sheet-tabs .ptab{height:42px;font-size:12px;}
+  #mob-sheet-body{flex:1;overflow-y:auto;padding:12px 14px;}
+  #mob-sheet-body::-webkit-scrollbar{width:4px;}
+  #mob-sheet-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+
+  /* ── Bottom bars — sit above toolstrip (54px) ── */
+  #crop-bar{bottom:62px!important;left:8px!important;right:8px!important;
+    transform:none!important;max-width:100%!important;}
+  #ba-bar,#wm-bar,#blur-bar{bottom:54px!important;}
+  #toast{bottom:68px!important;}
+
+  /* ── Bigger crop handles for touch ── */
+  .ch{width:22px!important;height:22px!important;}
+  .ch.tl{top:-11px!important;left:-11px!important;}
+  .ch.tr{top:-11px!important;right:-11px!important;}
+  .ch.bl{bottom:-11px!important;left:-11px!important;}
+  .ch.br{bottom:-11px!important;right:-11px!important;}
+  .ch.tc{top:-11px!important;left:calc(50% - 11px)!important;}
+  .ch.bc{bottom:-11px!important;left:calc(50% - 11px)!important;}
+  .ch.lc{left:-11px!important;top:calc(50% - 11px)!important;}
+  .ch.rc{right:-11px!important;top:calc(50% - 11px)!important;}
+
+  /* ── Modals slide up from bottom ── */
   .modal-bg{align-items:flex-end;}
   .mcard{width:100%!important;max-width:100%!important;
     border-radius:16px 16px 0 0!important;max-height:88vh;overflow-y:auto;}
-  /* Bigger crop handles */
-  .ch{width:20px!important;height:20px!important;}
-  .ch.tl{top:-10px!important;left:-10px!important;}
-  .ch.tr{top:-10px!important;right:-10px!important;}
-  .ch.bl{bottom:-10px!important;left:-10px!important;}
-  .ch.br{bottom:-10px!important;right:-10px!important;}
-  .ch.tc{top:-10px!important;left:calc(50% - 10px)!important;}
-  .ch.bc{bottom:-10px!important;left:calc(50% - 10px)!important;}
-  .ch.lc{left:-10px!important;top:calc(50% - 10px)!important;}
-  .ch.rc{right:-10px!important;top:calc(50% - 10px)!important;}
-  /* Bars above toolstrip */
-  #crop-bar,#ba-bar,#wm-bar{bottom:64px!important;}
-  #toast{bottom:70px!important;}
-  /* Panel tabs bigger for touch */
-  .ptab{height:44px;font-size:12px;}
-  .pbody{padding:12px;}
+
+  /* ── Bigger touch targets ── */
+  .btn{min-height:34px;}
+  input[type=range]{height:20px;}
+  .srow{margin-bottom:14px;}
 }
 </style>
 </head>
@@ -1162,6 +1215,8 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
   <div class="sep"></div>
   <button class="btn btn-ghost" id="ubtn" onclick="doUndo()" disabled>↩ Undo</button>
   <button class="btn btn-ghost" id="rbtn" onclick="doRedo()" disabled>↪ Redo</button>
+  <!-- Mobile panel toggle — hidden on desktop -->
+  <button class="btn btn-ghost" id="mob-panel-btn" onclick="toggleMobSheet()" style="display:none;margin-left:auto;" title="Adjust panel">⚙ Adjust</button>
   <div class="doc-name" id="docname"><span>No photo open</span></div>
   <div class="zoom-ctrl">
     <button class="btn btn-ghost" style="padding:0 8px" onclick="zOut()">−</button>
@@ -2083,6 +2138,8 @@ function renderLayersPanel(){
   } else {
     props.classList.remove('vis');
   }
+  // Keep mobile bottom sheet in sync
+  if(typeof syncMobAfterRender==='function')syncMobAfterRender();
 }
 
 function doReorderLayer(dragId, targetId, pos){
@@ -2273,25 +2330,26 @@ canvas.addEventListener('mousedown',e=>{
     if(layer.type==='text'||layer.type==='watermark'){const b=getTextBounds(layer);return cx>=b.x&&cx<=b.x+b.w&&cy>=b.y&&cy<=b.y+b.h;}
     return false;
   }
-  function startLayerDrag(layer){
+
+  function activateLayer(layer){
     selLayerId=layer.id;
     layerDrag=layer.id;
     layerDragStart={cx,cy};
     layerAtDragStart={x:layer.x??0,y:layer.y??0};
     e.preventDefault();
-    // Switch panel to reflect the selected layer
     updateAdjustHeader();
     if(layer.type==='text'){
-      // Text layers: show Layers pane so user sees edit/opacity controls
       const tab=document.querySelector('.ptab[data-p="layers"]');
       if(tab)switchPane(tab);
+      if(isMobile())openMobSheet();
     } else {
-      // Image/base layers: show Adjust pane with sliders loaded for this layer
       const tab=document.querySelector('.ptab[data-p="adjust"]');
       if(tab)switchPane(tab);
+      if(isMobile())openMobSheet();
     }
     renderLayersPanel();
   }
+
   function startLayerResize(layer,handle){
     selLayerId=layer.id;
     layerResizing=handle;
@@ -2309,26 +2367,57 @@ canvas.addEventListener('mousedown',e=>{
     renderLayersPanel();
   }
 
-  // 1. Selected layer gets priority
+  // 1. Check resize handles on selected layer first
   if(selLayerId){
     const sel=layers.find(l=>l.id===selLayerId);
     if(sel&&sel.visible){
       const handle=getResizeHandle(sel,cx,cy);
       if(handle){startLayerResize(sel,handle);return;}
-      if(hitTest(sel)){startLayerDrag(sel);return;}
     }
   }
 
-  // 2. Top of stack down
+  // 2. Build ordered list of all layers hit at this point (top → bottom)
+  const hits=[];
   for(let i=layers.length-1;i>=0;i--){
     const layer=layers[i];
     if(!layer.visible)continue;
+    // Check resize handles on any visible layer
     const handle=getResizeHandle(layer,cx,cy);
     if(handle){startLayerResize(layer,handle);return;}
-    if(hitTest(layer)){startLayerDrag(layer);return;}
+    if(hitTest(layer)) hits.push(layer);
   }
 
-  selLayerId=null;renderCanvas();renderLayersPanel();
+  if(hits.length===0){
+    // Clicked empty space — deselect
+    selLayerId=null;renderCanvas();renderLayersPanel();
+    return;
+  }
+
+  if(hits.length===1){
+    // Only one layer here — just select it
+    activateLayer(hits[0]);
+    return;
+  }
+
+  // 3. Multiple layers at this point — CYCLE through them on repeated clicks
+  // Find where the currently selected layer sits in the hit list
+  const curIdx=hits.findIndex(l=>l.id===selLayerId);
+  let nextLayer;
+  if(curIdx===-1){
+    // Currently selected layer isn't in hits — select topmost
+    nextLayer=hits[0];
+  } else {
+    // Cycle to the next layer underneath (wraps back to top)
+    nextLayer=hits[(curIdx+1)%hits.length];
+  }
+
+  // Show hint toast when cycling so user knows what's happening
+  if(curIdx!==-1){
+    const name=nextLayer.type==='text'?`"${nextLayer.text.slice(0,15)}"`:nextLayer.name||nextLayer.type;
+    toast(`🔄 Cycled to: ${name} — click again to cycle deeper`);
+  }
+
+  activateLayer(nextLayer);
 });
 
 let _rafPending=false;
@@ -3722,12 +3811,14 @@ function setTool(tool){
       const el=document.getElementById('adjust-top-anchor');
       if(el)el.scrollIntoView({block:'start',behavior:'smooth'});
     });
+    if(isMobile())openMobSheet();
   }
   if(tool==='filter'){
     requestAnimationFrame(()=>{
       const el=document.getElementById('presets-anchor');
       if(el)el.scrollIntoView({block:'start',behavior:'smooth'});
     });
+    if(isMobile()){openMobSheet();mobSwitchPane(document.querySelector('#mob-sheet-tabs .ptab'));}
   }
 
   // Tool-specific actions
@@ -4676,32 +4767,87 @@ document.addEventListener('paste',e=>{
 });
 
 // ════════════════════════════════════════════
-//  MOBILE — touch pan & pinch zoom only
+//  MOBILE — touch pan, pinch zoom & layer drag
 // ════════════════════════════════════════════
 let tcStart=null,tcPanOrig=null,tcPinchDist=null,tcPinchZoom=null;
+let tcLayerDragId=null,tcLayerDragStart=null,tcLayerAtStart=null;
+let tcMoved=false; // distinguish tap from drag
+
 function tcDist(t){
   const dx=t[0].clientX-t[1].clientX,dy=t[0].clientY-t[1].clientY;
   return Math.sqrt(dx*dx+dy*dy);
 }
+function tcCanvasCoords(touch){
+  const rect=canvas.getBoundingClientRect();
+  return{
+    cx:(touch.clientX-rect.left)*(canvas.width/rect.width),
+    cy:(touch.clientY-rect.top)*(canvas.height/rect.height)
+  };
+}
+function tcHitTest(layer,cx,cy){
+  if(!layer.visible)return false;
+  if(layer.type==='base'){const lx=layer.x??0,ly=layer.y??0,lw=layer.w??canvas.width,lh=layer.h??canvas.height;return cx>=lx&&cx<=lx+lw&&cy>=ly&&cy<=ly+lh;}
+  if(layer.type==='image')return cx>=layer.x&&cx<=layer.x+layer.w&&cy>=layer.y&&cy<=layer.y+layer.h;
+  if(layer.type==='text'||layer.type==='watermark'){const b=getTextBounds(layer);return cx>=b.x&&cx<=b.x+b.w&&cy>=b.y&&cy<=b.y+b.h;}
+  return false;
+}
+
 canvas.addEventListener('touchstart',e=>{
   if(e.touches.length===1){
     const t=e.touches[0];
+    tcMoved=false;
     tcStart={x:t.clientX,y:t.clientY};
     tcPanOrig={x:S.panX,y:S.panY};
+    // Check if touching a layer for dragging — with cycling support
+    if(S.hasImg&&S.tool==='move'){
+      const{cx,cy}=tcCanvasCoords(t);
+      // Build list of all non-base layers hit at this point (top→bottom)
+      const hits=[];
+      for(let i=layers.length-1;i>=0;i--){
+        const layer=layers[i];
+        if(!layer.visible||layer.type==='base')continue;
+        if(tcHitTest(layer,cx,cy)) hits.push(layer);
+      }
+      if(hits.length>0){
+        // Cycle: if current selection is in hits, take the next one
+        const curIdx=hits.findIndex(l=>l.id===selLayerId);
+        const picked=curIdx===-1?hits[0]:hits[(curIdx+1)%hits.length];
+        tcLayerDragId=picked.id;
+        tcLayerDragStart={cx,cy};
+        tcLayerAtStart={x:picked.x??0,y:picked.y??0};
+        selLayerId=picked.id;
+        updateAdjustHeader();
+        renderLayersPanel();
+      }
+    }
   } else if(e.touches.length===2){
     tcPinchDist=tcDist(e.touches);
     tcPinchZoom=S.zoom;
-    tcStart=null;
+    tcStart=null;tcLayerDragId=null;
   }
 },{passive:true});
 
 canvas.addEventListener('touchmove',e=>{
   e.preventDefault();
-  if(e.touches.length===1&&tcStart&&!layerDrag){
+  if(e.touches.length===1){
     const t=e.touches[0];
-    S.panX=tcPanOrig.x+(t.clientX-tcStart.x);
-    S.panY=tcPanOrig.y+(t.clientY-tcStart.y);
-    positionCanvas();
+    const dx=t.clientX-tcStart.x, dy=t.clientY-tcStart.y;
+    if(Math.abs(dx)>4||Math.abs(dy)>4)tcMoved=true;
+    if(tcLayerDragId&&tcMoved){
+      // Drag the layer
+      const layer=layers.find(l=>l.id===tcLayerDragId);
+      if(layer){
+        const{cx,cy}=tcCanvasCoords(t);
+        layer.x=tcLayerAtStart.x+(cx-tcLayerDragStart.cx);
+        layer.y=tcLayerAtStart.y+(cy-tcLayerDragStart.cy);
+        if(!_rafPending){_rafPending=true;requestAnimationFrame(()=>{renderCanvas();_rafPending=false;});}
+      }
+    } else if(!tcLayerDragId){
+      // Pan canvas
+      S.panX=tcPanOrig.x+dx;
+      S.panY=tcPanOrig.y+dy;
+      positionCanvas();
+    }
   } else if(e.touches.length===2&&tcPinchDist){
     const d=tcDist(e.touches);
     S.zoom=Math.max(0.05,Math.min(4,tcPinchZoom*d/tcPinchDist));
@@ -4709,9 +4855,125 @@ canvas.addEventListener('touchmove',e=>{
   }
 },{passive:false});
 
-canvas.addEventListener('touchend',()=>{
-  tcStart=null;tcPanOrig=null;tcPinchDist=null;
+canvas.addEventListener('touchend',e=>{
+  if(tcLayerDragId){
+    if(!tcMoved){
+      // Tap on layer — select it and open panel
+      const layer=layers.find(l=>l.id===tcLayerDragId);
+      if(layer){
+        if(layer.type==='text'){
+          const tab=document.querySelector('.ptab[data-p="layers"]');
+          if(tab)switchPane(tab);
+        } else {
+          const tab=document.querySelector('.ptab[data-p="adjust"]');
+          if(tab)switchPane(tab);
+        }
+        if(typeof openMobSheet==='function')openMobSheet();
+        syncMobSliders();
+      }
+    } else {
+      pushHist('Moved layer');
+    }
+    tcLayerDragId=null;tcLayerDragStart=null;tcLayerAtStart=null;
+    renderCanvas();renderLayersPanel();
+  }
+  tcStart=null;tcPanOrig=null;tcPinchDist=null;tcMoved=false;
 },{passive:true});
+
+// ════════════════════════════════════════════
+//  MOBILE BOTTOM SHEET
+// ════════════════════════════════════════════
+function isMobile(){return window.innerWidth<=700;}
+
+function toggleMobSheet(){document.getElementById('mob-sheet')?.classList.toggle('open');}
+function openMobSheet(){document.getElementById('mob-sheet')?.classList.add('open');}
+function closeMobSheet(){document.getElementById('mob-sheet')?.classList.remove('open');}
+
+function mobSwitchPane(btn){
+  const p=btn.dataset.p;
+  // Update mobile tabs
+  document.querySelectorAll('#mob-sheet-tabs .ptab').forEach(t=>t.classList.toggle('active',t.dataset.p===p));
+  // Update mobile panes
+  document.querySelectorAll('#mob-sheet-body .pane').forEach(pn=>pn.classList.toggle('active',pn.id==='mob-pane-'+p));
+  // Also sync desktop panel to same tab
+  const desktopTab=document.querySelector(`#rp .ptab[data-p="${p}"]`);
+  if(desktopTab)switchPane(desktopTab);
+}
+
+function mobSlide(k,v){
+  // Sync to desktop slider and apply
+  const ds=document.getElementById('s-'+k);
+  if(ds)ds.value=v;
+  const n=parseInt(v);
+  const label=n>0?`+${n}`:String(n);
+  const dv=document.getElementById('v-'+k);if(dv)dv.textContent=label;
+  const mv=document.getElementById('mv-'+k);if(mv)mv.textContent=label;
+  slide(k,v);
+}
+
+function syncMobSliders(){
+  if(!isMobile())return;
+  Object.keys(DSLIDERS).forEach(k=>{
+    const ds=document.getElementById('s-'+k);
+    const ms=document.getElementById('ms-'+k);
+    const mv=document.getElementById('mv-'+k);
+    if(ds&&ms)ms.value=ds.value;
+    if(ds&&mv){const n=parseInt(ds.value);mv.textContent=n>0?`+${n}`:String(n);}
+  });
+  // Sync adj indicator
+  const ind=document.getElementById('adj-layer-indicator');
+  const mobInd=document.getElementById('mob-adj-indicator');
+  if(ind&&mobInd){
+    if(ind.classList.contains('on')){
+      mobInd.style.display='block';
+      mobInd.textContent='🎯 Adjusting: '+document.getElementById('adj-layer-name').textContent;
+    } else {mobInd.style.display='none';}
+  }
+}
+
+function syncMobLayers(){
+  if(!isMobile())return;
+  const desktopLL=document.getElementById('ll');
+  const mobLL=document.getElementById('mob-ll');
+  if(desktopLL&&mobLL)mobLL.innerHTML=desktopLL.innerHTML;
+  const desktopHL=document.getElementById('hlist');
+  const mobHL=document.getElementById('mob-hlist');
+  if(desktopHL&&mobHL)mobHL.innerHTML=desktopHL.innerHTML;
+}
+
+// Call after renderLayersPanel to keep mobile in sync — no function override needed
+function syncMobAfterRender(){
+  if(!isMobile())return;
+  syncMobLayers();
+  syncMobSliders();
+}
+
+// Sheet drag-to-dismiss
+(function initMobSheet(){
+  let startY=0,dragging=false;
+  document.addEventListener('DOMContentLoaded',setup);
+  if(document.readyState!=='loading')setup();
+  function setup(){
+    const drag=document.getElementById('mob-sheet-drag');
+    const sheet=document.getElementById('mob-sheet');
+    if(!drag||!sheet)return;
+    drag.addEventListener('touchstart',e=>{startY=e.touches[0].clientY;dragging=true;},{passive:true});
+    drag.addEventListener('touchmove',e=>{
+      if(!dragging)return;
+      const dy=e.touches[0].clientY-startY;
+      if(dy>0)sheet.style.transform=`translateY(${dy}px)`;
+    },{passive:true});
+    drag.addEventListener('touchend',e=>{
+      if(!dragging)return;dragging=false;
+      sheet.style.transform='';
+      if(e.changedTouches[0].clientY-startY>80)closeMobSheet();
+    },{passive:true});
+    document.addEventListener('touchstart',e=>{
+      if(sheet.classList.contains('open')&&!sheet.contains(e.target)&&e.target.id!=='mob-panel-btn')
+        closeMobSheet();
+    },{passive:true});
+  }
+})();
 
 // ════════════════════════════════════════════
 //  INIT
@@ -4719,5 +4981,71 @@ canvas.addEventListener('touchend',()=>{
 updateUndoBtns();
 // Welcome screen shows on load — enterApp() triggers showOB() after dismiss
 </script>
+
+<!-- MOBILE BOTTOM SHEET -->
+<div id="mob-sheet">
+  <div id="mob-sheet-drag" onclick="closeMobSheet()"></div>
+  <div id="mob-sheet-tabs" class="ptabs">
+    <button class="ptab active" data-p="adjust" onclick="mobSwitchPane(this)">Adjust</button>
+    <button class="ptab" data-p="layers" onclick="mobSwitchPane(this)">Layers</button>
+    <button class="ptab" data-p="history" onclick="mobSwitchPane(this)">History</button>
+  </div>
+  <div id="mob-sheet-body" class="pbody">
+    <div class="pane active" id="mob-pane-adjust">
+      <div id="mob-adj-indicator" style="display:none;padding:7px 10px;background:var(--accent-glow);border:1px solid rgba(232,184,109,0.3);border-radius:var(--rs);font-size:12px;color:var(--accent);margin-bottom:8px;"></div>
+      <div class="psec" style="margin-bottom:10px;">
+        <button class="qfbtn" onclick="quickFix()">⚡ Quick Fix — Auto-enhance</button>
+      </div>
+      <div class="psec"><h4>Light</h4>
+        <div class="srow"><div class="shdr"><span class="slbl">Brightness</span><span class="sval" id="mv-br">0</span></div><input type="range" min="-100" max="100" value="0" id="ms-br" oninput="mobSlide('br',this.value)"></div>
+        <div class="srow"><div class="shdr"><span class="slbl">Contrast</span><span class="sval" id="mv-co">0</span></div><input type="range" min="-100" max="100" value="0" id="ms-co" oninput="mobSlide('co',this.value)"></div>
+        <div class="srow"><div class="shdr"><span class="slbl">Highlights</span><span class="sval" id="mv-hi">0</span></div><input type="range" min="-100" max="100" value="0" id="ms-hi" oninput="mobSlide('hi',this.value)"></div>
+        <div class="srow"><div class="shdr"><span class="slbl">Shadows</span><span class="sval" id="mv-sh">0</span></div><input type="range" min="-100" max="100" value="0" id="ms-sh" oninput="mobSlide('sh',this.value)"></div>
+      </div>
+      <div class="psec"><h4>Color</h4>
+        <div class="srow"><div class="shdr"><span class="slbl">Saturation</span><span class="sval" id="mv-sa">0</span></div><input type="range" min="-100" max="100" value="0" id="ms-sa" oninput="mobSlide('sa',this.value)"></div>
+        <div class="srow"><div class="shdr"><span class="slbl">Warmth</span><span class="sval" id="mv-wa">0</span></div><input type="range" min="-100" max="100" value="0" id="ms-wa" oninput="mobSlide('wa',this.value)"></div>
+        <div class="srow"><div class="shdr"><span class="slbl">Tint</span><span class="sval" id="mv-ti">0</span></div><input type="range" min="-100" max="100" value="0" id="ms-ti" oninput="mobSlide('ti',this.value)"></div>
+      </div>
+      <div class="psec"><h4>Detail</h4>
+        <div class="srow"><div class="shdr"><span class="slbl">Blur</span><span class="sval" id="mv-bl">0</span></div><input type="range" min="0" max="100" value="0" id="ms-bl" oninput="mobSlide('bl',this.value)"></div>
+        <div class="srow"><div class="shdr"><span class="slbl">Clarity</span><span class="sval" id="mv-cl">0</span></div><input type="range" min="-100" max="100" value="0" id="ms-cl" oninput="mobSlide('cl',this.value)"></div>
+        <div class="srow"><div class="shdr"><span class="slbl">Sharpness</span><span class="sval" id="mv-sp">0</span></div><input type="range" min="0" max="100" value="0" id="ms-sp" oninput="mobSlide('sp',this.value)"></div>
+        <div class="srow"><div class="shdr"><span class="slbl">Vignette</span><span class="sval" id="mv-vi">0</span></div><input type="range" min="-100" max="0" value="0" id="ms-vi" oninput="mobSlide('vi',this.value)"></div>
+      </div>
+      <div class="psec"><h4>Transform</h4>
+        <div style="display:flex;gap:6px;margin-bottom:6px;">
+          <button class="btn btn-outline" style="flex:1;font-size:12px;justify-content:center" onclick="rotateCW()">↻ CW</button>
+          <button class="btn btn-outline" style="flex:1;font-size:12px;justify-content:center" onclick="rotateCCW()">↺ CCW</button>
+          <button class="btn btn-outline" style="flex:1;font-size:12px;justify-content:center" onclick="flipH()">⇔ H</button>
+          <button class="btn btn-outline" style="flex:1;font-size:12px;justify-content:center" onclick="flipV()">⇕ V</button>
+        </div>
+      </div>
+      <div class="psec"><h4>Presets</h4>
+        <div class="pgrid">
+          <div class="pi active" onclick="applyPreset(this,'none')"><div class="pthumb" style="background:#2a2826">🏔</div><div class="pname">Original</div></div>
+          <div class="pi" onclick="applyPreset(this,'sp')"><div class="pthumb" style="background:linear-gradient(135deg,#3d2d2d,#4a3535)">🌸</div><div class="pname">Soft Portrait</div></div>
+          <div class="pi" onclick="applyPreset(this,'wf')"><div class="pthumb" style="background:linear-gradient(135deg,#3d3420,#4a4228)">🎞</div><div class="pname">Warm Film</div></div>
+          <div class="pi" onclick="applyPreset(this,'cn')"><div class="pthumb" style="background:linear-gradient(135deg,#1a2040,#202840)">💫</div><div class="pname">Cool Neon</div></div>
+          <div class="pi" onclick="applyPreset(this,'gh')"><div class="pthumb" style="background:linear-gradient(135deg,#3d3010,#504020)">🌅</div><div class="pname">Golden Hour</div></div>
+          <div class="pi" onclick="applyPreset(this,'fm')"><div class="pthumb" style="background:linear-gradient(135deg,#282828,#343434)">🎭</div><div class="pname">Faded Mono</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="pane" id="mob-pane-layers">
+      <div class="psec">
+        <h4>Layers</h4>
+        <div class="ll" id="mob-ll"></div>
+        <button class="ladd" onclick="openTxtModal(null)">＋ Add text</button>
+        <button class="ladd" style="margin-top:3px" onclick="document.getElementById('overlay-fi').click()">＋ Add image overlay</button>
+        <button class="ladd" style="margin-top:3px" onclick="openStickerPicker()">＋ Add sticker</button>
+      </div>
+    </div>
+    <div class="pane" id="mob-pane-history">
+      <div class="psec"><h4>History</h4><div class="hl" id="mob-hlist"></div></div>
+      <button class="btn btn-ghost" style="width:100%;margin-top:4px;justify-content:center;font-size:12px" onclick="resetAll()">↺ Reset to original</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
