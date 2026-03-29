@@ -2236,7 +2236,7 @@ function commitText(){
     selLayerId=layer.id;
     pushHist('Added text');
     // Switch to layers pane
-    const tab=document.querySelector('.ptab[data-p="layers"]');
+    const tab=document.querySelector('#rp .ptab[data-p="layers"]');
     if(tab)switchPane(tab);
   }
   renderCanvas();renderLayersPanel();
@@ -2277,7 +2277,7 @@ function addImageOverlayFromFile(f){
       selLayerId=layer.id;
       renderCanvas();renderLayersPanel();
       pushHist('Added image overlay');
-      const tab=document.querySelector('.ptab[data-p="layers"]');
+      const tab=document.querySelector('#rp .ptab[data-p="layers"]');
       if(tab)switchPane(tab);
       toast('🖼 Image overlay added! Drag to move it.');
     };
@@ -2338,14 +2338,13 @@ canvas.addEventListener('mousedown',e=>{
     layerAtDragStart={x:layer.x??0,y:layer.y??0};
     e.preventDefault();
     updateAdjustHeader();
-    if(layer.type==='text'){
-      const tab=document.querySelector('.ptab[data-p="layers"]');
-      if(tab)switchPane(tab);
-      if(isMobile())openMobSheet();
-    } else {
-      const tab=document.querySelector('.ptab[data-p="adjust"]');
-      if(tab)switchPane(tab);
-      if(isMobile())openMobSheet();
+    const paneId=layer.type==='text'?'layers':'adjust';
+    const desktopTab=document.querySelector(`#rp .ptab[data-p="${paneId}"]`);
+    if(desktopTab)switchPane(desktopTab);
+    if(isMobile()){
+      const mobTab=document.querySelector(`#mob-sheet-tabs .ptab[data-p="${paneId}"]`);
+      if(mobTab)mobSwitchPane(mobTab);
+      openMobSheet();
     }
     renderLayersPanel();
   }
@@ -2357,13 +2356,9 @@ canvas.addEventListener('mousedown',e=>{
     layerAtDragStart={x:layer.x??0,y:layer.y??0,w:layer.w??canvas.width,h:layer.h??canvas.height};
     e.preventDefault();
     updateAdjustHeader();
-    if(layer.type==='text'){
-      const tab=document.querySelector('.ptab[data-p="layers"]');
-      if(tab)switchPane(tab);
-    } else {
-      const tab=document.querySelector('.ptab[data-p="adjust"]');
-      if(tab)switchPane(tab);
-    }
+    const paneId=layer.type==='text'?'layers':'adjust';
+    const desktopTab=document.querySelector(`#rp .ptab[data-p="${paneId}"]`);
+    if(desktopTab)switchPane(desktopTab);
     renderLayersPanel();
   }
 
@@ -2377,15 +2372,23 @@ canvas.addEventListener('mousedown',e=>{
   }
 
   // 2. Build ordered list of all layers hit at this point (top → bottom)
+  // Exclude base layer from cycling — it's selected last as fallback only
   const hits=[];
+  let baseHit=null;
   for(let i=layers.length-1;i>=0;i--){
     const layer=layers[i];
     if(!layer.visible)continue;
     // Check resize handles on any visible layer
     const handle=getResizeHandle(layer,cx,cy);
     if(handle){startLayerResize(layer,handle);return;}
-    if(hitTest(layer)) hits.push(layer);
+    if(hitTest(layer)){
+      if(layer.type==='base') baseHit=layer;
+      else hits.push(layer);
+    }
   }
+
+  // Add base as last resort if nothing else was hit
+  if(hits.length===0&&baseHit) hits.push(baseHit);
 
   if(hits.length===0){
     // Clicked empty space — deselect
@@ -2399,8 +2402,7 @@ canvas.addEventListener('mousedown',e=>{
     return;
   }
 
-  // 3. Multiple layers at this point — CYCLE through them on repeated clicks
-  // Find where the currently selected layer sits in the hit list
+  // 3. Multiple non-base layers at this point — CYCLE through them on repeated clicks
   const curIdx=hits.findIndex(l=>l.id===selLayerId);
   let nextLayer;
   if(curIdx===-1){
@@ -3349,7 +3351,7 @@ function acceptWatermark(){
     document.getElementById('wm-bar').style.display='none';
 
     // Switch to layers pane
-    const tab=document.querySelector('.ptab[data-p="layers"]');
+    const tab=document.querySelector('#rp .ptab[data-p="layers"]');
     if(tab)switchPane(tab);
 
     // Set move tool state directly (avoid setTool switching pane)
@@ -3801,24 +3803,45 @@ function setTool(tool){
   if(tool==='eye') ca.classList.add('teye');
   if(tool==='blurbrush') ca.classList.add('tblur');
 
-  // Switch right panel to correct tab
+  // Switch desktop right panel to correct tab
   const pane=TOOL_PANE[tool];
-  if(pane){const tab=document.querySelector(`.ptab[data-p="${pane}"]`);if(tab)switchPane(tab);}
+  if(pane){
+    const desktopTab=document.querySelector(`#rp .ptab[data-p="${pane}"]`);
+    if(desktopTab)switchPane(desktopTab);
+  }
 
-  // Scroll adjust pane to the right section
+  // On mobile: open the sheet and switch to the right pane
+  if(isMobile()&&pane){
+    const mobTab=document.querySelector(`#mob-sheet-tabs .ptab[data-p="${pane}"]`);
+    if(mobTab)mobSwitchPane(mobTab);
+    // Open sheet for panel-based tools (not for move/crop which need the canvas free)
+    const sheetTools=['adjust','filter','overlay','eye','blurbrush','bgr'];
+    if(sheetTools.includes(tool)) openMobSheet();
+    syncMobSliders();
+  }
+
+  // Scroll desktop adjust pane to the right section
   if(tool==='adjust'){
     requestAnimationFrame(()=>{
       const el=document.getElementById('adjust-top-anchor');
       if(el)el.scrollIntoView({block:'start',behavior:'smooth'});
     });
-    if(isMobile())openMobSheet();
   }
   if(tool==='filter'){
-    requestAnimationFrame(()=>{
-      const el=document.getElementById('presets-anchor');
-      if(el)el.scrollIntoView({block:'start',behavior:'smooth'});
-    });
-    if(isMobile()){openMobSheet();mobSwitchPane(document.querySelector('#mob-sheet-tabs .ptab'));}
+    // Switch mobile sheet to adjust pane and scroll to presets
+    if(isMobile()){
+      const mobTab=document.querySelector('#mob-sheet-tabs .ptab[data-p="adjust"]');
+      if(mobTab)mobSwitchPane(mobTab);
+      requestAnimationFrame(()=>{
+        const anchor=document.getElementById('mob-presets-anchor');
+        if(anchor)anchor.scrollIntoView({block:'start',behavior:'smooth'});
+      });
+    } else {
+      requestAnimationFrame(()=>{
+        const el=document.getElementById('presets-anchor');
+        if(el)el.scrollIntoView({block:'start',behavior:'smooth'});
+      });
+    }
   }
 
   // Tool-specific actions
@@ -3831,10 +3854,11 @@ function setTool(tool){
   if(tool==='blurbrush'){if(!S.hasImg){toast('Open a photo first!');S.tool='move';return;}startBlurBrush();}
 }
 function switchPane(btn){
-  document.querySelectorAll('.ptab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+  // Only affect desktop panel — scope to #rp to avoid touching mobile sheet
+  document.querySelectorAll('#rp .ptab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('#rp .pane').forEach(p=>p.classList.remove('active'));
   btn.classList.add('active');
-  document.getElementById('pane-'+btn.dataset.p).classList.add('active');
+  document.getElementById('pane-'+btn.dataset.p)?.classList.add('active');
 }
 
 // ════════════════════════════════════════════
@@ -4392,7 +4416,7 @@ function addSticker(emoji){
     renderCanvas();renderLayersPanel();
     pushHist(`${emoji} Sticker added`);
     // Switch to Layers tab so user can see and interact
-    const tab=document.querySelector('.ptab[data-p="layers"]');
+    const tab=document.querySelector('#rp .ptab[data-p="layers"]');
     if(tab)switchPane(tab);
     toast(`${emoji} Sticker added — drag to reposition!`);
   };
@@ -4862,10 +4886,10 @@ canvas.addEventListener('touchend',e=>{
       const layer=layers.find(l=>l.id===tcLayerDragId);
       if(layer){
         if(layer.type==='text'){
-          const tab=document.querySelector('.ptab[data-p="layers"]');
+          const tab=document.querySelector('#rp .ptab[data-p="layers"]');
           if(tab)switchPane(tab);
         } else {
-          const tab=document.querySelector('.ptab[data-p="adjust"]');
+          const tab=document.querySelector('#rp .ptab[data-p="adjust"]');
           if(tab)switchPane(tab);
         }
         if(typeof openMobSheet==='function')openMobSheet();
@@ -4885,8 +4909,8 @@ canvas.addEventListener('touchend',e=>{
 // ════════════════════════════════════════════
 function isMobile(){return window.innerWidth<=700;}
 
-function toggleMobSheet(){document.getElementById('mob-sheet')?.classList.toggle('open');}
-function openMobSheet(){document.getElementById('mob-sheet')?.classList.add('open');}
+function toggleMobSheet(){document.getElementById('mob-sheet')?.classList.toggle('open');syncMobSliders();}
+function openMobSheet(){document.getElementById('mob-sheet')?.classList.add('open');syncMobSliders();}
 function closeMobSheet(){document.getElementById('mob-sheet')?.classList.remove('open');}
 
 function mobSwitchPane(btn){
@@ -4895,6 +4919,8 @@ function mobSwitchPane(btn){
   document.querySelectorAll('#mob-sheet-tabs .ptab').forEach(t=>t.classList.toggle('active',t.dataset.p===p));
   // Update mobile panes
   document.querySelectorAll('#mob-sheet-body .pane').forEach(pn=>pn.classList.toggle('active',pn.id==='mob-pane-'+p));
+  // Sync sliders when switching to adjust
+  if(p==='adjust')syncMobSliders();
   // Also sync desktop panel to same tab
   const desktopTab=document.querySelector(`#rp .ptab[data-p="${p}"]`);
   if(desktopTab)switchPane(desktopTab);
@@ -5021,7 +5047,7 @@ updateUndoBtns();
           <button class="btn btn-outline" style="flex:1;font-size:12px;justify-content:center" onclick="flipV()">⇕ V</button>
         </div>
       </div>
-      <div class="psec"><h4>Presets</h4>
+      <div class="psec"><h4 id="mob-presets-anchor">Presets</h4>
         <div class="pgrid">
           <div class="pi active" onclick="applyPreset(this,'none')"><div class="pthumb" style="background:#2a2826">🏔</div><div class="pname">Original</div></div>
           <div class="pi" onclick="applyPreset(this,'sp')"><div class="pthumb" style="background:linear-gradient(135deg,#3d2d2d,#4a3535)">🌸</div><div class="pname">Soft Portrait</div></div>
