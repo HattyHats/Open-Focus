@@ -40,9 +40,9 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);height:100
 .zoom-ctrl{display:flex;align-items:center;gap:4px;}
 .zoom-val{font-size:12px;color:var(--text-muted);min-width:40px;text-align:center;}
 /* MAIN */
-#main{flex:1;display:flex;overflow:hidden;}
+#main{flex:1;display:flex;overflow:hidden;background:#0a0908;}
 /* TOOLSTRIP */
-#toolstrip{width:var(--tool-w);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:10px 0;gap:2px;flex-shrink:0;}
+#toolstrip{width:var(--tool-w);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:10px 0;gap:2px;flex-shrink:0;z-index:20;position:relative;}
 .tbtn{width:48px;height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border-radius:var(--rs);cursor:pointer;transition:var(--tr);color:var(--text-muted);border:none;background:none;font-family:var(--font-b);position:relative;}
 .tbtn:hover{background:var(--panel);color:var(--text);}
 .tbtn.active{background:var(--accent-glow);color:var(--accent);}
@@ -52,7 +52,7 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);height:100
 .tsep{width:32px;height:1px;background:var(--border);margin:6px 0;}
 /* CANVAS AREA */
 #canvas-area{flex:1;overflow:hidden;position:relative;background:#0a0908;user-select:none;}
-#cs{position:absolute;inset:0;}
+#cs{position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden;}
 #cw{position:absolute;box-shadow:0 8px 64px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.05);transform-origin:top left;}
 #mc{display:block;}
 /* cursor per tool */
@@ -101,7 +101,7 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);height:100
 .dacts{display:flex;gap:10px;margin-top:4px;flex-wrap:wrap;justify-content:center;}
 #canvas-area.drag-over::after{content:'Drop here ✨';position:absolute;inset:0;background:rgba(232,184,109,.08);border:2px dashed var(--accent);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--accent);z-index:20;font-family:var(--font-b);font-weight:500;pointer-events:none;}
 /* RIGHT PANEL */
-#rp{width:var(--panel-w);background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;}
+#rp{width:var(--panel-w);background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;position:relative;z-index:10;}
 .ptabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;}
 .ptab{flex:1;height:40px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.5px;color:var(--text-dim);cursor:pointer;border:none;background:none;transition:var(--tr);border-bottom:2px solid transparent;font-family:var(--font-b);}
 .ptab:hover{color:var(--text-muted);}.ptab.active{color:var(--accent);border-bottom-color:var(--accent);}
@@ -215,17 +215,6 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 }
 /* All welcome content sits above bg */
 #welcome>*:not(#wl-bg):not(#wl-overlay){position:relative;z-index:2;}
-
-/* Logo — fades in smoothly first */
-#wl-logo{
-  width:140px;height:140px;object-fit:contain;
-  opacity:0;
-  animation:wl-logo-in .9s ease .1s forwards;
-}
-@keyframes wl-logo-in{
-  from{opacity:0;transform:scale(.88) translateY(8px);}
-  to{opacity:1;transform:scale(1) translateY(0);}
-}
 
 /* Title "OpenFocus" — glitches in after logo */
 #wl-title{
@@ -429,8 +418,9 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 .epr.active{border-color:var(--accent);background:var(--accent-glow);}
 .epn{font-size:13px;font-weight:500;color:var(--text);}.eps{font-size:11px;color:var(--text-muted);}
 /* TOAST */
-#toast{position:fixed;bottom:40px;left:50%;transform:translateX(-50%);background:var(--panel);border:1px solid var(--border-light);border-radius:var(--r);padding:10px 18px;font-size:13px;color:var(--text);z-index:9999;transition:opacity .3s,transform .3s;opacity:0;transform:translateX(-50%) translateY(10px);pointer-events:none;white-space:nowrap;}
+#toast{position:fixed;bottom:40px;left:50%;transform:translateX(-50%);background:var(--panel);border:1px solid var(--border-light);border-radius:var(--r);padding:10px 18px 14px;font-size:13px;color:var(--text);z-index:9999;transition:opacity .3s,transform .3s;opacity:0;transform:translateX(-50%) translateY(10px);pointer-events:none;white-space:nowrap;overflow:hidden;}
 #toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
+#toast-progress{position:absolute;bottom:0;left:0;height:3px;background:var(--accent);border-radius:0 0 var(--r) var(--r);width:100%;transform-origin:left;}
 /* BG REMOVE progress */
 #bgr-progress{width:100%;height:4px;background:var(--border);border-radius:2px;margin-top:12px;overflow:hidden;display:none;}
 #bgr-bar{height:100%;background:var(--accent);width:0%;transition:width .3s;}
@@ -619,6 +609,22 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
   input[type=range]{height:20px;}
   .srow{margin-bottom:14px;}
 }
+
+/* ── Checkerboard for transparent images ── */
+#cw.transparent-bg{background-image:linear-gradient(45deg,#3a3837 25%,transparent 25%),linear-gradient(-45deg,#3a3837 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#3a3837 75%),linear-gradient(-45deg,transparent 75%,#3a3837 75%);background-size:16px 16px;background-position:0 0,0 8px,8px -8px,-8px 0;}
+
+/* ── Slider value pop ── */
+@keyframes sval-pop{0%{transform:scale(1)}45%{transform:scale(1.4);color:var(--accent)}100%{transform:scale(1)}}
+.sval.pop{animation:sval-pop .22s ease-out;}
+
+/* ── Tool button tooltip ── */
+.tbtn{position:relative;}
+.tbtn[title]::after{content:attr(title);position:absolute;left:calc(100% + 10px);top:50%;transform:translateY(-50%);background:var(--panel);border:1px solid var(--border-light);border-radius:5px;padding:4px 9px;font-size:11px;color:var(--text);white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;z-index:300;box-shadow:0 3px 12px rgba(0,0,0,.5);}
+.tbtn[title]:hover::after{opacity:1;}
+
+/* ── Histogram ── */
+#hist-section{border-bottom:1px solid var(--border);}
+#hist-toggle-btn:hover{color:var(--text-muted)!important;}
 </style>
 </head>
 <body>
@@ -851,7 +857,7 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
   <!-- Radial vignette over background -->
   <div id="wl-overlay"></div>
 
-  <img id="wl-logo" src="open-focus.png" alt="OpenFocus" onerror="this.style.display='none'">
+  
   <div id="wl-title"><span class="wl-glyph" data-text="Open">Open</span><span class="wl-glyph wl-glyph-focus" data-text="Focus">Focus</span></div>
   <div id="wl-tagline">An Open Source Photo Editor<br>Made Just For You</div>
   <div id="wl-credit">
@@ -1065,7 +1071,8 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
         <button class="fitb" id="fitb-fit" onclick="setFitMode(this,'fit')" style="flex:1;height:34px;border-radius:var(--rs);border:1px solid var(--border-light);background:transparent;color:var(--text-muted);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font-b)">📐 Fit (letterbox)</button>
       </div>
     </div>
-    <div class="macts"><button class="btn btn-ghost" onclick="closeEM()">Cancel</button><button class="btn btn-accent" onclick="doExport()">⬇ Download</button></div>
+    <div class="macts"><div style="font-size:11.5px;color:var(--text-dim);text-align:center;margin-bottom:8px">Est. size: <span id="exp-size-est" style="color:var(--accent);font-weight:500">—</span></div><button class="btn btn-ghost" onclick="closeEM()">Cancel</button><button class="btn btn-accent" onclick="doExport()">⬇ Download</button>
+      <button class="btn btn-ghost" onclick="doCopyImage()" style="border:1px solid var(--border-light)">📋 Copy</button></div>
   </div>
 </div>
 
@@ -1206,7 +1213,7 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 
 <!-- TOP BAR -->
 <div id="topbar">
-  <a class="logo" href="#"><div class="logo-icon">🔍</div><div class="logo-text">Open<span>Focus</span></div></a>
+  <a class="logo" href="#"><svg width="26" height="26" viewBox="0 0 28 28" fill="none" style="flex-shrink:0"><rect width="28" height="28" rx="7" fill="#e8b86d"/><circle cx="12.5" cy="12.5" r="5.5" stroke="#1a1510" stroke-width="2.2" fill="none"/><line x1="16.8" y1="16.8" x2="21.5" y2="21.5" stroke="#1a1510" stroke-width="2.4" stroke-linecap="round"/><circle cx="12.5" cy="12.5" r="2" fill="#1a1510" opacity="0.35"/></svg><div class="logo-text">Open<span>Focus</span></div></a>
   <div class="sep"></div>
   <button class="btn btn-ghost" onclick="openFile()">📂 Open</button>
   <button class="btn btn-ghost" onclick="openResize()">⤡ Resize</button>
@@ -1226,6 +1233,7 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
   </div>
   <div class="sep"></div>
   <button class="btn btn-ghost" onclick="showOB()">? Help</button>
+  <button class="btn btn-ghost" onclick="openKB()" title="Keyboard shortcuts (?)">⌨</button>
   <div class="sep"></div>
   <a class="hatty-link" href="https://earnwithhatty.com/" target="_blank" rel="noopener">🚀 earnwithhatty.com</a>
   <div class="hatty-credit">
@@ -1337,6 +1345,11 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 
       <!-- ADJUST PANE -->
       <div class="pane active" id="pane-adjust">
+        <div class="psec" id="hist-section" style="padding-bottom:8px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;"><h4 style="margin:0;font-size:10.5px;letter-spacing:.6px;">HISTOGRAM</h4><button id="hist-toggle-btn" onclick="toggleHistogram()" style="font-size:10px;color:var(--text-dim);background:none;border:none;cursor:pointer;padding:2px 6px;border-radius:3px;">hide</button></div>
+          <canvas id="histogram-canvas" width="260" height="56" style="width:100%;height:56px;border-radius:4px;background:#111;display:block;"></canvas>
+          <div style="display:flex;justify-content:space-between;margin-top:3px;"><span style="font-size:9px;color:var(--text-dim)">Shadows</span><span style="font-size:9px;color:var(--text-dim)">Midtones</span><span style="font-size:9px;color:var(--text-dim)">Highlights</span></div>
+        </div>
         <!-- Layer focus indicator -->
         <div id="adj-layer-indicator">
           <span>🎯 Adjusting:</span>
@@ -1385,7 +1398,8 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
           <div class="srow"><div class="shdr"><span class="slbl">Blur</span><span class="sval" id="v-bl">0</span></div><input type="range" min="0" max="100" value="0" id="s-bl" oninput="slide('bl',this.value)"></div>
           <div class="srow"><div class="shdr"><span class="slbl">Clarity</span><span class="sval" id="v-cl">0</span></div><input type="range" min="-100" max="100" value="0" id="s-cl" oninput="slide('cl',this.value)"></div>
           <div class="srow"><div class="shdr"><span class="slbl">Sharpness</span><span class="sval" id="v-sp">0</span></div><input type="range" min="0" max="100" value="0" id="s-sp" oninput="slide('sp',this.value)"></div>
-          <div class="srow"><div class="shdr"><span class="slbl">Vignette</span><span class="sval" id="v-vi">0</span></div><input type="range" min="-100" max="0" value="0" id="s-vi" oninput="slide('vi',this.value)"></div>
+          <div class="srow"><div class="shdr"><span class="slbl">Vignette</span><span class="sval" id="v-vi">0</span></div><input type="range" min="-100" max="100" value="0" id="s-vi" oninput="slide('vi',this.value)"></div>
+          <div class="srow"><div class="shdr"><span class="slbl">Grain</span><span class="sval" id="v-gr">0</span></div><input type="range" min="0" max="100" value="0" id="s-gr" oninput="slide('gr',this.value)"></div>
         </div>
         <div class="psec">
           <button class="qfbtn" onclick="setTool('blurbrush')" style="background:linear-gradient(135deg,rgba(109,168,232,.15),rgba(109,190,232,.1));">🖌 Blur Brush — paint blur on specific areas</button>
@@ -1416,7 +1430,7 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
         <!-- Selected layer properties -->
         <div class="layer-props" id="layer-props">
           <div class="shdr"><span class="slbl" id="lp-name">Layer</span><span class="sval" id="lp-opacity-val">100%</span></div>
-          <input type="range" min="0" max="100" value="100" id="lp-opacity" oninput="setLayerOpacity(this.value)">
+          <input type="range" min="0" max="100" value="100" id="lp-opacity" oninput="setLayerOpacity(parseInt(this.value))">
           <div style="display:flex;gap:6px;flex-wrap:wrap" id="lp-actions"></div>
         </div>
         <div class="tip"><strong>Layers</strong> — drag the ⠿ handle to reorder, or use ↑↓ buttons. The base photo is a layer too — move it anywhere in the stack. Top of list = front of image.</div>
@@ -1436,6 +1450,8 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
   <div class="si">Size: <span id="stsize">—</span></div>
   <div class="ssep"></div>
   <div class="si">Tool: <span id="sttool">Move</span></div>
+  <div class="ssep"></div>
+  <div class="si" id="st-coords" style="display:none">📍 <span id="st-xy" style="font-family:var(--font-b);font-size:11px">—</span></div>
   <div class="ssep"></div>
   <div class="si">Layers: <span id="stlayers">0</span></div>
   <div class="ssep"></div>
@@ -1458,13 +1474,13 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
   </div>
   <div style="font-size:10.5px;color:var(--text-dim);text-align:center;">Click to copy hex</div>
 </div>
-<div id="toast"></div>
+<div id="toast"><span id="toast-msg"></span><div id="toast-progress"></div></div>
 
 <script>
 // ════════════════════════════════════════════
 //  CORE STATE
 // ════════════════════════════════════════════
-const DSLIDERS={br:0,co:0,hi:0,sh:0,sa:0,wa:0,ti:0,cl:0,sp:0,vi:0,bl:0};
+const DSLIDERS={br:0,co:0,hi:0,sh:0,sa:0,wa:0,ti:0,cl:0,sp:0,vi:0,bl:0,gr:0};
 let S={tool:'move',zoom:1,hasImg:false,fmt:'jpg',expPreset:'original',obStep:0,panX:0,panY:0};
 
 // LAYER STACK
@@ -1533,8 +1549,8 @@ function openFile(){
   const btn=document.querySelector('#topbar .btn-ghost');
   const popup=document.getElementById('open-popup');
   const rect=btn.getBoundingClientRect();
-  popup.style.top=(rect.bottom+6)+'px';
-  popup.style.left=rect.left+'px';
+  popup.style.top=(rect.bottom + window.scrollY + 6)+'px';
+  popup.style.left=(rect.left + window.scrollX)+'px';
   popup.classList.add('on');
   // Dismiss on click outside
   clearTimeout(openPopupDismiss);
@@ -1595,6 +1611,7 @@ function loadSample(){
 }
 
 function initCanvas(img,name){
+  document.getElementById("cw").classList.remove("transparent-bg");
   origImg=img;S.hasImg=true;
   canvas.width=img.width;canvas.height=img.height;
   // Create the base photo as the first (bottom) layer
@@ -1643,14 +1660,13 @@ function captureOrigImg(){
   return tc.toDataURL('image/png');
 }
 const MAX_HIST=50;
+let _origDirty=true;
 function pushHist(label){
   if(hIdx<hist.length-1)hist=hist.slice(0,hIdx+1);
-  hist.push({
-    label,
-    sliders:getSliders(),
-    layers:serializeLayers(),
-    origImgSrc:captureOrigImg()  // ← save pixel data every time
-  });
+  const _needsCap=_origDirty||(hist.length===0);
+  const _oSrc=_needsCap?captureOrigImg():(hist[hIdx]?.origImgSrc||captureOrigImg());
+  _origDirty=false;
+  hist.push({label,sliders:getSliders(),layers:serializeLayers(),origImgSrc:_oSrc});
   // Cap history to prevent memory bloat
   if(hist.length>MAX_HIST){hist=hist.slice(hist.length-MAX_HIST);hIdx=hist.length-1;}
   else hIdx=hist.length-1;
@@ -1736,17 +1752,23 @@ function applyAdjustments(srcCanvas, adj){
   x.putImageData(id,0,0);
   // Vignette
   const vi=s.vi||0;
-  if(vi<0){
+  if(vi!==0){
     const a=Math.abs(vi)/100*0.75;
     const vg=x.createRadialGradient(c.width/2,c.height/2,c.width*.22,c.width/2,c.height/2,c.width*.8);
-    vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,`rgba(0,0,0,${a})`);
+    if(vi<0){vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,`rgba(0,0,0,${a})`);}
+    else{vg.addColorStop(0,`rgba(255,248,230,${a*0.55})`);vg.addColorStop(1,'rgba(0,0,0,0)');}
     x.fillStyle=vg;x.fillRect(0,0,c.width,c.height);
   }
   // Sharpness
   const sp=s.sp||0;
   if(sp>0){
-    x.save();x.globalAlpha=sp/100*0.5;x.globalCompositeOperation='overlay';
-    x.filter=`blur(${1+sp/100}px)`;x.drawImage(c,0,0);x.restore();
+    // Unsharp mask: sharpen = original + (original - blurred) * amount
+    const _sa=sp/100*1.6;
+    const _sb=document.createElement('canvas');_sb.width=c.width;_sb.height=c.height;
+    const _sx=_sb.getContext('2d');_sx.filter=`blur(${1.2+sp/90}px)`;_sx.drawImage(c,0,0);
+    const _od=x.getImageData(0,0,c.width,c.height),_bd=_sx.getImageData(0,0,c.width,c.height).data,_dd=_od.data;
+    for(let i=0;i<_dd.length;i+=4){_dd[i]=Math.min(255,Math.max(0,_dd[i]+(_dd[i]-_bd[i])*_sa));_dd[i+1]=Math.min(255,Math.max(0,_dd[i+1]+(_dd[i+1]-_bd[i+1])*_sa));_dd[i+2]=Math.min(255,Math.max(0,_dd[i+2]+(_dd[i+2]-_bd[i+2])*_sa));}
+    x.putImageData(_od,0,0);
   }
   // Blur (global)
   const bl=s.bl||0;
@@ -1759,20 +1781,32 @@ function applyAdjustments(srcCanvas, adj){
     x.clearRect(0,0,c.width,c.height);
     x.drawImage(blurred,0,0);
   }
+  // Film Grain
+  const gr=s.gr||0;
+  if(gr>0){const _gd=x.getImageData(0,0,c.width,c.height),_g=_gd.data,_ga=gr/100*55;for(let i=0;i<_g.length;i+=4){const n=(Math.random()-.5)*_ga;_g[i]=Math.min(255,Math.max(0,_g[i]+n));_g[i+1]=Math.min(255,Math.max(0,_g[i+1]+n));_g[i+2]=Math.min(255,Math.max(0,_g[i+2]+n));}x.putImageData(_gd,0,0);}
   return c;
 }
 
 function renderImageLayerToCanvas(layer){
   // Render at display size (layer.w × layer.h), not source resolution.
-  // This is what gets drawn to screen — rendering full 4K source on every frame is wasteful.
   const w=Math.max(1,Math.round(layer.w));
   const h=Math.max(1,Math.round(layer.h));
+  const hasAdj=layer.adjustments&&Object.values(layer.adjustments).some(v=>v!==0);
+  if(!hasAdj){
+    // No adjustments — draw directly without creating an intermediate adjusted canvas
+    const tmp=document.createElement('canvas');tmp.width=w;tmp.height=h;
+    tmp.getContext('2d').drawImage(layer.img,0,0,w,h);
+    return tmp;
+  }
+  // With adjustments — use per-layer adj cache keyed by layer id + adj + size
+  if(!layer._adjCache) layer._adjCache={key:null,canvas:null};
+  const key=JSON.stringify(layer.adjustments)+w+'x'+h;
+  if(layer._adjCache.key===key&&layer._adjCache.canvas) return layer._adjCache.canvas;
   const tmp=document.createElement('canvas');tmp.width=w;tmp.height=h;
   tmp.getContext('2d').drawImage(layer.img,0,0,w,h);
-  if(layer.adjustments&&Object.values(layer.adjustments).some(v=>v!==0)){
-    return applyAdjustments(tmp,layer.adjustments);
-  }
-  return tmp;
+  const result=applyAdjustments(tmp,layer.adjustments);
+  layer._adjCache={key,canvas:result};
+  return result;
 }
 
 // ── Adjustment cache — avoids rerunning the pixel loop when nothing changed ──
@@ -1799,6 +1833,7 @@ function compositeClean(targetCtx, targetW, targetH){
     if(!layer.visible)return;
     targetCtx.save();
     targetCtx.globalAlpha=layer.opacity/100;
+    targetCtx.globalCompositeOperation=layer.blendMode||'source-over';
     if(layer.type==='base'){
       const lx=layer.x??0,ly=layer.y??0,lw=layer.w??targetW,lh=layer.h??targetH;
       const adjusted=getCachedAdjusted(layer);
@@ -1866,6 +1901,12 @@ function renderCanvas(){
 
   // Composite all layers via shared helper (no UI overlays)
   compositeClean(ctx,canvas.width,canvas.height);
+
+  // Update live histogram after each render (debounced)
+  if(_histVisible && typeof drawHistogram==='function'){
+    clearTimeout(renderCanvas._histTimer);
+    renderCanvas._histTimer=setTimeout(drawHistogram,80);
+  }
 
   // ── UI overlays: selection handles (not baked into export) ──
   layers.forEach(layer=>{
@@ -1979,6 +2020,7 @@ function renderCanvas(){
       ctx.restore();
     }
   }
+  requestAnimationFrame(drawHistogram);
 }
 
 function getTextBounds(layer){
@@ -1995,8 +2037,22 @@ function getTextBounds(layer){
 }
 
 // ════════════════════════════════════════════
-//  LAYERS PANEL
+//  BLEND MODE SUPPORT
 // ════════════════════════════════════════════
+const BLEND_MODES=['source-over','multiply','screen','overlay','soft-light','hard-light','color-dodge','color-burn','difference','exclusion'];
+const BLEND_LABELS={
+  'source-over':'Normal','multiply':'Multiply','screen':'Screen',
+  'overlay':'Overlay','soft-light':'Soft Light','hard-light':'Hard Light',
+  'color-dodge':'Color Dodge','color-burn':'Color Burn',
+  'difference':'Difference','exclusion':'Exclusion'
+};
+function setLayerBlend(id,mode){
+  const l=layers.find(l=>l.id===id);
+  if(!l)return;
+  l.blendMode=mode;
+  renderCanvas();renderLayersPanel();
+  pushHist('Changed blend mode');
+}
 let panelDragId=null, panelDragOver=null, panelDragPos='below';
 
 function renderLayersPanel(){
@@ -2126,6 +2182,21 @@ function renderLayersPanel(){
     const opSlider=document.getElementById('lp-opacity');
     const opVal=document.getElementById('lp-opacity-val');
     opSlider.value=sel.opacity;opVal.textContent=sel.opacity+'%';
+
+    // Blend mode selector
+    let blendRow=document.getElementById('lp-blend-row');
+    if(!blendRow){
+      blendRow=document.createElement('div');blendRow.id='lp-blend-row';
+      blendRow.style.cssText='display:flex;align-items:center;gap:8px;margin-top:6px;';
+      blendRow.innerHTML='<span style="font-size:11px;color:var(--text-muted);min-width:44px">Blend</span>'
+        +'<select id="lp-blend" style="flex:1;background:var(--panel);border:1px solid var(--border);border-radius:var(--rs);padding:3px 6px;color:var(--text);font-size:12px;font-family:var(--font-b)"></select>';
+      props.insertBefore(blendRow,props.querySelector('#lp-actions')||props.lastChild);
+    }
+    const blendSel=document.getElementById('lp-blend');
+    blendSel.innerHTML=Object.entries(BLEND_LABELS).map(([v,l])=>`<option value="${v}">${l}</option>`).join('');
+    blendSel.value=sel.blendMode||'source-over';
+    blendSel.onchange=()=>setLayerBlend(sel.id,blendSel.value);
+
     const lpActs=document.getElementById('lp-actions');lpActs.innerHTML='';
     if(sel.type==='text'){
       const eb=document.createElement('button');eb.className='btn btn-outline';eb.style.cssText='font-size:12px;height:28px;';
@@ -2239,6 +2310,7 @@ function commitText(){
     const tab=document.querySelector('#rp .ptab[data-p="layers"]');
     if(tab)switchPane(tab);
   }
+  // globalAlpha in compositeClean uses layer.opacity/100 — no further normalization needed
   renderCanvas();renderLayersPanel();
   closeTxtModal();
   toast('✏ Text added! Drag it to reposition.');
@@ -2281,10 +2353,10 @@ function addImageOverlayFromFile(f){
       if(tab)switchPane(tab);
       toast('🖼 Image overlay added! Drag to move it.');
     };
-    img.onerror=()=>{_addingOverlay=false;};
+    img.onerror=()=>{_addingOverlay=false;toast('⚠ Could not load image file.');};
     img.src=e2.target.result;
   };
-  r.onerror=()=>{_addingOverlay=false;};
+  r.onerror=()=>{_addingOverlay=false;toast('⚠ Could not read file.');};
   r.readAsDataURL(f);
 }
 
@@ -2531,7 +2603,7 @@ function getBGRTarget(){
     toSrcX:(cx)=>Math.round((cx-bx)/bw*origImg.width),
     toSrcY:(cy)=>Math.round((cy-by)/bh*origImg.height),
     bake:(newImg)=>{
-      origImg=newImg;
+      _origDirty=true;origImg=newImg;
       if(base){base.x=bx;base.y=by;base.w=newImg.width;base.h=newImg.height;}
       resetSlidersUI();
       renderCanvas();renderLayersPanel();
@@ -2570,6 +2642,7 @@ function openBGRModal(){
 }
 function closeBGR(){
   document.getElementById('bgr-modal').classList.remove('on');
+  if(S.hasImg)document.getElementById('cw').classList.add('transparent-bg');
   bgrSampling=false;bgrSampleColor=null;
   canvas.style.cursor='';
   stopLasso();
@@ -2986,7 +3059,8 @@ function getAdjTarget(){
 let _slideRaf=null;
 function slide(k,v){
   const n=parseInt(v);
-  document.getElementById('v-'+k).textContent=n>0?`+${n}`:String(n);
+  const _ve=document.getElementById('v-'+k);
+  if(_ve){_ve.textContent=n>0?`+${n}`:String(n);_ve.classList.remove('pop');void _ve.offsetWidth;_ve.classList.add('pop');setTimeout(()=>_ve.classList.remove('pop'),260);}
   const target=getAdjTarget();
   if(target){
     if(!target.adjustments)target.adjustments={...DSLIDERS};
@@ -3055,14 +3129,53 @@ function resetAll(){
 // ════════════════════════════════════════════
 function quickFix(){
   if(!S.hasImg){toast('Open a photo first!');return;}
-  const t={br:10,co:12,sa:8,wa:8,hi:-10,sh:18};
   const target=getAdjTarget();
   if(!target.adjustments)target.adjustments={...DSLIDERS};
+
+  // Sample the base image to compute auto-levels
+  const sampleCanvas=document.createElement('canvas');
+  const sw=Math.min(200,canvas.width), sh=Math.max(1,Math.round(sw*(canvas.height/canvas.width)));
+  sampleCanvas.width=sw; sampleCanvas.height=sh;
+  const sCtx=sampleCanvas.getContext('2d');
+  if(target.type==='base'){
+    sCtx.drawImage(origImg,0,0,sw,sh);
+  } else if(target.img){
+    sCtx.drawImage(target.img,0,0,sw,sh);
+  }
+  const id=sCtx.getImageData(0,0,sw,sh);
+  const d=id.data;
+  let rSum=0,gSum=0,bSum=0,lumaSum=0,darkPx=0,lightPx=0,n=d.length/4;
+  for(let i=0;i<d.length;i+=4){
+    const r=d[i],g=d[i+1],b=d[i+2];
+    const luma=0.299*r+0.587*g+0.114*b;
+    rSum+=r; gSum+=g; bSum+=b; lumaSum+=luma;
+    if(luma<60) darkPx++;
+    if(luma>200) lightPx++;
+  }
+  const avgLuma=lumaSum/n;
+  const avgR=rSum/n, avgG=gSum/n, avgB=bSum/n;
+  const shadowFrac=darkPx/n, highlightFrac=lightPx/n;
+
+  // Brightness: push toward 128
+  const brAdj=Math.round(Math.max(-30,Math.min(30,(128-avgLuma)*0.35)));
+  // Contrast: low if most pixels are in a narrow band
+  const coAdj=avgLuma>60&&avgLuma<190?8:0;
+  // Shadows: lift if under-exposed
+  const shAdj=shadowFrac>0.35?Math.round(shadowFrac*50):0;
+  // Highlights: reduce if blown out
+  const hiAdj=highlightFrac>0.25?Math.round(-highlightFrac*40):0;
+  // Saturation: gentle boost unless already vivid
+  const saAdj=8;
+  // Warmth: tiny nudge based on colour cast (cool cast → warm nudge)
+  const warmthAdj=avgB>avgR+10?5:avgR>avgB+10?-5:3;
+
+  const t={br:brAdj,co:coAdj,sa:saAdj,wa:warmthAdj,hi:hiAdj,sh:shAdj};
   Object.entries(t).forEach(([k,v])=>{
     target.adjustments[k]=v;
-    document.getElementById('s-'+k).value=v;
-    document.getElementById('v-'+k).textContent=v>0?`+${v}`:String(v);
+    const s=document.getElementById('s-'+k); if(s) s.value=v;
+    const vEl=document.getElementById('v-'+k); if(vEl) vEl.textContent=v>0?`+${v}`:String(v);
   });
+  invalidateAdjCache();
   renderCanvas();pushHist('⚡ Quick Fix');
   const name=target.type==='base'?'photo':target.name||'layer';
   toast(`⚡ Quick Fix applied to ${name}!`);
@@ -3283,7 +3396,7 @@ function acceptWatermark(){
     oCtx.restore();
     const newImg=new Image();
     newImg.onload=()=>{
-      origImg=newImg;
+      _origDirty=true;origImg=newImg;
       if(base){base.x=bx;base.y=by;base.w=bw;base.h=bh;}
       layers=layers.filter(l=>l!==wmLayer);
       wmLayer=null;selLayerId=null;
@@ -3533,6 +3646,15 @@ function stopEyedropper(){
 
 // Mouse move — live preview
 canvas.addEventListener('mousemove',e=>{
+  if(S.hasImg){
+    const _r=canvas.getBoundingClientRect();
+    const _cx=Math.round((e.clientX-_r.left)*(canvas.width/_r.width));
+    const _cy=Math.round((e.clientY-_r.top)*(canvas.height/_r.height));
+    if(_cx>=0&&_cx<=canvas.width&&_cy>=0&&_cy<=canvas.height){
+      const _sc=document.getElementById('st-coords'),_sxy=document.getElementById('st-xy');
+      if(_sc)_sc.style.display='flex';if(_sxy)_sxy.textContent=`${_cx}, ${_cy}`;
+    }
+  }
   if(!eyeActive||S.tool!=='eye')return;
   if(!S.hasImg)return;
   const color=sampleCanvasColor(e);
@@ -3543,6 +3665,7 @@ canvas.addEventListener('mousemove',e=>{
 
 // Mouse leave canvas — hide tooltip
 canvas.addEventListener('mouseleave',()=>{
+  const _sc=document.getElementById('st-coords');if(_sc)_sc.style.display='none';
   if(!eyeActive)return;
   hideEyeTooltip();
 });
@@ -3869,8 +3992,21 @@ let panStart=null,panOrigin={x:0,y:0};
 function positionCanvas(){
   const aW=ca.clientWidth,aH=ca.clientHeight;
   const iW=canvas.width*S.zoom,iH=canvas.height*S.zoom;
-  cw.style.left=((aW-iW)/2+S.panX)+'px';
-  cw.style.top=((aH-iH)/2+S.panY)+'px';
+  const leftVal=(aW-iW)/2+S.panX;
+  const topVal=(aH-iH)/2+S.panY;
+  cw.style.left=leftVal+'px';
+  cw.style.top=topVal+'px';
+  // Expand #cs so mouse events reach the canvas wherever it is
+  const cs=document.getElementById('cs');
+  if(cs){
+    const PAD=120;
+    const right=leftVal+iW+PAD;
+    const bottom=topVal+iH+PAD;
+    cs.style.width=Math.max(aW, right<0?aW:right)+'px';
+    cs.style.height=Math.max(aH, bottom<0?aH:bottom)+'px';
+    cs.style.left=Math.min(0,leftVal-PAD)+'px';
+    cs.style.top=Math.min(0,topVal-PAD)+'px';
+  }
 }
 
 cw.addEventListener('mousedown',e=>{
@@ -3911,7 +4047,7 @@ function bakeRotation(deg){
   tCtx.drawImage(origImg,-sw/2,-sh/2);
   const newImg=new Image();
   newImg.onload=()=>{
-    origImg=newImg;
+    _origDirty=true;origImg=newImg;
     canvas.width=nw;canvas.height=nh;
     const base=layers.find(l=>l.type==='base');
     if(base){base.x=0;base.y=0;base.w=nw;base.h=nh;}
@@ -3957,7 +4093,7 @@ function rotateCW(){
   tCtx.drawImage(origImg,-sw/2,-sh/2);
   const newImg=new Image();
   newImg.onload=()=>{
-    origImg=newImg;
+    _origDirty=true;origImg=newImg;
     canvas.width=sh;canvas.height=sw;
     const base=layers.find(l=>l.type==='base');
     if(base){base.x=0;base.y=0;base.w=sh;base.h=sw;}
@@ -3998,7 +4134,7 @@ function rotateCCW(){
   tCtx.drawImage(origImg,-sw/2,-sh/2);
   const newImg=new Image();
   newImg.onload=()=>{
-    origImg=newImg;
+    _origDirty=true;origImg=newImg;
     canvas.width=sh;canvas.height=sw;
     const base=layers.find(l=>l.type==='base');
     if(base){base.x=0;base.y=0;base.w=sh;base.h=sw;}
@@ -4031,7 +4167,7 @@ function flipH(){
   tCtx.drawImage(origImg,0,0);
   const newImg=new Image();
   newImg.onload=()=>{
-    origImg=newImg;
+    _origDirty=true;origImg=newImg;
     const base=layers.find(l=>l.type==='base');
     if(base){base.x=0;base.y=0;base.w=sw;base.h=sh;}
     resetSlidersUI();renderCanvas();
@@ -4061,7 +4197,7 @@ function flipV(){
   tCtx.drawImage(origImg,0,0);
   const newImg=new Image();
   newImg.onload=()=>{
-    origImg=newImg;
+    _origDirty=true;origImg=newImg;
     const base=layers.find(l=>l.type==='base');
     if(base){base.x=0;base.y=0;base.w=sw;base.h=sh;}
     resetSlidersUI();renderCanvas();
@@ -4215,7 +4351,7 @@ function applyCrop(){
   const dataURL=tmp.toDataURL('image/png');
   const newImg=new Image();
   newImg.onload=()=>{
-    origImg=newImg;canvas.width=w;canvas.height=h;
+    _origDirty=true;origImg=newImg;canvas.width=w;canvas.height=h;
     const base=layers.find(l=>l.type==='base');
     if(base){base.name=base.name.replace(/\s*\(cropped\)*/,'');base.x=0;base.y=0;base.w=w;base.h=h;}
     resetSlidersUI();cropOn=false;
@@ -4319,7 +4455,47 @@ function onZoomSlider(val){
   S.zoom=Math.max(0.05,Math.min(4,parseInt(val)/100));
   applyZoom();
 }
-ca.addEventListener('wheel',e=>{if(!S.hasImg)return;e.preventDefault();if(e.deltaY<0)zIn();else zOut();},{passive:false});
+// Smooth wheel zoom centred on cursor
+ca.addEventListener('wheel',e=>{
+  if(!S.hasImg)return;
+  e.preventDefault();
+  const factor=e.deltaY<0?1.08:1/1.08;
+  const caRect=ca.getBoundingClientRect();
+  const mx=e.clientX-caRect.left, my=e.clientY-caRect.top;
+  const iW=canvas.width*S.zoom, iH=canvas.height*S.zoom;
+  const ox=(caRect.width-iW)/2+S.panX;
+  const oy=(caRect.height-iH)/2+S.panY;
+  const relX=mx-ox, relY=my-oy;
+  const newZoom=Math.max(0.05,Math.min(4,S.zoom*factor));
+  S.panX+=relX-(relX*(newZoom/S.zoom));
+  S.panY+=relY-(relY*(newZoom/S.zoom));
+  S.zoom=newZoom;
+  applyZoom();
+},{passive:false});
+
+// Middle-mouse drag to pan
+(function(){
+  let _mmStart=null,_mmOrigin=null;
+  ca.addEventListener('mousedown',e=>{
+    if(e.button!==1||!S.hasImg)return;
+    e.preventDefault();
+    _mmStart={x:e.clientX,y:e.clientY};
+    _mmOrigin={x:S.panX,y:S.panY};
+    ca.style.cursor='grabbing';
+  });
+  window.addEventListener('mousemove',e=>{
+    if(!_mmStart)return;
+    S.panX=_mmOrigin.x+(e.clientX-_mmStart.x);
+    S.panY=_mmOrigin.y+(e.clientY-_mmStart.y);
+    positionCanvas();
+  });
+  window.addEventListener('mouseup',e=>{
+    if(e.button!==1||!_mmStart)return;
+    _mmStart=null;_mmOrigin=null;
+    ca.style.cursor='';
+  });
+  ca.addEventListener('auxclick',e=>{if(e.button===1)e.preventDefault();});
+})();
 
 // ════════════════════════════════════════════
 //  STICKERS / EMOJI OVERLAYS
@@ -4519,7 +4695,7 @@ function applyResize(){
   newImg.onload=()=>{
     // Scale non-base layer positions proportionally
     const scaleX=nw/canvas.width, scaleY=nh/canvas.height;
-    origImg=newImg;
+    _origDirty=true;origImg=newImg;
     canvas.width=nw;canvas.height=nh;
     const base=layers.find(l=>l.type==='base');
     if(base){base.x=0;base.y=0;base.w=nw;base.h=nh;}
@@ -4661,7 +4837,7 @@ function applyBorder(){
 
   const newImg=new Image();
   newImg.onload=()=>{
-    origImg=newImg;
+    _origDirty=true;origImg=newImg;
     canvas.width=nw;canvas.height=nh;
     const base=layers.find(l=>l.type==='base');
     if(base){base.x=0;base.y=0;base.w=nw;base.h=nh;}
@@ -4681,9 +4857,21 @@ function applyBorder(){
 // ════════════════════════════════════════════
 //  EXPORT
 // ════════════════════════════════════════════
-function openEM(){document.getElementById('em').classList.add('on');}
+function openEM(){
+  document.getElementById('em').classList.add('on');
+  // Restore last-used format button
+  document.querySelectorAll('.fmtb').forEach(b=>{
+    b.classList.toggle('active', b.getAttribute('onclick')&&b.getAttribute('onclick').includes(`'${S.fmt}'`));
+  });
+  _updateSizeEst();
+}
+function _updateSizeEst(){
+  const el=document.getElementById('exp-size-est');if(!el||!S.hasImg)return;
+  const m={jpg:0.08,png:0.35,webp:0.06};const b=canvas.width*canvas.height*(m[S.fmt]||0.08);
+  el.textContent=b<1048576?(b/1024).toFixed(0)+' KB':(b/1048576).toFixed(1)+' MB';
+}
 function closeEM(){document.getElementById('em').classList.remove('on');}
-function setFmt(btn,f){document.querySelectorAll('.fmtb').forEach(b=>b.classList.remove('active'));btn.classList.add('active');S.fmt=f;}
+function setFmt(btn,f){document.querySelectorAll('.fmtb').forEach(b=>b.classList.remove('active'));btn.classList.add('active');S.fmt=f;_updateSizeEst();}
 function pickEP(el,p){
   document.querySelectorAll('.epr').forEach(b=>b.classList.remove('active'));
   el.classList.add('active');S.expPreset=p;
@@ -4745,10 +4933,23 @@ function doExport(){
 // ════════════════════════════════════════════
 //  TOAST
 // ════════════════════════════════════════════
-let tTimer;
-function toast(msg){
-  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('on');
-  clearTimeout(tTimer);tTimer=setTimeout(()=>t.classList.remove('on'),3500);
+let tTimer, tProgTimer;
+function toast(msg, dur=3500){
+  const t=document.getElementById('toast');
+  const tm=document.getElementById('toast-msg');
+  const tp=document.getElementById('toast-progress');
+  if(tm) tm.textContent=msg; else t.textContent=msg;
+  t.classList.add('on');
+  clearTimeout(tTimer); clearTimeout(tProgTimer);
+  // Animate progress bar
+  if(tp){
+    tp.style.transition='none'; tp.style.transform='scaleX(1)';
+    requestAnimationFrame(()=>{
+      tp.style.transition=`transform ${dur}ms linear`;
+      tp.style.transform='scaleX(0)';
+    });
+  }
+  tTimer=setTimeout(()=>t.classList.remove('on'),dur);
 }
 
 // ════════════════════════════════════════════
@@ -4760,22 +4961,46 @@ document.addEventListener('keydown',e=>{
   if(e.ctrlKey||e.metaKey){
     if(e.key==='z'){e.preventDefault();doUndo();}
     if(e.key==='y'){e.preventDefault();doRedo();}
+    if(e.key==='Z'){e.preventDefault();doRedo();} // Ctrl+Shift+Z
     if(e.key==='s'||e.key==='e'){e.preventDefault();openEM();}
     if(e.key==='o'){e.preventDefault();openFile();}
     if(e.key==='='||e.key==='+'){e.preventDefault();zIn();}
     if(e.key==='-'){e.preventDefault();zOut();}
+    return;
   }
-  if(e.key==='Escape'){closeOB();closeEM();closeTxtModal();closeBGR();closeResize();closeBorderModal();closeStickerPicker();if(cropOn)cancelCrop();if(eyeActive)setTool('move');if(blurBrushActive)cancelBlurBrush();}
+  if(e.key==='Escape'){
+    closeOB();closeEM();closeTxtModal();closeBGR();closeResize();closeBorderModal();closeStickerPicker();
+    if(cropOn)cancelCrop();if(eyeActive)setTool('move');if(blurBrushActive)cancelBlurBrush();
+    // Escape also deselects current layer
+    if(selLayerId){selLayerId=null;renderCanvas();renderLayersPanel();}
+    return;
+  }
   if(e.key==='Enter'&&cropOn){e.preventDefault();applyCrop();}
   if(e.key==='Delete'||e.key==='Backspace'){
     if(selLayerId){deleteLayer(selLayerId);}
+    return;
   }
-  if(!e.ctrlKey&&!e.metaKey){
-    if(e.key==='m')setTool('move');
-    if(e.key==='c')setTool('crop');
-    if(e.key==='t')setTool('text');
-    if(e.key==='i')setTool('eye');
+  // Layer opacity shortcuts: [ to decrease, ] to increase by 10
+  if(e.key==='['&&selLayerId){
+    const l=layers.find(x=>x.id===selLayerId);
+    if(l){setLayerOpacity(Math.max(0,l.opacity-10));}
+    return;
   }
+  if(e.key===']'&&selLayerId){
+    const l=layers.find(x=>x.id===selLayerId);
+    if(l){setLayerOpacity(Math.min(100,l.opacity+10));}
+    return;
+  }
+  if(e.key==='m')setTool('move');
+  if(e.key==='c')setTool('crop');
+  if(e.key==='t')setTool('text');
+  if(e.key==='i')setTool('eye');
+  if(e.key==='b')setTool('blurbrush');
+  if(e.key==='e'){e.preventDefault();openEM();}
+  if(e.key===' '){e.preventDefault();zFit();}
+  if(e.key==='z')doUndo();
+  if(e.key==='y')doRedo();
+  if(e.key==='?')openKB();
 });
 document.addEventListener('paste',e=>{
   const tag=document.activeElement.tagName;
@@ -5006,6 +5231,120 @@ function syncMobAfterRender(){
 // ════════════════════════════════════════════
 updateUndoBtns();
 // Welcome screen shows on load — enterApp() triggers showOB() after dismiss
+
+// ═══════════════════════════════════════════════════
+//  KEYBOARD SHORTCUTS MODAL
+// ═══════════════════════════════════════════════════
+function openKB(){document.getElementById('kb-modal').classList.add('on');}
+function closeKB(){document.getElementById('kb-modal').classList.remove('on');}
+
+// ═══════════════════════════════════════════════════
+//  LIVE RGB HISTOGRAM
+// ═══════════════════════════════════════════════════
+let _histVisible=true;
+function drawHistogram(){
+  const hc=document.getElementById('histogram-canvas');
+  if(!hc||!S.hasImg)return;
+  const hw=hc.width,hh=hc.height,hx=hc.getContext('2d');
+  // Sample at reduced size for performance
+  const sw=Math.min(180,canvas.width);
+  const sh=Math.max(1,Math.round(sw*(canvas.height/canvas.width)));
+  const sc=document.createElement('canvas');sc.width=sw;sc.height=sh;
+  sc.getContext('2d').drawImage(canvas,0,0,sw,sh);
+  const id=sc.getContext('2d').getImageData(0,0,sw,sh),d=id.data;
+  const rB=new Array(256).fill(0),gB=new Array(256).fill(0),bB=new Array(256).fill(0);
+  for(let i=0;i<d.length;i+=4){rB[d[i]]++;gB[d[i+1]]++;bB[d[i+2]]++;}
+  const mx=Math.max(...rB,...gB,...bB)||1;
+  hx.fillStyle='#111';hx.fillRect(0,0,hw,hh);
+  // Grid lines
+  hx.strokeStyle='rgba(255,255,255,0.06)';hx.lineWidth=1;
+  [64,128,192].forEach(v=>{const px=v/255*(hw-1)+.5;hx.beginPath();hx.moveTo(px,0);hx.lineTo(px,hh);hx.stroke();});
+  // Channels
+  [[rB,'rgba(232,90,70,0.7)'],[gB,'rgba(80,200,90,0.7)'],[bB,'rgba(70,140,232,0.7)']].forEach(([bins,col])=>{
+    hx.save();hx.beginPath();hx.moveTo(0,hh);
+    for(let i=0;i<256;i++)hx.lineTo(i/255*(hw-1),hh-(bins[i]/mx)*hh);
+    hx.lineTo(hw-1,hh);hx.closePath();hx.fillStyle=col;hx.globalCompositeOperation='screen';hx.fill();hx.restore();
+  });
+  hx.globalCompositeOperation='source-over';
+}
+function toggleHistogram(){
+  _histVisible=!_histVisible;
+  const c=document.getElementById('histogram-canvas');
+  const b=document.getElementById('hist-toggle-btn');
+  const lb=document.querySelector('#hist-section div:last-child');
+  if(c)c.style.display=_histVisible?'block':'none';
+  if(lb)lb.style.display=_histVisible?'flex':'none';
+  if(b)b.textContent=_histVisible?'hide':'show';
+}
+
+// ═══════════════════════════════════════════════════
+//  COPY IMAGE TO CLIPBOARD
+// ═══════════════════════════════════════════════════
+function doCopyImage(){
+  if(!S.hasImg){toast('Open a photo first!');return;}
+  const src=document.createElement('canvas');src.width=canvas.width;src.height=canvas.height;
+  compositeClean(src.getContext('2d'),canvas.width,canvas.height);
+  src.toBlob(blob=>{
+    if(!blob){toast('Copy failed — browser not supported.');return;}
+    try{
+      navigator.clipboard.write([new ClipboardItem({'image/png':blob})])
+        .then(()=>toast('📋 Image copied to clipboard!'))
+        .catch(()=>toast('Copy failed — try downloading instead.'));
+    }catch(e){toast('Copy not supported in this browser.');}
+  },'image/png');
+}
+
+// ═══════════════════════════════════════════════════
+//  PRESET HOVER PREVIEW
+// ═══════════════════════════════════════════════════
+let _pvActive=false,_pvSaved=null;
+const _PMAP={
+  none:{br:0,co:0,hi:0,sh:0,sa:0,wa:0,ti:0,cl:0,sp:0,vi:0,bl:0,gr:0},
+  sp:{br:5,co:10,hi:-15,sh:10,sa:-10,wa:15,ti:5,cl:10,sp:5,vi:-20,bl:0,gr:0},
+  wf:{br:10,co:15,hi:-20,sh:20,sa:10,wa:30,ti:10,cl:5,sp:0,vi:-25,bl:0,gr:8},
+  cn:{br:-5,co:20,hi:10,sh:-10,sa:20,wa:-20,ti:-10,cl:20,sp:10,vi:-15,bl:0,gr:0},
+  gh:{br:15,co:10,hi:20,sh:30,sa:15,wa:35,ti:0,cl:15,sp:5,vi:-20,bl:0,gr:5},
+  fm:{br:-5,co:-10,hi:-20,sh:20,sa:-70,wa:5,ti:0,cl:0,sp:0,vi:-30,bl:0,gr:12}
+};
+function _pvPreset(key){
+  if(!S.hasImg)return;
+  const tgt=getAdjTarget();if(!tgt)return;
+  if(!_pvActive){_pvSaved=Object.assign({},tgt.adjustments);_pvActive=true;}
+  tgt.adjustments=Object.assign({},tgt.adjustments,_PMAP[key]||_PMAP.none);
+  renderCanvas();
+}
+function _pvCancel(){
+  if(!_pvActive)return;
+  const tgt=getAdjTarget();if(tgt&&_pvSaved)tgt.adjustments=Object.assign({},_pvSaved);
+  _pvSaved=null;_pvActive=false;renderCanvas();
+}
+document.addEventListener('DOMContentLoaded',function(){
+  document.querySelectorAll('.pi[onclick*="applyPreset"]').forEach(el=>{
+    const m=el.getAttribute('onclick').match(/'([a-z_]+)'\s*\)/);
+    if(!m)return;
+    el.addEventListener('mouseenter',()=>_pvPreset(m[1]));
+    el.addEventListener('mouseleave',()=>_pvCancel());
+  });
+});
+
+// ═══════════════════════════════════════════════════
+//  PINCH-TO-ZOOM (MOBILE)
+// ═══════════════════════════════════════════════════
+(function(){
+  let _pa=false,_pd=0,_pz=1;
+  const cv=document.getElementById('mc');
+  cv.addEventListener('touchstart',e=>{
+    if(e.touches.length===2){_pa=true;_pd=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);_pz=S.zoom;e.preventDefault();}
+  },{passive:false});
+  cv.addEventListener('touchmove',e=>{
+    if(_pa&&e.touches.length===2){
+      const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+      S.zoom=Math.max(0.05,Math.min(4,_pz*(d/_pd)));applyZoom();e.preventDefault();
+    }
+  },{passive:false});
+  cv.addEventListener('touchend',e=>{if(e.touches.length<2)_pa=false;},{passive:true});
+})();
+
 </script>
 
 <!-- MOBILE BOTTOM SHEET -->
@@ -5037,7 +5376,8 @@ updateUndoBtns();
         <div class="srow"><div class="shdr"><span class="slbl">Blur</span><span class="sval" id="mv-bl">0</span></div><input type="range" min="0" max="100" value="0" id="ms-bl" oninput="mobSlide('bl',this.value)"></div>
         <div class="srow"><div class="shdr"><span class="slbl">Clarity</span><span class="sval" id="mv-cl">0</span></div><input type="range" min="-100" max="100" value="0" id="ms-cl" oninput="mobSlide('cl',this.value)"></div>
         <div class="srow"><div class="shdr"><span class="slbl">Sharpness</span><span class="sval" id="mv-sp">0</span></div><input type="range" min="0" max="100" value="0" id="ms-sp" oninput="mobSlide('sp',this.value)"></div>
-        <div class="srow"><div class="shdr"><span class="slbl">Vignette</span><span class="sval" id="mv-vi">0</span></div><input type="range" min="-100" max="0" value="0" id="ms-vi" oninput="mobSlide('vi',this.value)"></div>
+        <div class="srow"><div class="shdr"><span class="slbl">Vignette</span><span class="sval" id="mv-vi">0</span></div><input type="range" min="-100" max="100" value="0" id="ms-vi" oninput="mobSlide('vi',this.value)"></div>
+          <div class="srow"><div class="shdr"><span class="slbl">Grain</span><span class="sval" id="mv-gr">0</span></div><input type="range" min="0" max="100" value="0" id="ms-gr" oninput="mobSlide('gr',this.value)"></div>
       </div>
       <div class="psec"><h4>Transform</h4>
         <div style="display:flex;gap:6px;margin-bottom:6px;">
@@ -5071,6 +5411,32 @@ updateUndoBtns();
       <div class="psec"><h4>History</h4><div class="hl" id="mob-hlist"></div></div>
       <button class="btn btn-ghost" style="width:100%;margin-top:4px;justify-content:center;font-size:12px" onclick="resetAll()">↺ Reset to original</button>
     </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="kb-modal">
+  <div class="mcard" style="width:440px;">
+    <div class="mtitle">⌨ Keyboard Shortcuts</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px 24px;margin-top:10px;">
+      <div style="font-size:12px;color:var(--text-muted)"><kbd style="background:var(--panel);border:1px solid var(--border-light);border-radius:3px;padding:1px 7px;font-size:11px;color:var(--text);font-family:var(--font-b)">Ctrl+Z</kbd>  Undo</div>
+      <div style="font-size:12px;color:var(--text-muted)"><kbd style="background:var(--panel);border:1px solid var(--border-light);border-radius:3px;padding:1px 7px;font-size:11px;color:var(--text);font-family:var(--font-b)">Ctrl+Y</kbd>  Redo</div>
+      <div style="font-size:12px;color:var(--text-muted)"><kbd style="background:var(--panel);border:1px solid var(--border-light);border-radius:3px;padding:1px 7px;font-size:11px;color:var(--text);font-family:var(--font-b)">Ctrl+Shift+Z</kbd>  Redo</div>
+      <div style="font-size:12px;color:var(--text-muted)"><kbd style="background:var(--panel);border:1px solid var(--border-light);border-radius:3px;padding:1px 7px;font-size:11px;color:var(--text);font-family:var(--font-b)">Z / Y</kbd>  Undo / Redo</div>
+      <div style="font-size:12px;color:var(--text-muted)"><kbd style="background:var(--panel);border:1px solid var(--border-light);border-radius:3px;padding:1px 7px;font-size:11px;color:var(--text);font-family:var(--font-b)">C</kbd>  Crop tool</div>
+      <div style="font-size:12px;color:var(--text-muted)"><kbd style="background:var(--panel);border:1px solid var(--border-light);border-radius:3px;padding:1px 7px;font-size:11px;color:var(--text);font-family:var(--font-b)">T</kbd>  Text tool</div>
+      <div style="font-size:12px;color:var(--text-muted)"><kbd style="background:var(--panel);border:1px solid var(--border-light);border-radius:3px;padding:1px 7px;font-size:11px;color:var(--text);font-family:var(--font-b)">I</kbd>  Eyedropper</div>
+      <div style="font-size:12px;color:var(--text-muted)"><kbd style="background:var(--panel);border:1px solid var(--border-light);border-radius:3px;padding:1px 7px;font-size:11px;color:var(--text);font-family:var(--font-b)">B</kbd>  Blur Brush</div>
+      <div style="font-size:12px;color:var(--text-muted)"><kbd style="background:var(--panel);border:1px solid var(--border-light);border-radius:3px;padding:1px 7px;font-size:11px;color:var(--text);font-family:var(--font-b)">E</kbd>  Export</div>
+      <div style="font-size:12px;color:var(--text-muted)"><kbd style="background:var(--panel);border:1px solid var(--border-light);border-radius:3px;padding:1px 7px;font-size:11px;color:var(--text);font-family:var(--font-b)">M</kbd>  Move tool</div>
+      <div style="font-size:12px;color:var(--text-muted)"><kbd style="background:var(--panel);border:1px solid var(--border-light);border-radius:3px;padding:1px 7px;font-size:11px;color:var(--text);font-family:var(--font-b)">Space</kbd>  Fit to screen</div>
+      <div style="font-size:12px;color:var(--text-muted)"><kbd style="background:var(--panel);border:1px solid var(--border-light);border-radius:3px;padding:1px 7px;font-size:11px;color:var(--text);font-family:var(--font-b)">+ / −</kbd>  Zoom in/out</div>
+      <div style="font-size:12px;color:var(--text-muted)"><kbd style="background:var(--panel);border:1px solid var(--border-light);border-radius:3px;padding:1px 7px;font-size:11px;color:var(--text);font-family:var(--font-b)">Del</kbd>  Delete layer</div>
+      <div style="font-size:12px;color:var(--text-muted)"><kbd style="background:var(--panel);border:1px solid var(--border-light);border-radius:3px;padding:1px 7px;font-size:11px;color:var(--text);font-family:var(--font-b)">Esc</kbd>  Deselect / Cancel</div>
+      <div style="font-size:12px;color:var(--text-muted)"><kbd style="background:var(--panel);border:1px solid var(--border-light);border-radius:3px;padding:1px 7px;font-size:11px;color:var(--text);font-family:var(--font-b)">[ / ]</kbd>  Layer opacity −/+10</div>
+      <div style="font-size:12px;color:var(--text-muted)"><kbd style="background:var(--panel);border:1px solid var(--border-light);border-radius:3px;padding:1px 7px;font-size:11px;color:var(--text);font-family:var(--font-b)">?</kbd>  This menu</div>
+    </div>
+    <div style="margin-top:14px;padding:8px 10px;background:var(--panel);border-radius:var(--rs);font-size:11.5px;color:var(--text-muted)">🖱 <strong style="color:var(--text)">Middle-mouse drag</strong> to pan · <strong style="color:var(--text)">Scroll wheel</strong> to zoom (cursor-centred)</div>
+    <div class="macts" style="margin-top:18px;"><button class="btn btn-accent" onclick="closeKB()">Got it ✓</button></div>
   </div>
 </div>
 </body>
