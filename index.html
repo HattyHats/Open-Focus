@@ -56,11 +56,15 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);height:100
 #cw{position:absolute;box-shadow:0 8px 64px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.05);transform-origin:top left;}
 #mc{display:block;}
 /* cursor per tool */
-#canvas-area.tm #cw{cursor:grab;}
-#canvas-area.tm #cw.pg{cursor:grabbing;}
+#canvas-area.tm{cursor:grab;}
+#canvas-area.tm #cw{cursor:inherit;}
+#canvas-area.tm.pg,#canvas-area.tm #cw.pg{cursor:grabbing;}
 #canvas-area.tc2 #cw{cursor:crosshair;}
 #canvas-area.teye #cw{cursor:crosshair;}
 #canvas-area.tblur #cw{cursor:crosshair;}
+#canvas-area.sp{cursor:grab;}
+#canvas-area.sp #cw{cursor:inherit;}
+#canvas-area.pg,#canvas-area.pg #cw.pg{cursor:grabbing;}
 /* Vertical zoom slider */
 #zoom-slider-wrap{
   position:absolute;right:14px;top:50%;transform:translateY(-50%);
@@ -2388,6 +2392,7 @@ function getResizeHandle(layer,cx,cy){
 
 canvas.addEventListener('mousedown',e=>{
   if(!S.hasImg)return;
+  if(spacePanHeld)return;
   if(S.tool==='crop')return;
   if(S.tool==='bgr')return;
   const {cx,cy}=canvasCoords(e);
@@ -3715,6 +3720,7 @@ function startBlurBrush(){
 
 function attachBlurBrushEvents(){
   blurOverlayCanvas.onmousedown=e=>{
+    if(spacePanHeld)return;
     e.preventDefault();
     blurBrushDrawing=true;
     const pt=blurCanvasCoords(e);
@@ -3733,6 +3739,7 @@ function attachBlurBrushEvents(){
   blurOverlayCanvas.onmouseup=()=>{blurBrushDrawing=false;blurCurrentStroke=null;};
   blurOverlayCanvas.onmouseleave=()=>{blurBrushDrawing=false;blurCurrentStroke=null;};
   blurOverlayCanvas.ontouchstart=e=>{
+    if(spacePanHeld)return;
     e.preventDefault();
     blurBrushDrawing=true;
     const pt=blurTouchCoords(e.touches[0]);
@@ -3988,6 +3995,118 @@ function switchPane(btn){
 //  MOVE TOOL (pan)
 // ════════════════════════════════════════════
 let panStart=null,panOrigin={x:0,y:0};
+let panVelocity={x:0,y:0};
+let panLastSample=null;
+let panMomentumRaf=null;
+let panMomentumVX=0,panMomentumVY=0,panMomentumLastT=0;
+let spacePanHeld=false;
+
+function stopPanMomentum(){
+  if(panMomentumRaf){
+    cancelAnimationFrame(panMomentumRaf);
+    panMomentumRaf=null;
+  }
+  panMomentumVX=0;
+  panMomentumVY=0;
+  panMomentumLastT=0;
+}
+
+function resetPanVelocity(){
+  panVelocity.x=0;
+  panVelocity.y=0;
+  panLastSample=null;
+}
+
+function samplePanVelocity(clientX,clientY){
+  const now=performance.now();
+  if(panLastSample){
+    const dt=Math.max(1,now-panLastSample.t);
+    if(dt<100){
+      const vx=(clientX-panLastSample.x)/dt;
+      const vy=(clientY-panLastSample.y)/dt;
+      panVelocity.x=panVelocity.x*0.65+vx*0.35;
+      panVelocity.y=panVelocity.y*0.65+vy*0.35;
+    }
+  }
+  panLastSample={x:clientX,y:clientY,t:now};
+}
+
+function startPanMomentum(){
+  const speed=Math.hypot(panVelocity.x,panVelocity.y);
+  if(speed<0.08)return;
+  stopPanMomentum();
+  panMomentumVX=panVelocity.x*16;
+  panMomentumVY=panVelocity.y*16;
+  panMomentumLastT=0;
+  const step=(t)=>{
+    if(!panMomentumLastT)panMomentumLastT=t;
+    const dt=Math.min(34,Math.max(8,t-panMomentumLastT));
+    panMomentumLastT=t;
+    const damp=Math.pow(0.9,dt/16);
+    panMomentumVX*=damp;
+    panMomentumVY*=damp;
+    if(Math.hypot(panMomentumVX,panMomentumVY)<0.06){
+      stopPanMomentum();
+      return;
+    }
+    S.panX+=panMomentumVX*(dt/16);
+    S.panY+=panMomentumVY*(dt/16);
+    positionCanvas();
+    panMomentumRaf=requestAnimationFrame(step);
+  };
+  panMomentumRaf=requestAnimationFrame(step);
+}
+
+function canUsePanTool(){
+  return S.hasImg&&(S.tool==='move'||spacePanHeld);
+}
+
+function clearSpacePan(){
+  spacePanHeld=false;
+  ca.classList.remove('sp');
+}
+
+function isTextEntryElement(el){
+  if(!el)return false;
+  const tag=el.tagName;
+  return tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT'||el.isContentEditable;
+}
+
+function startPanDrag(e){
+  if(!canUsePanTool()||e.button!==0)return;
+  if(layerDrag||layerResizing)return;
+  const target=e.target;
+  if(target&&target.closest){
+    if(
+      target.closest('#zoom-slider-wrap')||
+      target.closest('#crop-bar')||
+      target.closest('#blur-bar')||
+      target.closest('#wm-bar')
+    ) return;
+  }
+  stopPanMomentum();
+  resetPanVelocity();
+  samplePanVelocity(e.clientX,e.clientY);
+  panStart={x:e.clientX,y:e.clientY};
+  panOrigin={x:S.panX,y:S.panY};
+  cw.classList.add('pg');
+  ca.classList.add('pg');
+  e.preventDefault();
+}
+
+function stopPanDrag(withMomentum=true){
+  if(!panStart){
+    cw.classList.remove('pg');
+    ca.classList.remove('pg');
+    return;
+  }
+  panStart=null;
+  cw.classList.remove('pg');
+  ca.classList.remove('pg');
+  if(withMomentum&&S.hasImg)startPanMomentum();
+  else stopPanMomentum();
+  resetPanVelocity();
+}
 
 function positionCanvas(){
   const aW=ca.clientWidth,aH=ca.clientHeight;
@@ -4010,22 +4129,28 @@ function positionCanvas(){
 }
 
 cw.addEventListener('mousedown',e=>{
-  if(S.tool!=='move'||!S.hasImg)return;
-  // Only start canvas pan if canvas mousedown didn't grab a layer
+  if(e.button!==0||!canUsePanTool())return;
+  // Let layer hit-testing run first; pan only if no layer drag started.
   requestAnimationFrame(()=>{
     if(layerDrag||layerResizing)return;
-    panStart={x:e.clientX,y:e.clientY};
-    panOrigin={x:S.panX,y:S.panY};
-    cw.classList.add('pg');
+    startPanDrag(e);
   });
+});
+ca.addEventListener('mousedown',e=>{
+  if(e.button!==0||!canUsePanTool())return;
+  const target=e.target;
+  if(target&&target.closest&&target.closest('#cw'))return;
+  startPanDrag(e);
 });
 window.addEventListener('mousemove',e=>{
   if(!panStart)return;
+  samplePanVelocity(e.clientX,e.clientY);
   S.panX=panOrigin.x+(e.clientX-panStart.x);
   S.panY=panOrigin.y+(e.clientY-panStart.y);
   positionCanvas();
 });
-window.addEventListener('mouseup',()=>{panStart=null;cw.classList.remove('pg');});
+window.addEventListener('mouseup',()=>{stopPanDrag();});
+window.addEventListener('blur',()=>{stopPanDrag(false);clearSpacePan();});
 
 // ════════════════════════════════════════════
 //  ROTATE & FLIP
@@ -4389,6 +4514,7 @@ function updateCropUI(){
 }
 cro.addEventListener('mousedown',e=>{
   if(S.tool!=='crop')return;
+  if(spacePanHeld)return;
   e.preventDefault();e.stopPropagation();
   const handle=e.target.dataset.h;
   const rect=canvas.getBoundingClientRect();
@@ -4479,20 +4605,27 @@ ca.addEventListener('wheel',e=>{
   ca.addEventListener('mousedown',e=>{
     if(e.button!==1||!S.hasImg)return;
     e.preventDefault();
+    stopPanMomentum();
+    resetPanVelocity();
+    samplePanVelocity(e.clientX,e.clientY);
     _mmStart={x:e.clientX,y:e.clientY};
     _mmOrigin={x:S.panX,y:S.panY};
     ca.style.cursor='grabbing';
   });
   window.addEventListener('mousemove',e=>{
     if(!_mmStart)return;
+    samplePanVelocity(e.clientX,e.clientY);
     S.panX=_mmOrigin.x+(e.clientX-_mmStart.x);
     S.panY=_mmOrigin.y+(e.clientY-_mmStart.y);
     positionCanvas();
   });
   window.addEventListener('mouseup',e=>{
-    if(e.button!==1||!_mmStart)return;
+    if(!_mmStart)return;
     _mmStart=null;_mmOrigin=null;
     ca.style.cursor='';
+    ca.classList.remove('pg');
+    startPanMomentum();
+    resetPanVelocity();
   });
   ca.addEventListener('auxclick',e=>{if(e.button===1)e.preventDefault();});
 })();
@@ -4956,8 +5089,16 @@ function toast(msg, dur=3500){
 //  KEYBOARD
 // ════════════════════════════════════════════
 document.addEventListener('keydown',e=>{
-  const tag=document.activeElement.tagName;
-  if(tag==='TEXTAREA'||tag==='INPUT')return;
+  if(isTextEntryElement(document.activeElement))return;
+  if(e.code==='Space'){
+    e.preventDefault();
+    if(!spacePanHeld){
+      spacePanHeld=true;
+      if(S.hasImg)ca.classList.add('sp');
+      stopPanMomentum();
+    }
+    return;
+  }
   if(e.ctrlKey||e.metaKey){
     if(e.key==='z'){e.preventDefault();doUndo();}
     if(e.key==='y'){e.preventDefault();doRedo();}
@@ -4997,10 +5138,13 @@ document.addEventListener('keydown',e=>{
   if(e.key==='i')setTool('eye');
   if(e.key==='b')setTool('blurbrush');
   if(e.key==='e'){e.preventDefault();openEM();}
-  if(e.key===' '){e.preventDefault();zFit();}
+  if(e.key==='0'){e.preventDefault();zFit();}
   if(e.key==='z')doUndo();
   if(e.key==='y')doRedo();
   if(e.key==='?')openKB();
+});
+document.addEventListener('keyup',e=>{
+  if(e.code==='Space')clearSpacePan();
 });
 document.addEventListener('paste',e=>{
   const tag=document.activeElement.tagName;
@@ -5021,6 +5165,8 @@ document.addEventListener('paste',e=>{
 let tcStart=null,tcPanOrig=null,tcPinchDist=null,tcPinchZoom=null;
 let tcLayerDragId=null,tcLayerDragStart=null,tcLayerAtStart=null;
 let tcMoved=false; // distinguish tap from drag
+let tcPanning=false;
+let tcBgStart=null,tcBgPanOrig=null,tcBgMoved=false;
 
 function tcDist(t){
   const dx=t[0].clientX-t[1].clientX,dy=t[0].clientY-t[1].clientY;
@@ -5045,8 +5191,12 @@ canvas.addEventListener('touchstart',e=>{
   if(e.touches.length===1){
     const t=e.touches[0];
     tcMoved=false;
+    tcPanning=false;
     tcStart={x:t.clientX,y:t.clientY};
     tcPanOrig={x:S.panX,y:S.panY};
+    stopPanMomentum();
+    resetPanVelocity();
+    samplePanVelocity(t.clientX,t.clientY);
     // Check if touching a layer for dragging — with cycling support
     if(S.hasImg&&S.tool==='move'){
       const{cx,cy}=tcCanvasCoords(t);
@@ -5079,6 +5229,7 @@ canvas.addEventListener('touchstart',e=>{
 canvas.addEventListener('touchmove',e=>{
   e.preventDefault();
   if(e.touches.length===1){
+    if(!tcStart)return;
     const t=e.touches[0];
     const dx=t.clientX-tcStart.x, dy=t.clientY-tcStart.y;
     if(Math.abs(dx)>4||Math.abs(dy)>4)tcMoved=true;
@@ -5093,6 +5244,8 @@ canvas.addEventListener('touchmove',e=>{
       }
     } else if(!tcLayerDragId){
       // Pan canvas
+      tcPanning=true;
+      samplePanVelocity(t.clientX,t.clientY);
       S.panX=tcPanOrig.x+dx;
       S.panY=tcPanOrig.y+dy;
       positionCanvas();
@@ -5105,6 +5258,7 @@ canvas.addEventListener('touchmove',e=>{
 },{passive:false});
 
 canvas.addEventListener('touchend',e=>{
+  let launchedMomentum=false;
   if(tcLayerDragId){
     if(!tcMoved){
       // Tap on layer — select it and open panel
@@ -5126,8 +5280,58 @@ canvas.addEventListener('touchend',e=>{
     tcLayerDragId=null;tcLayerDragStart=null;tcLayerAtStart=null;
     renderCanvas();renderLayersPanel();
   }
+  if(!launchedMomentum&&tcPanning&&S.hasImg){
+    startPanMomentum();
+    launchedMomentum=true;
+  }
   tcStart=null;tcPanOrig=null;tcPinchDist=null;tcMoved=false;
+  tcPanning=false;
+  if(!launchedMomentum)resetPanVelocity();
 },{passive:true});
+
+// Touch panning from the canvas background area (outside the image) on mobile.
+ca.addEventListener('touchstart',e=>{
+  if(!S.hasImg||S.tool!=='move'||e.touches.length!==1)return;
+  const target=e.target;
+  if(target&&target.closest){
+    if(
+      target.closest('#cw')||
+      target.closest('#zoom-slider-wrap')||
+      target.closest('#crop-bar')||
+      target.closest('#blur-bar')||
+      target.closest('#wm-bar')
+    ) return;
+  }
+  const t=e.touches[0];
+  tcBgMoved=false;
+  tcBgStart={x:t.clientX,y:t.clientY};
+  tcBgPanOrig={x:S.panX,y:S.panY};
+  stopPanMomentum();
+  resetPanVelocity();
+  samplePanVelocity(t.clientX,t.clientY);
+},{passive:true});
+
+ca.addEventListener('touchmove',e=>{
+  if(!tcBgStart||e.touches.length!==1)return;
+  e.preventDefault();
+  const t=e.touches[0];
+  const dx=t.clientX-tcBgStart.x,dy=t.clientY-tcBgStart.y;
+  if(Math.abs(dx)>2||Math.abs(dy)>2)tcBgMoved=true;
+  samplePanVelocity(t.clientX,t.clientY);
+  S.panX=tcBgPanOrig.x+dx;
+  S.panY=tcBgPanOrig.y+dy;
+  positionCanvas();
+},{passive:false});
+
+function endBgTouchPan(){
+  if(tcBgStart&&tcBgMoved&&S.hasImg)startPanMomentum();
+  else resetPanVelocity();
+  tcBgStart=null;
+  tcBgPanOrig=null;
+  tcBgMoved=false;
+}
+ca.addEventListener('touchend',endBgTouchPan,{passive:true});
+ca.addEventListener('touchcancel',endBgTouchPan,{passive:true});
 
 // ════════════════════════════════════════════
 //  MOBILE BOTTOM SHEET
@@ -5328,22 +5532,8 @@ document.addEventListener('DOMContentLoaded',function(){
 });
 
 // ═══════════════════════════════════════════════════
-//  PINCH-TO-ZOOM (MOBILE)
 // ═══════════════════════════════════════════════════
-(function(){
-  let _pa=false,_pd=0,_pz=1;
-  const cv=document.getElementById('mc');
-  cv.addEventListener('touchstart',e=>{
-    if(e.touches.length===2){_pa=true;_pd=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);_pz=S.zoom;e.preventDefault();}
-  },{passive:false});
-  cv.addEventListener('touchmove',e=>{
-    if(_pa&&e.touches.length===2){
-      const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
-      S.zoom=Math.max(0.05,Math.min(4,_pz*(d/_pd)));applyZoom();e.preventDefault();
-    }
-  },{passive:false});
-  cv.addEventListener('touchend',e=>{if(e.touches.length<2)_pa=false;},{passive:true});
-})();
+
 
 </script>
 
@@ -5428,7 +5618,8 @@ document.addEventListener('DOMContentLoaded',function(){
       <div style="font-size:12px;color:var(--text-muted)"><kbd style="background:var(--panel);border:1px solid var(--border-light);border-radius:3px;padding:1px 7px;font-size:11px;color:var(--text);font-family:var(--font-b)">B</kbd>  Blur Brush</div>
       <div style="font-size:12px;color:var(--text-muted)"><kbd style="background:var(--panel);border:1px solid var(--border-light);border-radius:3px;padding:1px 7px;font-size:11px;color:var(--text);font-family:var(--font-b)">E</kbd>  Export</div>
       <div style="font-size:12px;color:var(--text-muted)"><kbd style="background:var(--panel);border:1px solid var(--border-light);border-radius:3px;padding:1px 7px;font-size:11px;color:var(--text);font-family:var(--font-b)">M</kbd>  Move tool</div>
-      <div style="font-size:12px;color:var(--text-muted)"><kbd style="background:var(--panel);border:1px solid var(--border-light);border-radius:3px;padding:1px 7px;font-size:11px;color:var(--text);font-family:var(--font-b)">Space</kbd>  Fit to screen</div>
+      <div style="font-size:12px;color:var(--text-muted)"><kbd style="background:var(--panel);border:1px solid var(--border-light);border-radius:3px;padding:1px 7px;font-size:11px;color:var(--text);font-family:var(--font-b)">Hold Space</kbd>  Temporary hand-pan</div>
+      <div style="font-size:12px;color:var(--text-muted)"><kbd style="background:var(--panel);border:1px solid var(--border-light);border-radius:3px;padding:1px 7px;font-size:11px;color:var(--text);font-family:var(--font-b)">0</kbd>  Fit to screen</div>
       <div style="font-size:12px;color:var(--text-muted)"><kbd style="background:var(--panel);border:1px solid var(--border-light);border-radius:3px;padding:1px 7px;font-size:11px;color:var(--text);font-family:var(--font-b)">+ / −</kbd>  Zoom in/out</div>
       <div style="font-size:12px;color:var(--text-muted)"><kbd style="background:var(--panel);border:1px solid var(--border-light);border-radius:3px;padding:1px 7px;font-size:11px;color:var(--text);font-family:var(--font-b)">Del</kbd>  Delete layer</div>
       <div style="font-size:12px;color:var(--text-muted)"><kbd style="background:var(--panel);border:1px solid var(--border-light);border-radius:3px;padding:1px 7px;font-size:11px;color:var(--text);font-family:var(--font-b)">Esc</kbd>  Deselect / Cancel</div>
