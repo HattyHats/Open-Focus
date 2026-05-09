@@ -6,6 +6,7 @@
 <title>OpenFocus — The Friendly Photo Editor</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'><rect width='28' height='28' rx='7' fill='%23e8b86d'/><circle cx='12.5' cy='12.5' r='5.5' stroke='%231a1510' stroke-width='2.2' fill='none'/><line x1='16.8' y1='16.8' x2='21.5' y2='21.5' stroke='%231a1510' stroke-width='2.4' stroke-linecap='round'/></svg>">
 <style>
 :root{
   --bg:#0f0e0d;--surface:#1a1917;--panel:#211f1d;--border:#2e2b28;
@@ -1360,7 +1361,7 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
           <span class="adj-layer-name" id="adj-layer-name">—</span>
           <button class="lbtn" onclick="selLayerId=null;updateAdjustHeader();renderCanvas();renderLayersPanel()" title="Clear focus" style="font-size:11px">✕</button>
         </div>
-        <div id="adj-img-note" class="on" style="display:none">ℹ️ Sliders adjust the selected image layer's brightness, contrast etc. Presets bake into the image.</div>
+        <div id="adj-img-note">ℹ️ Sliders adjust the selected image layer's brightness, contrast etc. Presets bake into the image.</div>
         <div class="psec" id="adjust-top-anchor">
           <button class="qfbtn" onclick="quickFix()">⚡ Quick Fix — Auto-enhance</button>
           <div class="tip"><strong>Not sure?</strong> Quick Fix nudges everything in the right direction. Fine-tune after — undo is always there.</div>
@@ -1514,7 +1515,6 @@ function enterApp(){
   w.classList.add('hide');
   setTimeout(()=>{
     w.remove(); // remove from DOM entirely — no more blocking
-    showOB();
   },450);
 }
 
@@ -1550,7 +1550,7 @@ function openFile(){
     return;
   }
   // Show the choice popup anchored under the Open button
-  const btn=document.querySelector('#topbar .btn-ghost');
+  const btn=document.querySelector('#topbar button[onclick="openFile()"]');
   const popup=document.getElementById('open-popup');
   const rect=btn.getBoundingClientRect();
   popup.style.top=(rect.bottom + window.scrollY + 6)+'px';
@@ -2007,6 +2007,7 @@ function renderCanvas(){
   }
 
   // Before/After overlay — draw original on left side of divider
+  // Note: histogram is already updated via debounced call at top of renderCanvas — no second call needed here
   if(baActive&&baOrigSnapshot){
     const pct=parseFloat(document.getElementById('ba-slider').value)/100;
     const splitX=Math.round(canvas.width*pct);
@@ -2024,7 +2025,6 @@ function renderCanvas(){
       ctx.restore();
     }
   }
-  requestAnimationFrame(drawHistogram);
 }
 
 function getTextBounds(layer){
@@ -2281,7 +2281,12 @@ function openTxtModal(layer){
   document.getElementById('txt-shadow').value=layer?layer.shadow:'soft';
   document.getElementById('txt-opacity').value=layer?layer.opacity:100;
   document.getElementById('txt-modal').classList.add('on');
-  setTimeout(()=>document.getElementById('txt-content').focus(),100);
+  // Auto-select all text so the user can start typing immediately to replace the default
+  setTimeout(()=>{
+    const ta=document.getElementById('txt-content');
+    ta.focus();
+    ta.select();
+  },100);
 }
 function closeTxtModal(){document.getElementById('txt-modal').classList.remove('on');}
 
@@ -2774,9 +2779,8 @@ function startLasso(){
   lassoCanvas=document.getElementById('lasso-overlay');
   lassoCanvas.width=canvas.width;
   lassoCanvas.height=canvas.height;
-  const rect=canvas.getBoundingClientRect();
-  lassoCanvas.style.width=rect.width+'px';
-  lassoCanvas.style.height=rect.height+'px';
+  lassoCanvas.style.width=canvas.width+'px';
+  lassoCanvas.style.height=canvas.height+'px';
   lassoCanvas.classList.add('on');
   lassoCtx=lassoCanvas.getContext('2d');
   setLassoBrush('fg', document.getElementById('brush-fg-btn'));
@@ -3093,7 +3097,7 @@ function updateAdjustHeader(){
   const ind=document.getElementById('adj-layer-indicator');
   const note=document.getElementById('adj-img-note');
   const target=getAdjTarget();
-  if(!target){ind.classList.remove('on');note.classList.remove('on');return;}
+  if(!target){ind.classList.remove('on');note.style.display='none';return;}
   // Show indicator if a non-base layer is selected
   const sel=layers.find(l=>l.id===selLayerId);
   if(sel&&sel.type!=='base'){
@@ -3912,7 +3916,7 @@ function cleanupBlurBrush(){
 // ════════════════════════════════════════════
 //  TOOLS
 // ════════════════════════════════════════════
-const TOOL_PANE={move:'adjust',adjust:'adjust',filter:'adjust',crop:'adjust',text:'layers',overlay:'layers',bgr:'adjust',history:'history',eye:'adjust',blurbrush:'adjust'};
+const TOOL_PANE={move:'adjust',adjust:'adjust',filter:'adjust',crop:'adjust',text:'layers',overlay:'layers',bgr:'adjust',wm:'adjust',history:'history',eye:'adjust',blurbrush:'adjust'};
 function setTool(tool){
   // Clean up any active exclusive modes whenever switching tools
   if(S.tool==='ba'&&tool!=='ba') exitBA();
@@ -4784,13 +4788,13 @@ function toggleResizeLock(){
 function onResizeW(val){
   if(!resizeLocked)return;
   const ratio=canvas.height/canvas.width;
-  const newH=Math.max(1,Math.round(parseInt(val)||1*ratio));
+  const newH=Math.max(1,Math.round((parseInt(val)||1)*ratio));
   document.getElementById('resize-h').value=newH;
 }
 function onResizeH(val){
   if(!resizeLocked)return;
   const ratio=canvas.width/canvas.height;
-  const newW=Math.max(1,Math.round(parseInt(val)||1*ratio));
+  const newW=Math.max(1,Math.round((parseInt(val)||1)*ratio));
   document.getElementById('resize-w').value=newW;
 }
 
@@ -5434,7 +5438,7 @@ function syncMobAfterRender(){
 //  INIT
 // ════════════════════════════════════════════
 updateUndoBtns();
-// Welcome screen shows on load — enterApp() triggers showOB() after dismiss
+// Welcome screen shows on load — enterApp() dismisses it and drops straight into the editor
 
 // ═══════════════════════════════════════════════════
 //  KEYBOARD SHORTCUTS MODAL
