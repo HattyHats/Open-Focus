@@ -2926,13 +2926,24 @@ function applyLasso(){
     // If no BG strokes painted, auto-sample from border region + far from FG strokes
     if(bgSamples.length<10){
       const borderW=Math.max(3,Math.round(Math.min(w,h)*0.06));
-      for(let y=0;y<h;y++){
-        for(let x=0;x<w;x++){
-          const onBorder=(x<borderW||x>=w-borderW||y<borderW||y>=h-borderW);
-          if(onBorder&&!fgMask[y*w+x]){
-            const p=(y*w+x)*4;
-            bgSamples.push({r:d[p],g:d[p+1],b:d[p+2]});
-          }
+      const stepX=Math.max(1,Math.round(w/100));
+      const stepY=Math.max(1,Math.round(h/100));
+      for(let y=0;y<borderW;y++){
+        for(let x=0;x<w;x+=stepX){
+          const i=y*w+x;
+          if(!fgMask[i]){const p=i*4;bgSamples.push({r:d[p],g:d[p+1],b:d[p+2]});}
+          const y2=h-1-y;
+          const i2=y2*w+x;
+          if(!fgMask[i2]){const p=i2*4;bgSamples.push({r:d[p],g:d[p+1],b:d[p+2]});}
+        }
+      }
+      for(let x=0;x<borderW;x++){
+        for(let y=borderW;y<h-borderW;y+=stepY){
+          const i=y*w+x;
+          if(!fgMask[i]){const p=i*4;bgSamples.push({r:d[p],g:d[p+1],b:d[p+2]});}
+          const x2=w-1-x;
+          const i2=y*w+x2;
+          if(!fgMask[i2]){const p=i2*4;bgSamples.push({r:d[p],g:d[p+1],b:d[p+2]});}
         }
       }
     }
@@ -2973,25 +2984,37 @@ function applyLasso(){
     const bgClusters=buildClusters(bgSamples);
     document.getElementById('bgr-bar').style.width='55%';
 
-    // ── Step 5: Classify every pixel ──
+    // ── Step 5: Classify every pixel using 3D LUT ──
     function minClusterDist(r,g,b,clusters){
+      if(!clusters.length)return 1e9;
       let best=Infinity;
       for(let ci=0;ci<clusters.length;ci++){
         const c=clusters[ci];
         const dist=(r-c.r)**2+(g-c.g)**2+(b-c.b)**2;
         if(dist<best)best=dist;
       }
-      return best; // squared distance is fine for comparison
+      return best;
+    }
+
+    const lut=new Float32Array(32768);
+    for(let r=0;r<32;r++){
+      for(let g=0;g<32;g++){
+        for(let b=0;b<32;b++){
+          const rc=(r<<3)+4;
+          const gc=(g<<3)+4;
+          const bc=(b<<3)+4;
+          const dFg=minClusterDist(rc,gc,bc,fgClusters);
+          const dBg=minClusterDist(rc,gc,bc,bgClusters);
+          lut[(r<<10)|(g<<5)|b]=dBg/(dFg+dBg+1);
+        }
+      }
     }
 
     const alphaMask=new Float32Array(w*h);
     for(let i=0;i<w*h;i++){
       const pi=i*4;
-      const r=d[pi],g=d[pi+1],b=d[pi+2];
-      const dFg=minClusterDist(r,g,b,fgClusters);
-      const dBg=minClusterDist(r,g,b,bgClusters);
-      // foreground score: closer to FG than BG → 1, closer to BG → 0
-      alphaMask[i]=dBg/(dFg+dBg+1);
+      const bin=((d[pi]>>3)<<10)|((d[pi+1]>>3)<<5)|(d[pi+2]>>3);
+      alphaMask[i]=lut[bin];
     }
     document.getElementById('bgr-bar').style.width='70%';
 
@@ -3001,31 +3024,35 @@ function applyLasso(){
       else if(bgMask[i])alphaMask[i]=0.0;
     }
 
-    // ── Step 7: Gaussian-ish blur to soften edges ──
+    // ── Step 7: Fast sliding-window box blur to soften edges ──
     const blurR=Math.max(1,feather);
     const smoothed=new Float32Array(w*h);
-    // Separable box blur (fast approximation of gaussian)
     const tmp=new Float32Array(w*h);
     // Horizontal pass
     for(let y=0;y<h;y++){
+      const rowOffset=y*w;
+      let sum=0;
+      for(let dx2=-blurR;dx2<=blurR;dx2++){
+        sum+=alphaMask[rowOffset+Math.max(0,Math.min(w-1,dx2))];
+      }
       for(let x=0;x<w;x++){
-        let sum=0,cnt=0;
-        for(let dx2=-blurR;dx2<=blurR;dx2++){
-          const nx=x+dx2;
-          if(nx>=0&&nx<w){sum+=alphaMask[y*w+nx];cnt++;}
-        }
-        tmp[y*w+x]=sum/cnt;
+        tmp[rowOffset+x]=sum/(blurR*2+1);
+        const nextX=x+blurR+1;
+        const prevX=x-blurR;
+        sum+=alphaMask[rowOffset+Math.min(w-1,nextX)]-alphaMask[rowOffset+Math.max(0,prevX)];
       }
     }
     // Vertical pass
-    for(let y=0;y<h;y++){
-      for(let x=0;x<w;x++){
-        let sum=0,cnt=0;
-        for(let dy2=-blurR;dy2<=blurR;dy2++){
-          const ny=y+dy2;
-          if(ny>=0&&ny<h){sum+=tmp[ny*w+x];cnt++;}
-        }
-        smoothed[y*w+x]=sum/cnt;
+    for(let x=0;x<w;x++){
+      let sum=0;
+      for(let dy2=-blurR;dy2<=blurR;dy2++){
+        sum+=tmp[Math.max(0,Math.min(h-1,dy2))*w+x];
+      }
+      for(let y=0;y<h;y++){
+        smoothed[y*w+x]=sum/(blurR*2+1);
+        const nextY=y+blurR+1;
+        const prevY=y-blurR;
+        sum+=tmp[Math.min(h-1,nextY)*w+x]-tmp[Math.max(0,prevY)*w+x];
       }
     }
     document.getElementById('bgr-bar').style.width='88%';
@@ -3254,9 +3281,28 @@ function applyAutoBGR(){
 
     // BFS flood-fill from all edges
     const visited=new Uint8Array(w*h);
+    const lut=new Uint8Array(32768);
+    bgColors.forEach(c=>{
+      const br=Math.round(c.r/8);
+      const bg=Math.round(c.g/8);
+      const bb=Math.round(c.b/8);
+      const rad=Math.ceil(tol/8);
+      for(let r=Math.max(0,br-rad);r<=Math.min(31,br+rad);r++){
+        for(let g=Math.max(0,bg-rad);g<=Math.min(31,bg+rad);g++){
+          for(let b=Math.max(0,bb-rad);b<=Math.min(31,bb+rad);b++){
+            const dist=Math.sqrt((r*8-c.r)**2+(g*8-c.g)**2+(b*8-c.b)**2);
+            if(dist<=tol){
+              lut[(r<<10)|(g<<5)|b]=1;
+            }
+          }
+        }
+      }
+    });
     function colorMatch(i){
-      const r=d[i],g=d[i+1],b=d[i+2];
-      return bgColors.some(c=>Math.sqrt((r-c.r)**2+(g-c.g)**2+(b-c.b)**2)<=tol);
+      const r=d[i]>>3;
+      const g=d[i+1]>>3;
+      const b=d[i+2]>>3;
+      return lut[(r<<10)|(g<<5)|b]===1;
     }
     const queue=[];
     function tryAdd(x,y){
@@ -3647,12 +3693,6 @@ function startEyedropper(){
   toast('🔬 Hover to preview — click to copy hex code. Press I or Esc to exit.');
 }
 
-function stopEyedropper(){
-  eyeActive=false;
-  hideEyeTooltip();
-  ca.className=ca.className.replace(/\bteye\b/g,'').trim()+' tm';
-}
-
 // Mouse move — live preview
 canvas.addEventListener('mousemove',e=>{
   if(S.hasImg){
@@ -3843,9 +3883,10 @@ function applyBlurBrush(){
 
   // Build alpha mask — TRANSPARENT background, WHITE (opaque) strokes
   // destination-in uses the ALPHA channel of the mask, not luminance
-  const base=layers.find(l=>l.type==='base');
-  const bx=base?.x??0,by=base?.y??0,bw=base?.w??canvas.width,bh=base?.h??canvas.height;
-  const scaleX=w/bw, scaleY=h/bh;
+  const sel=selLayerId?layers.find(l=>l.id===selLayerId):null;
+  const refLayer=(sel&&sel.type==='image')?sel:(layers.find(l=>l.type==='base'));
+  const lw=refLayer?.w??canvas.width;
+  const scaleX=w/lw;
 
   const maskC=document.createElement('canvas');maskC.width=w;maskC.height=h;
   const mCtx=maskC.getContext('2d');
@@ -3857,12 +3898,12 @@ function applyBlurBrush(){
     mCtx.lineWidth=stroke.size*scaleX;
     mCtx.beginPath();
     stroke.points.forEach((p,i)=>{
-      const sx=(p.x-bx)*scaleX, sy=(p.y-by)*scaleY;
+      const sx=target.toSrcX(p.x), sy=target.toSrcY(p.y);
       if(i===0)mCtx.moveTo(sx,sy); else mCtx.lineTo(sx,sy);
     });
     // Single point — draw a dot
     if(stroke.points.length===1){
-      const sx=(stroke.points[0].x-bx)*scaleX, sy=(stroke.points[0].y-by)*scaleY;
+      const sx=target.toSrcX(stroke.points[0].x), sy=target.toSrcY(stroke.points[0].y);
       mCtx.arc(sx,sy,stroke.size*scaleX/2,0,Math.PI*2);
       mCtx.fillStyle='rgba(255,255,255,1)';
       mCtx.fill();
