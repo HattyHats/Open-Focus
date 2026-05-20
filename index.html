@@ -3284,6 +3284,11 @@ const PRESETS={
 const PNAMES={none:'Original',sp:'Soft Portrait',wf:'Warm Film',cn:'Cool Neon',gh:'Golden Hour',fm:'Faded Mono'};
 function applyPreset(el,key){
   if(!S.hasImg){toast('Open a photo first!');return;}
+  // Commit the preset: cancel any active hover preview so mouseleave doesn't revert it
+  if(typeof _pvActive !== 'undefined' && _pvActive) {
+    _pvActive = false;
+    _pvSaved = null;
+  }
   document.querySelectorAll('.pi').forEach(p=>p.classList.remove('active'));
   el.classList.add('active');
   const vals={...DSLIDERS,...(PRESETS[key]||{})};
