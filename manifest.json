@@ -1,0 +1,17 @@
+{
+  "name": "Open Focus Pro",
+  "short_name": "Open Focus",
+  "description": "The Ultimate Open Source Photo Editor",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#0a0908",
+  "theme_color": "#1a1917",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
