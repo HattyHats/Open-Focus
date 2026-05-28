@@ -1811,14 +1811,14 @@ function serializeLayers(){
     if(l.type==='base') return {...l}; // base pixels stored separately in origImgSrc
     const out={...l};
     if(l.type==='image'&&l.img){
-      const tc=document.createElement('canvas');tc.width=l.img.width;tc.height=l.img.height;
-      tc.getContext('2d').drawImage(l.img,0,0);
-      out.imgSrc=tc.toDataURL();out.img=null;
+      out.imgSrc=l.img.src;
+      out.img=null;
     }
     if(l.mask){
-      // Convert mask canvas to dataURL for history storage
+      // Convert mask canvas to dataURL for history storage, but cache it to avoid memory bloat
       if(l.mask instanceof HTMLCanvasElement) {
-        out.maskSrc=l.mask.toDataURL();
+        if(!l.mask._cachedDataUrl) l.mask._cachedDataUrl = l.mask.toDataURL();
+        out.maskSrc = l.mask._cachedDataUrl;
       } else if (l.mask instanceof HTMLImageElement) {
         out.maskSrc=l.mask.src;
       }
@@ -1919,9 +1919,13 @@ function updateUndoBtns(){
 // ════════════════════════════════════════════
 //  RENDER CANVAS  (fully layer-driven, per-layer adjustments)
 // ════════════════════════════════════════════
-function applyAdjustments(srcCanvas, adj, layerMask, isBase){
+const _adjScratchCanvas = document.createElement('canvas');
+const _applyScratchCanvas = document.createElement('canvas');
+
+function applyAdjustments(srcCanvas, adj, layerMask, isBase, useScratch = false){
   // Apply pixel adjustments to srcCanvas in-place, return the canvas
-  const c=document.createElement('canvas');c.width=srcCanvas.width;c.height=srcCanvas.height;
+  const c = useScratch ? _applyScratchCanvas : document.createElement('canvas');
+  c.width=srcCanvas.width;c.height=srcCanvas.height;
   const x=c.getContext('2d');x.drawImage(srcCanvas,0,0);
   const s=adj||DSLIDERS;
   const id=x.getImageData(0,0,c.width,c.height);
@@ -2009,10 +2013,8 @@ function renderImageLayerToCanvas(layer){
   const h=Math.max(1,Math.round(layer.h));
   const hasAdj=layer.adjustments&&Object.values(layer.adjustments).some(v=>v!==0);
   if(!hasAdj){
-    // No adjustments — draw directly without creating an intermediate adjusted canvas
-    const tmp=document.createElement('canvas');tmp.width=w;tmp.height=h;
-    tmp.getContext('2d').drawImage(layer.img,0,0,w,h);
-    return tmp;
+    // No adjustments — draw directly, no canvas allocation needed
+    return layer.img;
   }
   // With adjustments — use per-layer adj cache keyed by layer id + adj + size
   if(!layer._adjCache) layer._adjCache={key:null,canvas:null};
@@ -2059,9 +2061,9 @@ function compositeClean(targetCtx, targetW, targetH){
     targetCtx.globalCompositeOperation=layer.blendMode||'source-over';
     
     if(layer.type==='adjustment'){
-      const snap=document.createElement('canvas'); snap.width=targetW; snap.height=targetH;
-      snap.getContext('2d').drawImage(targetCtx.canvas, 0, 0);
-      const adjusted = applyAdjustments(snap, layer.adjustments, layer.mask, false);
+      _adjScratchCanvas.width=targetW; _adjScratchCanvas.height=targetH;
+      _adjScratchCanvas.getContext('2d').drawImage(targetCtx.canvas, 0, 0);
+      const adjusted = applyAdjustments(_adjScratchCanvas, layer.adjustments, layer.mask, false, true);
       targetCtx.save();
       const bm = layer.blendMode || 'source-over';
       if (layer.opacity >= 100 && bm === 'source-over' && !layer.mask) {
@@ -2151,36 +2153,46 @@ function compositeClean(targetCtx, targetW, targetH){
           if(layer.strokeWidth > 0) targetCtx.strokeText(line,layer.x,ly);
           targetCtx.fillText(line,layer.x,ly);
         } else {
-          // Curved rendering
-          targetCtx.save();
-          // Approximate curve using characters
+const _textScratchCanvas = document.createElement('canvas');
+
+// ... (in compositeClean, inside the text rendering loop) ...
+          // Curved rendering (draw to scratch to keep shadow uniform)
+          _textScratchCanvas.width = targetW;
+          _textScratchCanvas.height = targetH;
+          const txtCtx = _textScratchCanvas.getContext('2d');
+          
+          txtCtx.font = targetCtx.font;
+          txtCtx.fillStyle = targetCtx.fillStyle;
+          txtCtx.strokeStyle = targetCtx.strokeStyle;
+          txtCtx.lineWidth = targetCtx.lineWidth;
+          txtCtx.textAlign = 'center';
+          
           const radius = Math.abs(curve) + 20; // avoid div by 0
           const isUp = curve < 0; // Negative bends up (arch), positive bends down (bowl)
           
-          targetCtx.translate(layer.x, ly + (isUp ? radius : -radius));
+          txtCtx.translate(layer.x, ly + (isUp ? radius : -radius));
+          txtCtx.textBaseline = isUp ? 'bottom' : 'top';
           
-          // Calculate total angle span based on total width
-          targetCtx.textAlign = 'center';
-          targetCtx.textBaseline = isUp ? 'bottom' : 'top';
-          
-          const totalWidth = targetCtx.measureText(line).width;
+          const totalWidth = txtCtx.measureText(line).width;
           let currentAngle = -(totalWidth / radius) / 2;
           
           for(let j=0; j<line.length; j++) {
             const char = line[j];
-            const charWidth = targetCtx.measureText(char).width;
+            const charWidth = txtCtx.measureText(char).width;
             const angleStep = charWidth / radius;
             
-            targetCtx.save();
-            targetCtx.rotate(currentAngle + angleStep/2);
-            targetCtx.translate(0, isUp ? -radius : radius);
-            if(layer.strokeWidth > 0) targetCtx.strokeText(char, 0, 0);
-            targetCtx.fillText(char, 0, 0);
-            targetCtx.restore();
+            txtCtx.save();
+            txtCtx.rotate(currentAngle + angleStep/2);
+            txtCtx.translate(0, isUp ? -radius : radius);
+            if(layer.strokeWidth > 0) txtCtx.strokeText(char, 0, 0);
+            txtCtx.fillText(char, 0, 0);
+            txtCtx.restore();
             
             currentAngle += angleStep;
           }
-          targetCtx.restore();
+          
+          // Draw scratch onto target (applies targetCtx's shadow uniformly)
+          targetCtx.drawImage(_textScratchCanvas, 0, 0);
         }
       });
       // Reset letterSpacing for other drawings
@@ -2265,30 +2277,38 @@ function renderCanvas(){
     }
     ctx.restore();
   });
+let _marchingAntsPattern = null;
+function getMarchingAntsPattern() {
+  if (_marchingAntsPattern) return _marchingAntsPattern;
+  const patC = document.createElement('canvas'); patC.width=16; patC.height=16;
+  const pCtx = patC.getContext('2d');
+  pCtx.fillStyle='white'; pCtx.fillRect(0,0,16,16);
+  pCtx.fillStyle='black';
+  pCtx.beginPath();
+  pCtx.moveTo(0,8); pCtx.lineTo(8,0); pCtx.lineTo(16,0); pCtx.lineTo(0,16); pCtx.fill();
+  pCtx.beginPath();
+  pCtx.moveTo(8,16); pCtx.lineTo(16,8); pCtx.lineTo(16,16); pCtx.fill();
+  _marchingAntsPattern = patC;
+  return patC;
+}
+const _antsScratchCanvas = document.createElement('canvas');
+
   // Marching Ants overlay
-  if(selectionActive && selectionMaskCanvas) {
+  if(selectionActive && selectionMaskCanvas && typeof selectionEdgeCanvas !== 'undefined') {
     ctx.save();
     selectionMarchingOffset = (selectionMarchingOffset + 1) % 16;
-    const patC = document.createElement('canvas'); patC.width=16; patC.height=16;
-    const pCtx = patC.getContext('2d');
-    pCtx.fillStyle='white'; pCtx.fillRect(0,0,16,16);
-    pCtx.fillStyle='black';
-    pCtx.beginPath();
-    pCtx.moveTo(0,8); pCtx.lineTo(8,0); pCtx.lineTo(16,0); pCtx.lineTo(0,16); pCtx.fill();
-    pCtx.beginPath();
-    pCtx.moveTo(8,16); pCtx.lineTo(16,8); pCtx.lineTo(16,16); pCtx.fill();
-
-    const edgeCtx = selectionEdgeCanvas.getContext('2d');
-    edgeCtx.globalCompositeOperation = 'copy';
-    edgeCtx.drawImage(selectionMaskCanvas, 0, 0);
-    edgeCtx.globalCompositeOperation = 'source-in';
-    edgeCtx.save();
-    edgeCtx.translate(selectionMarchingOffset, selectionMarchingOffset);
-    edgeCtx.fillStyle = edgeCtx.createPattern(patC, 'repeat');
-    edgeCtx.fillRect(-32, -32, canvas.width+64, canvas.height+64);
-    edgeCtx.restore();
     
-    ctx.drawImage(selectionEdgeCanvas, 0, 0);
+    _antsScratchCanvas.width = canvas.width;
+    _antsScratchCanvas.height = canvas.height;
+    const aCtx = _antsScratchCanvas.getContext('2d');
+    
+    aCtx.drawImage(selectionEdgeCanvas, 0, 0);
+    aCtx.globalCompositeOperation = 'source-in';
+    aCtx.translate(selectionMarchingOffset, selectionMarchingOffset);
+    aCtx.fillStyle = aCtx.createPattern(getMarchingAntsPattern(), 'repeat');
+    aCtx.fillRect(-32, -32, canvas.width+64, canvas.height+64);
+    
+    ctx.drawImage(_antsScratchCanvas, 0, 0);
     ctx.restore();
     
     if(!_rafPending) { _rafPending=true; requestAnimationFrame(()=>{renderCanvas();_rafPending=false;}); }
@@ -4037,15 +4057,23 @@ function enterBA(){
   // Also save the actual origImg reference for discard
   baOrigImgBefore=origImg;
   // Save layer stack so we can discard changes
-  baLayerSnapshots=JSON.parse(JSON.stringify(layers.map(l=>{
+  baLayerSnapshots=layers.map(l=>{
     const o={...l};
     if(l.type==='image'&&l.img){
-      const tc=document.createElement('canvas');tc.width=l.w;tc.height=l.h;
-      tc.getContext('2d').drawImage(l.img,0,0,l.w,l.h);
-      o.imgSrc=tc.toDataURL(); o.img=null;
+      o.imgSrc=l.img.src;
+      o.img=null;
+    }
+    if(l.mask){
+      if(l.mask instanceof HTMLCanvasElement) {
+        if(!l.mask._cachedDataUrl) l.mask._cachedDataUrl = l.mask.toDataURL();
+        o.maskSrc = l.mask._cachedDataUrl;
+      } else if (l.mask instanceof HTMLImageElement) {
+        o.maskSrc=l.mask.src;
+      }
+      o.mask=null;
     }
     return o;
-  })));
+  });
   document.getElementById('ba-bar').classList.add('on');
   document.getElementById('ba-divider').classList.add('on');
   document.getElementById('ba-label-before').classList.add('on');
@@ -4084,8 +4112,10 @@ function discardBA(){
   origImg=baOrigImgBefore;
   // Restore layers
   layers=baLayerSnapshots.map(l=>{
-    if(l.imgSrc){const img=new Image();img.src=l.imgSrc;return{...l,img};}
-    return{...l};
+    const out={...l};
+    if(out.imgSrc){const img=new Image();img.src=out.imgSrc;out.img=img;}
+    if(out.maskSrc){const mImg=new Image();mImg.src=out.maskSrc;out.mask=mImg;}
+    return out;
   });
   selLayerId=null;
   updateAdjustHeader();
@@ -4561,65 +4591,67 @@ function applyBlurBrush(){
   const srcC=document.createElement('canvas');srcC.width=w;srcC.height=h;
   srcC.getContext('2d').drawImage(target.img,0,0,w,h);
 
-  // Strength
-  const avgStrength=blurStrokes.reduce((s,st)=>s+st.strength,0)/blurStrokes.length;
-  const blurPx=Math.max(2,avgStrength);
-
-  // Build blurred version — draw on oversized canvas to avoid edge-clip artifacts
-  const pad=Math.ceil(blurPx*2);
-  const bigC=document.createElement('canvas');bigC.width=w+pad*2;bigC.height=h+pad*2;
-  const bigCtx=bigC.getContext('2d');
-  bigCtx.filter=`blur(${blurPx}px)`;
-  bigCtx.drawImage(srcC,pad,pad);
-  bigCtx.filter='none';
-
-  // Crop back to original size
-  const blurredC=document.createElement('canvas');blurredC.width=w;blurredC.height=h;
-  blurredC.getContext('2d').drawImage(bigC,-pad,-pad);
-
-  // Build alpha mask — TRANSPARENT background, WHITE (opaque) strokes
-  // destination-in uses the ALPHA channel of the mask, not luminance
-  const sel=selLayerId?layers.find(l=>l.id===selLayerId):null;
-  const refLayer=(sel&&sel.type==='image')?sel:(layers.find(l=>l.type==='base'));
-  const lw=refLayer?.w??canvas.width;
-  const scaleX=w/lw;
-
-  const maskC=document.createElement('canvas');maskC.width=w;maskC.height=h;
-  const mCtx=maskC.getContext('2d');
-  // Leave background transparent (default) — only paint where user brushed
-  blurStrokes.forEach(stroke=>{
-    mCtx.save();
-    mCtx.lineCap='round';mCtx.lineJoin='round';
-    mCtx.strokeStyle='rgba(255,255,255,1)'; // fully opaque white = full blur there
-    mCtx.lineWidth=stroke.size*scaleX;
-    mCtx.beginPath();
-    stroke.points.forEach((p,i)=>{
-      const sx=target.toSrcX(p.x), sy=target.toSrcY(p.y);
-      if(i===0)mCtx.moveTo(sx,sy); else mCtx.lineTo(sx,sy);
-    });
-    // Single point — draw a dot
-    if(stroke.points.length===1){
-      const sx=target.toSrcX(stroke.points[0].x), sy=target.toSrcY(stroke.points[0].y);
-      mCtx.arc(sx,sy,stroke.size*scaleX/2,0,Math.PI*2);
-      mCtx.fillStyle='rgba(255,255,255,1)';
-      mCtx.fill();
-    }
-    mCtx.stroke();
-    mCtx.restore();
-  });
-
-  // Clip blurred layer to mask using alpha
-  const blurMasked=document.createElement('canvas');blurMasked.width=w;blurMasked.height=h;
-  const bmCtx=blurMasked.getContext('2d');
-  bmCtx.drawImage(blurredC,0,0);
-  bmCtx.globalCompositeOperation='destination-in'; // now correctly uses alpha of maskC
-  bmCtx.drawImage(maskC,0,0);
+  // Group strokes by strength
+  const strengths = [...new Set(blurStrokes.map(s=>s.strength))];
 
   // Final: original + masked-blur on top
   const outC=document.createElement('canvas');outC.width=w;outC.height=h;
   const oCtx=outC.getContext('2d');
   oCtx.drawImage(srcC,0,0);       // sharp original everywhere
-  oCtx.drawImage(blurMasked,0,0); // blurred only in painted alpha regions
+
+  const sel=selLayerId?layers.find(l=>l.id===selLayerId):null;
+  const refLayer=(sel&&sel.type==='image')?sel:(layers.find(l=>l.type==='base'));
+  const lw=refLayer?.w??canvas.width;
+  const scaleX=w/lw;
+
+  strengths.forEach(strength => {
+    const blurPx=Math.max(2,strength);
+    
+    // Build blurred version
+    const pad=Math.ceil(blurPx*2);
+    const bigC=document.createElement('canvas');bigC.width=w+pad*2;bigC.height=h+pad*2;
+    const bigCtx=bigC.getContext('2d');
+    bigCtx.filter=`blur(${blurPx}px)`;
+    bigCtx.drawImage(srcC,pad,pad);
+    bigCtx.filter='none';
+
+    const blurredC=document.createElement('canvas');blurredC.width=w;blurredC.height=h;
+    blurredC.getContext('2d').drawImage(bigC,-pad,-pad);
+
+    // Build alpha mask for strokes with this strength
+    const maskC=document.createElement('canvas');maskC.width=w;maskC.height=h;
+    const mCtx=maskC.getContext('2d');
+    
+    blurStrokes.filter(s=>s.strength===strength).forEach(stroke=>{
+      mCtx.save();
+      mCtx.lineCap='round';mCtx.lineJoin='round';
+      mCtx.strokeStyle='rgba(255,255,255,1)'; 
+      mCtx.lineWidth=stroke.size*scaleX;
+      mCtx.beginPath();
+      stroke.points.forEach((p,i)=>{
+        const sx=target.toSrcX(p.x), sy=target.toSrcY(p.y);
+        if(i===0)mCtx.moveTo(sx,sy); else mCtx.lineTo(sx,sy);
+      });
+      if(stroke.points.length===1){
+        const sx=target.toSrcX(stroke.points[0].x), sy=target.toSrcY(stroke.points[0].y);
+        mCtx.arc(sx,sy,stroke.size*scaleX/2,0,Math.PI*2);
+        mCtx.fillStyle='rgba(255,255,255,1)';
+        mCtx.fill();
+      }
+      mCtx.stroke();
+      mCtx.restore();
+    });
+
+    // Clip blurred layer to mask
+    const blurMasked=document.createElement('canvas');blurMasked.width=w;blurMasked.height=h;
+    const bmCtx=blurMasked.getContext('2d');
+    bmCtx.drawImage(blurredC,0,0);
+    bmCtx.globalCompositeOperation='destination-in';
+    bmCtx.drawImage(maskC,0,0);
+
+    // Draw this strength's blur over the output
+    oCtx.drawImage(blurMasked,0,0);
+  });
 
   const newImg=new Image();
   newImg.onload=()=>{
@@ -6209,6 +6241,7 @@ function closeKB(){document.getElementById('kb-modal').classList.remove('on');}
 //  LIVE RGB HISTOGRAM
 // ═══════════════════════════════════════════════════
 let _histVisible=true;
+const _histScratchCanvas = document.createElement('canvas');
 function drawHistogram(){
   const hc=document.getElementById('histogram-canvas');
   if(!hc||!S.hasImg)return;
@@ -6216,9 +6249,10 @@ function drawHistogram(){
   // Sample at reduced size for performance
   const sw=Math.min(180,canvas.width);
   const sh=Math.max(1,Math.round(sw*(canvas.height/canvas.width)));
-  const sc=document.createElement('canvas');sc.width=sw;sc.height=sh;
-  sc.getContext('2d').drawImage(canvas,0,0,sw,sh);
-  const id=sc.getContext('2d').getImageData(0,0,sw,sh),d=id.data;
+  
+  _histScratchCanvas.width=sw; _histScratchCanvas.height=sh;
+  _histScratchCanvas.getContext('2d').drawImage(canvas,0,0,sw,sh);
+  const id=_histScratchCanvas.getContext('2d').getImageData(0,0,sw,sh),d=id.data;
   const rB=new Array(256).fill(0),gB=new Array(256).fill(0),bB=new Array(256).fill(0);
   for(let i=0;i<d.length;i+=4){rB[d[i]]++;gB[d[i+1]]++;bB[d[i+2]]++;}
   const mx=Math.max(...rB,...gB,...bB)||1;
@@ -6291,6 +6325,18 @@ document.addEventListener('DOMContentLoaded',function(){
     if(!m)return;
     el.addEventListener('mouseenter',()=>_pvPreset(m[1]));
     el.addEventListener('mouseleave',()=>_pvCancel());
+  });
+
+  // Attach change listener to all range sliders to push history when dragging stops
+  document.querySelectorAll('input[type="range"]').forEach(slider => {
+    slider.addEventListener('change', () => {
+      // Only push history for adjustment sliders, skip UI sliders like UI zoom
+      if(slider.id.startsWith('s-') || slider.id.startsWith('ms-')) {
+        let label = slider.previousElementSibling ? slider.previousElementSibling.querySelector('.slbl')?.textContent : null;
+        if(!label) label = 'slider';
+        pushHist('Adjusted ' + label);
+      }
+    });
   });
 });
 
