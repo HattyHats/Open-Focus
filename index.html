@@ -656,8 +656,9 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 *{scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
 @media(max-width:700px){
   /* ── Top bar ── */
-  #topbar{padding:0 8px;gap:5px;height:48px;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+  #topbar{padding:0 8px;gap:8px;height:54px;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
   #topbar::-webkit-scrollbar{display:none;}
+  #topbar > *{flex-shrink:0;}
   #topbar .sep,#topbar .zoom-ctrl,#topbar #docname,
   #topbar .hatty-link,#topbar .hatty-credit,
   #topbar button[onclick="showOB()"],
@@ -665,9 +666,9 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
   #topbar button[onclick="openResize()"],
   #topbar button[onclick="openBorderModal()"]{display:none!important;}
   .logo-text{font-size:13px;}
-  .logo-icon{width:22px;height:22px;font-size:11px;}
-  .logo-img{width:22px;height:22px;border-radius:5px;}
-  #topbar .btn{height:30px;padding:0 9px;font-size:12px;}
+  .logo-icon{width:22px;height:22px;font-size:11px;flex-shrink:0;}
+  .logo-img{width:22px;height:22px;border-radius:5px;flex-shrink:0;}
+  #topbar .btn{height:34px;padding:0 12px;font-size:12px;flex-shrink:0;}
   /* Show mobile panel toggle button */
   #mob-panel-btn{display:flex!important;}
 
@@ -677,16 +678,16 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 
   /* ── Toolstrip — horizontal bottom ── */
   #toolstrip{
-    width:100%;height:calc(72px + env(safe-area-inset-bottom, 10px));flex-direction:row;border-right:none;
-    border-top:1px solid var(--border);padding:6px 8px calc(6px + env(safe-area-inset-bottom, 10px)) 8px;gap:6px;
+    width:100%;height:calc(76px + env(safe-area-inset-bottom, 10px));flex-direction:row;border-right:none;
+    border-top:1px solid var(--border);padding:6px 8px calc(6px + env(safe-area-inset-bottom, 10px)) 8px;gap:8px;
     overflow-x:auto;overflow-y:hidden;flex-shrink:0;order:2;
     -webkit-overflow-scrolling:touch;scrollbar-width:none;
     background:var(--surface);
   }
   #toolstrip::-webkit-scrollbar{display:none;}
-  .tbtn{width:64px;height:58px;flex-shrink:0;gap:5px;border-radius:var(--rs);}
-  .tbtn .ticon{font-size:20px;}
-  .tbtn .tlabel{font-size:10.5px;letter-spacing:.4px;}
+  .tbtn{width:72px;height:62px;flex-shrink:0;gap:6px;border-radius:var(--rs);}
+  .tbtn .ticon{font-size:22px;}
+  .tbtn .tlabel{font-size:11px;letter-spacing:.4px;}
   .tbtn.active::before{left:50%;top:auto;bottom:-4px;transform:translateX(-50%);
     width:28px;height:3px;border-radius:3px 3px 0 0;}
   .tsep{width:1px;height:36px;margin:0 4px;}
@@ -709,7 +710,7 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
     z-index:400;
     transform:translateY(100%);
     transition:transform .3s cubic-bezier(.32,0,.67,0);
-    max-height:42vh;
+    max-height:34vh;
     display:flex;flex-direction:column;
     box-shadow:0 -8px 40px rgba(0,0,0,.5);
   }
@@ -730,7 +731,7 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
   #mob-sheet-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
 
   /* ── Bottom bars — sit above toolstrip ── */
-  #crop-bar,#bgr-refine-bar{bottom:calc(82px + env(safe-area-inset-bottom, 10px))!important;left:8px!important;right:8px!important;
+  #crop-bar,#bgr-refine-bar{bottom:calc(88px + env(safe-area-inset-bottom, 10px))!important;left:8px!important;right:8px!important;
     transform:none!important;max-width:100%!important;}
   #bgr-refine-bar{
     flex-direction:column;
@@ -2990,23 +2991,7 @@ let ptrPinchZoom = null;
 
 canvas.addEventListener('pointerdown',e=>{
   if(!S.hasImg)return;
-  canvas.setPointerCapture(e.pointerId);
-  activePointers.set(e.pointerId, e);
-
-  if(activePointers.size === 2){
-    layerDrag=null;layerResizing=null;polyLassoDrawing=false;
-    guides.h=false;guides.v=false;
-    const pts = Array.from(activePointers.values());
-    ptrPinchDist = Math.hypot(pts[0].clientX-pts[1].clientX, pts[0].clientY-pts[1].clientY);
-    ptrPinchZoom = S.zoom;
-    ptrPanStart = {x: (pts[0].clientX+pts[1].clientX)/2, y: (pts[0].clientY+pts[1].clientY)/2};
-    ptrPanOrig = {x: S.panX, y: S.panY};
-    stopPanMomentum();
-    resetPanVelocity();
-    return;
-  }
-  if(activePointers.size > 2) return;
-
+  
   if(spacePanHeld)return;
   if(S.tool==='crop')return;
   if(S.tool==='bgr')return;
@@ -3035,9 +3020,11 @@ canvas.addEventListener('pointerdown',e=>{
 
   function activateLayer(layer){
     selLayerId=layer.id;
-    layerDrag=layer.id;
-    layerDragStart={cx,cy};
-    layerAtDragStart={x:layer.x??0,y:layer.y??0};
+    if (layer.type !== 'base') {
+      layerDrag=layer.id;
+      layerDragStart={cx,cy};
+      layerAtDragStart={x:layer.x??0,y:layer.y??0};
+    }
     e.preventDefault();
     updateAdjustHeader();
     const paneId=layer.type==='text'?'layers':'adjust';
@@ -3119,7 +3106,7 @@ canvas.addEventListener('pointerdown',e=>{
 });
 
 let _rafPending=false;
-window.addEventListener('pointermove',e=>{
+ca.addEventListener('pointermove',e=>{
   if(activePointers.has(e.pointerId)){
     activePointers.set(e.pointerId, e);
   }
@@ -3128,15 +3115,19 @@ window.addEventListener('pointermove',e=>{
     e.preventDefault();
     const pts = Array.from(activePointers.values());
     const dist = Math.hypot(pts[0].clientX-pts[1].clientX, pts[0].clientY-pts[1].clientY);
-    if(ptrPinchDist) {
+    const midX = (pts[0].clientX+pts[1].clientX)/2;
+    const midY = (pts[0].clientY+pts[1].clientY)/2;
+    
+    if(ptrPinchDist && ptrPanStart) {
+      const oldZoom = S.zoom;
       S.zoom = Math.max(0.05, Math.min(4, ptrPinchZoom * dist / ptrPinchDist));
-      applyZoom();
-    }
-    if(ptrPanStart) {
-      const midX = (pts[0].clientX+pts[1].clientX)/2;
-      const midY = (pts[0].clientY+pts[1].clientY)/2;
-      S.panX = ptrPanOrig.x + (midX - ptrPanStart.x);
-      S.panY = ptrPanOrig.y + (midY - ptrPanStart.y);
+      
+      const cwRect = cw.getBoundingClientRect();
+      const relX = midX - cwRect.left;
+      const relY = midY - cwRect.top;
+      
+      S.panX = ptrPanOrig.x + (midX - ptrPanStart.x) + (relX - (relX * (S.zoom / oldZoom)));
+      S.panY = ptrPanOrig.y + (midY - ptrPanStart.y) + (relY - (relY * (S.zoom / oldZoom)));
       positionCanvas();
     }
     return;
@@ -5524,12 +5515,32 @@ cw.addEventListener('pointerdown',e=>{
 ca.addEventListener('pointerdown',e=>{
   if(e.pointerType==='mouse' && e.button!==0)return;
   if(!canUsePanTool())return;
+  
   const target=e.target;
+  // Prevent intercepting touches on floating UI panels or buttons inside the canvas area
+  if(target && target.closest && target.closest('.btn, input, #bgr-refine-bar, #crop-bar, #blur-bar, #wm-bar, #ba-bar, #zoom-slider-wrap')) return;
+  
+  ca.setPointerCapture(e.pointerId);
+  activePointers.set(e.pointerId, e);
+  
+  if(activePointers.size === 2){
+    layerDrag=null;layerResizing=null;polyLassoDrawing=false;
+    guides.h=false;guides.v=false;
+    const pts = Array.from(activePointers.values());
+    ptrPinchDist = Math.hypot(pts[0].clientX-pts[1].clientX, pts[0].clientY-pts[1].clientY);
+    ptrPinchZoom = S.zoom;
+    ptrPanStart = {x: (pts[0].clientX+pts[1].clientX)/2, y: (pts[0].clientY+pts[1].clientY)/2};
+    ptrPanOrig = {x: S.panX, y: S.panY};
+    stopPanMomentum();
+    resetPanVelocity();
+    return;
+  }
   if(target&&target.closest&&target.closest('#cw'))return;
   startPanDrag(e);
 });
 window.addEventListener('pointermove',e=>{
   if(!panStart)return;
+  if(activePointers.size >= 2) return; // Prevent single-finger pan logic during pinch-to-zoom
   e.preventDefault();
   samplePanVelocity(e.clientX,e.clientY);
   S.panX=panOrigin.x+(e.clientX-panStart.x);
@@ -5537,8 +5548,8 @@ window.addEventListener('pointermove',e=>{
   positionCanvas();
 });
 window.addEventListener('pointerup',()=>{stopPanDrag();});
-window.addEventListener('pointercancel',()=>{stopPanDrag();});
-window.addEventListener('blur',()=>{stopPanDrag(false);clearSpacePan();});
+window.addEventListener('pointercancel',(e)=>{activePointers.delete(e.pointerId); stopPanDrag();});
+window.addEventListener('blur',()=>{activePointers.clear(); stopPanDrag(false);clearSpacePan();});
 
 // ════════════════════════════════════════════
 //  ROTATE & FLIP
