@@ -1709,9 +1709,33 @@ function onDrop(e){
     loadFile(f);
   }
 }
+function downscaleImageIfNeeded(img, maxDim, callback) {
+  if (img.width > maxDim || img.height > maxDim) {
+    const scale = maxDim / Math.max(img.width, img.height);
+    const w = Math.round(img.width * scale);
+    const h = Math.round(img.height * scale);
+    const oc = document.createElement('canvas');
+    oc.width = w; oc.height = h;
+    oc.getContext('2d').drawImage(img, 0, 0, w, h);
+    const scaledImg = new Image();
+    scaledImg.onload = () => callback(scaledImg);
+    scaledImg.src = oc.toDataURL('image/png');
+  } else {
+    callback(img);
+  }
+}
 function loadFile(f){
   const r=new FileReader();
-  r.onload=e=>{const img=new Image();img.onload=()=>initCanvas(img,f.name||'photo');img.src=e.target.result;};
+  r.onload=e=>{
+    const img=new Image();
+    img.onload=()=>{
+      const maxDim = isMobile() ? 2048 : 3072;
+      downscaleImageIfNeeded(img, maxDim, (scaledImg) => {
+        initCanvas(scaledImg, f.name || 'photo');
+      });
+    };
+    img.src=e.target.result;
+  };
   r.readAsDataURL(f);
 }
 
@@ -2798,24 +2822,27 @@ function addImageOverlayFromFile(f){
     const img=new Image();
     img.onload=()=>{
       _addingOverlay=false;
-      const maxW=canvas.width*0.5;
-      const ratio=Math.min(maxW/img.width,1);
-      const w=Math.round(img.width*ratio);
-      const h=Math.round(img.height*ratio);
-      const layer={
-        id:nextLayerId++,type:'image',name:f.name||'Image',
-        visible:true,opacity:100,
-        img,imgW:img.width,imgH:img.height,
-        x:Math.round((canvas.width-w)/2),y:Math.round((canvas.height-h)/2),w,h,
-        adjustments:{...DSLIDERS}
-      };
-      layers.push(layer);
-      selLayerId=layer.id;
-      renderCanvas();renderLayersPanel();
-      pushHist('Added image overlay');
-      const tab=document.querySelector('#rp .ptab[data-p="layers"]');
-      if(tab)switchPane(tab);
-      toast('🖼 Image overlay added! Drag to move it.');
+      const maxDim = isMobile() ? 2048 : 3072;
+      downscaleImageIfNeeded(img, maxDim, (scaledImg) => {
+        const maxW=canvas.width*0.5;
+        const ratio=Math.min(maxW/scaledImg.width,1);
+        const w=Math.round(scaledImg.width*ratio);
+        const h=Math.round(scaledImg.height*ratio);
+        const layer={
+          id:nextLayerId++,type:'image',name:f.name||'Image',
+          visible:true,opacity:100,
+          img:scaledImg,imgW:scaledImg.width,imgH:scaledImg.height,
+          x:Math.round((canvas.width-w)/2),y:Math.round((canvas.height-h)/2),w,h,
+          adjustments:{...DSLIDERS}
+        };
+        layers.push(layer);
+        selLayerId=layer.id;
+        renderCanvas();renderLayersPanel();
+        pushHist('Added image overlay');
+        const tab=document.querySelector('#rp .ptab[data-p="layers"]');
+        if(tab)switchPane(tab);
+        toast('🖼 Image overlay added! Drag to move it.');
+      });
     };
     img.onerror=()=>{_addingOverlay=false;toast('⚠ Could not load image file.');};
     img.src=e2.target.result;
