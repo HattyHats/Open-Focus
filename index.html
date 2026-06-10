@@ -4289,8 +4289,6 @@ async function applyAutoBGR(){
     const blob = await removeBackground(inputBlob, {
       model: modelName,
       device: 'gpu', // Utilizes WebGPU with CPU fallback
-      proxyToWorker: window.crossOriginIsolated ? true : false,
-      publicPath: 'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.7.0/dist/',
       progress: (key, current, total) => {
         if (total > 0) {
           const pct = Math.round((current / total) * 35);
