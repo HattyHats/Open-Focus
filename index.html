@@ -6,7 +6,8 @@
 <title>OpenFocus — The Friendly Photo Editor</title>
 <link rel="manifest" href="manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" crossorigin>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'><rect width='28' height='28' rx='7' fill='%23e8b86d'/><circle cx='12.5' cy='12.5' r='5.5' stroke='%231a1510' stroke-width='2.2' fill='none'/><line x1='16.8' y1='16.8' x2='21.5' y2='21.5' stroke='%231a1510' stroke-width='2.4' stroke-linecap='round'/></svg>"><style>
 :root{
   --bg:#0a0908;--surface:#131211;--panel:#1a1917;--border:#262422;
@@ -36,6 +37,7 @@ html,body{font-family:var(--font-b);background:var(--bg);color:var(--text);heigh
 }
 .logo{display:flex;align-items:center;gap:8px;margin-right:8px;text-decoration:none;}
 .logo-icon{width:30px;height:30px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.logo-img{width:26px;height:26px;border-radius:6px;flex-shrink:0;object-fit:cover;}
 .logo-text{font-family:var(--font-d);font-size:17px;font-weight:500;color:var(--text);}
 .logo-text span{color:var(--accent);}
 .sep{width:1px;height:24px;background:var(--border);margin:0 4px;}
@@ -145,13 +147,17 @@ html,body{font-family:var(--font-b);background:var(--bg);color:var(--text);heigh
 .ch.bl{bottom:-6px;left:-6px;cursor:sw-resize;}.ch.br{bottom:-6px;right:-6px;cursor:se-resize;}
 .ch.tc{top:-6px;left:calc(50% - 6px);cursor:n-resize;}.ch.bc{bottom:-6px;left:calc(50% - 6px);cursor:s-resize;}
 .ch.lc{left:-6px;top:calc(50% - 6px);cursor:w-resize;}.ch.rc{right:-6px;top:calc(50% - 6px);cursor:e-resize;}
-#crop-bar{
+#crop-bar, #bgr-refine-bar{
   position:absolute;bottom:16px;left:50%;transform:translateX(-50%);
   background:var(--glass-bg);
   backdrop-filter:var(--backdrop-blur);
   -webkit-backdrop-filter:var(--backdrop-blur);
   border:1px solid var(--glass-border);
   border-radius:var(--r);padding:8px 12px;display:none;align-items:center;gap:10px;z-index:30;box-shadow:var(--glass-shadow);flex-wrap:wrap;max-width:90vw;
+}
+#bgr-refine-bar{
+  padding:10px 16px;
+  gap:14px;
 }
 .crop-ratio-btn{
   height:26px;padding:0 9px;border-radius:var(--rs);border:1px solid var(--border-light);background:transparent;color:var(--text-muted);font-family:var(--font-b);font-size:11.5px;font-weight:500;cursor:pointer;
@@ -650,7 +656,8 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 *{scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
 @media(max-width:700px){
   /* ── Top bar ── */
-  #topbar{padding:0 8px;gap:5px;height:48px;flex-wrap:nowrap;overflow:hidden;}
+  #topbar{padding:0 8px;gap:5px;height:48px;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+  #topbar::-webkit-scrollbar{display:none;}
   #topbar .sep,#topbar .zoom-ctrl,#topbar #docname,
   #topbar .hatty-link,#topbar .hatty-credit,
   #topbar button[onclick="showOB()"],
@@ -659,6 +666,7 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
   #topbar button[onclick="openBorderModal()"]{display:none!important;}
   .logo-text{font-size:13px;}
   .logo-icon{width:22px;height:22px;font-size:11px;}
+  .logo-img{width:22px;height:22px;border-radius:5px;}
   #topbar .btn{height:30px;padding:0 9px;font-size:12px;}
   /* Show mobile panel toggle button */
   #mob-panel-btn{display:flex!important;}
@@ -722,8 +730,22 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
   #mob-sheet-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
 
   /* ── Bottom bars — sit above toolstrip ── */
-  #crop-bar{bottom:calc(82px + env(safe-area-inset-bottom, 10px))!important;left:8px!important;right:8px!important;
+  #crop-bar,#bgr-refine-bar{bottom:calc(82px + env(safe-area-inset-bottom, 10px))!important;left:8px!important;right:8px!important;
     transform:none!important;max-width:100%!important;}
+  #bgr-refine-bar{
+    flex-direction:column;
+    align-items:stretch!important;
+    gap:8px!important;
+    padding:10px 12px!important;
+  }
+  #bgr-refine-bar > div:first-child{
+    flex-direction:column;
+    align-items:stretch!important;
+    gap:8px!important;
+  }
+  #bgr-refine-bar .sep{
+    display:none!important;
+  }
   #ba-bar,#wm-bar,#blur-bar{bottom:calc(74px + env(safe-area-inset-bottom, 10px))!important;}
   #toast{bottom:calc(88px + env(safe-area-inset-bottom, 10px))!important;}
 
@@ -934,6 +956,14 @@ input[type="range"] {
     <!-- One-Click Auto Panel -->
     <div class="bgr-panel active" id="bgr-panel-auto">
       <p style="font-size:13px;color:var(--text-muted);line-height:1.6;margin-bottom:16px">Removes the background automatically. Works best when the subject stands out from the background.</p>
+      <div class="txt-row" style="margin-bottom:16px; display:flex; align-items:center; gap:8px">
+        <label style="font-size:12px; font-weight:600; color:var(--text); min-width:80px">AI Quality:</label>
+        <select id="bgr-ai-quality" style="flex:1; background:var(--panel); border:1px solid var(--border); border-radius:var(--rs); padding:6px 10px; color:var(--text); font-size:12px; font-family:var(--font-b); outline:none">
+          <option value="balanced" selected>Standard (Balanced — fp16)</option>
+          <option value="ultra">Ultra HD (Max Quality — fp32)</option>
+          <option value="fast">Fast & Light (Quantized — quint8)</option>
+        </select>
+      </div>
       <div id="bgr-auto-progress" style="display:none;margin-bottom:12px"><div id="bgr-auto-bar" style="height:4px;background:var(--border);border-radius:2px;overflow:hidden"><div id="bgr-auto-fill" style="height:100%;background:var(--accent);width:0%;transition:width .2s"></div></div><div style="font-size:11px;color:var(--text-muted);margin-top:6px;text-align:center" id="bgr-auto-status">Removing background…</div></div>
       <div class="macts">
         <button class="btn btn-ghost" onclick="closeBGR()">Cancel</button>
@@ -1203,7 +1233,7 @@ input[type="range"] {
 
 <!-- TOP BAR -->
 <div id="topbar">
-  <a class="logo" href="#"><svg width="26" height="26" viewBox="0 0 28 28" fill="none" style="flex-shrink:0"><rect width="28" height="28" rx="7" fill="#e8b86d"/><circle cx="12.5" cy="12.5" r="5.5" stroke="#1a1510" stroke-width="2.2" fill="none"/><line x1="16.8" y1="16.8" x2="21.5" y2="21.5" stroke="#1a1510" stroke-width="2.4" stroke-linecap="round"/><circle cx="12.5" cy="12.5" r="2" fill="#1a1510" opacity="0.35"/></svg><div class="logo-text">Open<span>Focus</span></div></a>
+  <a class="logo" href="#"><img class="logo-img" src="icon.png" alt="OpenFocus Logo" /><div class="logo-text">Open<span>Focus</span></div></a>
   <div class="sep"></div>
   <button class="btn btn-ghost" onclick="openFile()">📂 Open</button>
   <button class="btn btn-ghost" onclick="openResize()">⤡ Resize</button>
@@ -1311,6 +1341,41 @@ input[type="range"] {
         <span id="cdims" style="font-size:12px;color:var(--text-muted);white-space:nowrap">— × —</span>
         <button class="btn btn-ghost" style="font-size:12px" onclick="cancelCrop()">✕ Cancel</button>
         <button class="btn btn-accent" style="font-size:12px" onclick="applyCrop()">✓ Apply Crop</button>
+      </div>
+    </div>
+    <!-- BGR Refinement Bar -->
+    <div id="bgr-refine-bar" style="display:none; position:absolute; bottom:16px; left:50%; transform:translateX(-50%); background:var(--glass-bg); backdrop-filter:var(--backdrop-blur); -webkit-backdrop-filter:var(--backdrop-blur); border:1px solid var(--glass-border); border-radius:var(--r); padding:10px 16px; align-items:center; gap:14px; z-index:30; box-shadow:var(--glass-shadow); flex-wrap:wrap; max-width:95vw; width: max-content;">
+      <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+        <span style="font-size:12px; font-weight:600; color:var(--accent); white-space:nowrap; display:flex; align-items:center; gap:4px">
+          ✂️ Refine Edges
+        </span>
+        <div class="sep" style="height:18px; width:1px; background:var(--glass-border); margin:0 4px"></div>
+        
+        <!-- Edge Shift Slider -->
+        <div style="display:flex; align-items:center; gap:6px;">
+          <span style="font-size:11px; color:var(--text-muted); min-width:65px">Edge Shift:</span>
+          <input type="range" id="bgr-refine-shift" min="-15" max="15" value="-1" style="width:80px; margin:0" oninput="document.getElementById('bgr-refine-shift-val').textContent=this.value; onBGRRefineSliderInput()">
+          <span id="bgr-refine-shift-val" style="font-size:11px; color:var(--text); min-width:18px; text-align:right">-1</span>
+        </div>
+        
+        <!-- Smoothness (Guided Filter Radius) Slider -->
+        <div style="display:flex; align-items:center; gap:6px;">
+          <span style="font-size:11px; color:var(--text-muted); min-width:65px">Smoothness:</span>
+          <input type="range" id="bgr-refine-smooth" min="0" max="10" value="4" style="width:80px; margin:0" oninput="document.getElementById('bgr-refine-smooth-val').textContent=this.value; onBGRRefineSliderInput()">
+          <span id="bgr-refine-smooth-val" style="font-size:11px; color:var(--text); min-width:18px; text-align:right">4</span>
+        </div>
+
+        <!-- Feather Slider -->
+        <div style="display:flex; align-items:center; gap:6px;">
+          <span style="font-size:11px; color:var(--text-muted); min-width:50px">Feather:</span>
+          <input type="range" id="bgr-refine-feather" min="0" max="15" value="0" style="width:80px; margin:0" oninput="document.getElementById('bgr-refine-feather-val').textContent=this.value; onBGRRefineSliderInput()">
+          <span id="bgr-refine-feather-val" style="font-size:11px; color:var(--text); min-width:18px; text-align:right">0</span>
+        </div>
+      </div>
+      
+      <div style="display:flex; align-items:center; gap:8px; margin-left:auto;">
+        <button class="btn btn-ghost" style="height:28px; font-size:12px; padding:0 10px; border-radius:var(--rs)" onclick="cancelBGRRefine()">✕ Cancel</button>
+        <button class="btn btn-accent" style="height:28px; font-size:12px; padding:0 12px; border-radius:var(--rs)" onclick="applyBGRRefine()">✓ Done</button>
       </div>
     </div>
     <!-- Vertical zoom slider -->
@@ -1475,11 +1540,30 @@ input[type="range"] {
 <div id="toast"><span id="toast-msg"></span><div id="toast-progress"></div></div>
 
 <script>
-// Register Service Worker for PWA
+// Register Service Worker for PWA & inject COOP/COEP headers
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js').then(reg => {
       console.log('ServiceWorker registered:', reg.scope);
+      
+      // If we are not cross-origin isolated yet, we need to activate the service worker and reload
+      if (!window.crossOriginIsolated) {
+        // If a service worker is already controlling the page, reload to apply the COOP/COEP headers
+        if (navigator.serviceWorker.controller) {
+          if (!sessionStorage.getItem('coi-reloaded')) {
+            sessionStorage.setItem('coi-reloaded', '1');
+            window.location.reload();
+          }
+        }
+        
+        // Listen for controller changes
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          window.location.reload();
+        });
+      } else {
+        // Clear the reload flag when we are successfully isolated
+        sessionStorage.removeItem('coi-reloaded');
+      }
     }).catch(err => {
       console.log('ServiceWorker registration failed:', err);
     });
@@ -1809,6 +1893,7 @@ function extractAccentColor(img) {
 }
 
 function initCanvas(img,name){
+  activePointers.clear();
   document.getElementById("cw").classList.remove("transparent-bg");
   origImg=img;S.hasImg=true;
   extractAccentColor(img);
@@ -2817,6 +2902,7 @@ function onOverlayInput(e){
 }
 let _addingOverlay=false; // guard against double-add
 function addImageOverlayFromFile(f){
+  activePointers.clear();
   if(!S.hasImg){toast('Open a base photo first!');return;}
   if(_addingOverlay)return;
   _addingOverlay=true;
@@ -3300,17 +3386,29 @@ function applyBGR(){
 
     const newImg=new Image();
     newImg.onload=()=>{
-      target.bake(newImg);
+      const origImgCopy = target.img;
       document.getElementById('bgr-bar').style.width='100%';
       setTimeout(()=>{
         document.getElementById('bgr-progress').style.display='none';
         document.getElementById('bgr-apply-btn').disabled=false;
+        
+        // Initialize BGR Refine
+        BGRRefine.init(target, origImgCopy, newImg);
+        
+        // Set slider defaults in UI
+        document.getElementById('bgr-refine-shift').value = -1;
+        document.getElementById('bgr-refine-shift-val').textContent = -1;
+        document.getElementById('bgr-refine-smooth').value = 4;
+        document.getElementById('bgr-refine-smooth-val').textContent = 4;
+        document.getElementById('bgr-refine-feather').value = 0;
+        document.getElementById('bgr-refine-feather-val').textContent = 0;
+        
+        // Run first update
+        BGRRefine.update(-1, 4, 0);
+        
         closeBGR();
-        pushHist('🪄 Background removed');
-        toast(`🪄 Background removed from ${target.name}! Export as PNG.`);
-        S.fmt='png';
-        document.querySelectorAll('.fmtb').forEach(b=>b.classList.remove('active'));
-        document.querySelector('.fmtb[onclick*="png"]').classList.add('active');
+        document.getElementById('bgr-refine-bar').style.display = 'flex';
+        toast("✨ Color cutout loaded. Adjust edges below!");
       },400);
     };
     newImg.src=offscreen.toDataURL('image/png');
@@ -3635,17 +3733,29 @@ function applyLasso(){
     out.getContext('2d').putImageData(imgData,0,0);
     const newImg=new Image();
     newImg.onload=()=>{
-      target.bake(newImg);
+      const origImgCopy = target.img;
       stopLasso();
       document.getElementById('bgr-bar').style.width='100%';
       setTimeout(()=>{
         document.getElementById('bgr-progress').style.display='none';
+        
+        // Initialize BGR Refine
+        BGRRefine.init(target, origImgCopy, newImg);
+        
+        // Set slider defaults in UI
+        document.getElementById('bgr-refine-shift').value = -1;
+        document.getElementById('bgr-refine-shift-val').textContent = -1;
+        document.getElementById('bgr-refine-smooth').value = 4;
+        document.getElementById('bgr-refine-smooth-val').textContent = 4;
+        document.getElementById('bgr-refine-feather').value = 0;
+        document.getElementById('bgr-refine-feather-val').textContent = 0;
+        
+        // Run first update
+        BGRRefine.update(-1, 4, 0);
+        
         closeBGR();
-        pushHist('✂️ Smart background removed');
-        toast(`✂️ Background removed from ${target.name}! Export as PNG.`);
-        S.fmt='png';
-        document.querySelectorAll('.fmtb').forEach(b=>b.classList.remove('active'));
-        document.querySelector('.fmtb[onclick*="png"]').classList.add('active');
+        document.getElementById('bgr-refine-bar').style.display = 'flex';
+        toast("✨ Smart cutout loaded. Adjust edges below!");
       },400);
     };
     newImg.src=out.toDataURL('image/png');
@@ -3823,124 +3933,549 @@ function applyPreset(el,key){
 }
 
 // ════════════════════════════════════════════
+// ════════════════════════════════════════════
+//  BGR REFINE ENGINE (Guided Filter, Shift, Feather)
+// ════════════════════════════════════════════
+const BGRRefine = {
+  active: false,
+  target: null,
+  originalImg: null,
+  w: 0,
+  h: 0,
+  originalImgData: null, // Uint8ClampedArray of original image pixels (RGBA)
+  guidance: null,        // Float32Array of grayscale guidance values
+  rawMask: null,         // Float32Array of raw AI mask alpha values (0.0 to 1.0)
+  refinedMask: null,     // Float32Array of refined mask values (0.0 to 1.0)
+  tempCanvas: null,
+  tempCtx: null,
+  updateId: 0,
+  
+  // Pre-allocated reusable buffers to avoid garbage collection memory pressure
+  buffer1: null,
+  buffer2: null,
+  buffer3: null,
+  buffer4: null,
+  buffer5: null,
+
+  init(target, originalImg, maskImg) {
+    this.target = target;
+    this.originalImg = originalImg; // Save reference to restore on Cancel
+    this.w = target.w;
+    this.h = target.h;
+    
+    // Allocate temporary canvas matching target resolution
+    this.tempCanvas = document.createElement('canvas');
+    this.tempCanvas.width = this.w;
+    this.tempCanvas.height = this.h;
+    this.tempCtx = this.tempCanvas.getContext('2d');
+    
+    // Draw and capture original pixels
+    this.tempCtx.drawImage(originalImg, 0, 0, this.w, this.h);
+    const origData = this.tempCtx.getImageData(0, 0, this.w, this.h);
+    this.originalImgData = origData.data;
+    
+    // Draw and capture raw transparent cutout mask from AI/fallback
+    this.tempCtx.clearRect(0, 0, this.w, this.h);
+    this.tempCtx.drawImage(maskImg, 0, 0, this.w, this.h);
+    const maskData = this.tempCtx.getImageData(0, 0, this.w, this.h).data;
+    
+    // Allocate Float32 arrays for high-precision math
+    const len = this.w * this.h;
+    this.guidance = new Float32Array(len);
+    this.rawMask = new Float32Array(len);
+    this.refinedMask = new Float32Array(len);
+    
+    // Convert original image to grayscale for guidance, and extract alpha channel
+    for (let i = 0; i < len; i++) {
+      const i4 = i * 4;
+      this.guidance[i] = (0.299 * this.originalImgData[i4] + 0.587 * this.originalImgData[i4+1] + 0.114 * this.originalImgData[i4+2]) / 255.0;
+      this.rawMask[i] = maskData[i4+3] / 255.0;
+    }
+    
+    // Pre-allocate temporary sliding-window box filter buffers
+    this.buffer1 = new Float32Array(len);
+    this.buffer2 = new Float32Array(len);
+    this.buffer3 = new Float32Array(len);
+    this.buffer4 = new Float32Array(len);
+    this.buffer5 = new Float32Array(len);
+    
+    this.active = true;
+    this.updateId = 0;
+  },
+  
+  cleanup() {
+    this.active = false;
+    this.target = null;
+    this.originalImg = null;
+    this.originalImgData = null;
+    this.guidance = null;
+    this.rawMask = null;
+    this.refinedMask = null;
+    this.tempCanvas = null;
+    this.tempCtx = null;
+    this.buffer1 = null;
+    this.buffer2 = null;
+    this.buffer3 = null;
+    this.buffer4 = null;
+    this.buffer5 = null;
+  },
+
+  // O(N) sliding window box filter (horizontal and vertical passes)
+  boxFilter(src, dest, r) {
+    const w = this.w;
+    const h = this.h;
+    const temp = this.buffer5; // Use pre-allocated buffer 5 for horizontal intermediate values
+    
+    // Horizontal pass
+    for (let y = 0; y < h; y++) {
+      const rowOffset = y * w;
+      let sum = 0;
+      for (let x = -r; x <= r; x++) {
+        const px = Math.max(0, Math.min(w - 1, x));
+        sum += src[rowOffset + px];
+      }
+      temp[rowOffset] = sum;
+      for (let x = 1; x < w; x++) {
+        const prevX = Math.max(0, x - r - 1);
+        const nextX = Math.min(w - 1, x + r);
+        sum += src[rowOffset + nextX] - src[rowOffset + prevX];
+        temp[rowOffset + x] = sum;
+      }
+    }
+    
+    // Vertical pass
+    const denom = 2 * r + 1;
+    for (let x = 0; x < w; x++) {
+      let sum = 0;
+      for (let y = -r; y <= r; y++) {
+        const py = Math.max(0, Math.min(h - 1, y));
+        sum += temp[py * w + x];
+      }
+      dest[x] = sum / (denom * denom);
+      for (let y = 1; y < h; y++) {
+        const prevY = Math.max(0, y - r - 1);
+        const nextY = Math.min(h - 1, y + r);
+        sum += temp[nextY * w + x] - temp[prevY * w + x];
+        dest[y * w + x] = sum / (denom * denom);
+      }
+    }
+  },
+
+  // Fast Guided Filter
+  // I: guidance image (grayscale), p: input mask
+  guidedFilter(r, eps) {
+    const w = this.w;
+    const h = this.h;
+    const I = this.guidance;
+    const p = this.rawMask;
+    const q = this.refinedMask;
+    const len = w * h;
+    
+    // Calculate products
+    for (let i = 0; i < len; i++) this.buffer3[i] = I[i] * p[i]; // I*p -> buffer3
+    for (let i = 0; i < len; i++) this.buffer4[i] = I[i] * I[i]; // I*I -> buffer4
+    
+    // Run box filters to compute means
+    this.boxFilter(I, this.buffer1, r);  // meanI
+    this.boxFilter(p, this.buffer2, r);  // meanP
+    this.boxFilter(this.buffer3, this.buffer3, r); // meanIp
+    this.boxFilter(this.buffer4, this.buffer4, r); // meanII
+    
+    // Compute linear coefficients: a = cov(I,p) / (var(I) + eps), b = meanP - a*meanI
+    for (let i = 0; i < len; i++) {
+      const meanI = this.buffer1[i];
+      const meanP = this.buffer2[i];
+      const meanIp = this.buffer3[i];
+      const meanII = this.buffer4[i];
+      
+      const varI = meanII - meanI * meanI;
+      const covIp = meanIp - meanI * meanP;
+      
+      const a = covIp / (varI + eps);
+      const b = meanP - a * meanI;
+      
+      this.buffer3[i] = a; // Save a in buffer3
+      this.buffer4[i] = b; // Save b in buffer4
+    }
+    
+    // Run box filters on coefficients a and b
+    this.boxFilter(this.buffer3, this.buffer1, r); // meanA
+    this.boxFilter(this.buffer4, this.buffer2, r); // meanB
+    
+    // Compute final refined mask: q = meanA * I + meanB
+    for (let i = 0; i < len; i++) {
+      q[i] = Math.max(0, Math.min(1, this.buffer1[i] * I[i] + this.buffer2[i]));
+    }
+  },
+
+  // Apply Guided Filter + Edge Shift + Feathering pipeline
+  update(shift, smoothness, feather) {
+    const myUpdateId = ++this.updateId;
+    const len = this.w * this.h;
+    
+    // 1. Run guided filter (if smoothness > 0)
+    if (smoothness > 0) {
+      this.guidedFilter(smoothness, 0.005);
+    } else {
+      this.refinedMask.set(this.rawMask);
+    }
+    
+    // 2. Shift edge & Contrast (gain)
+    // Shift ranges from -15 to +15. Map to -0.15 to +0.15.
+    const shiftVal = shift / 100;
+    const gain = 2.5; // Gain sharpens the mask border slightly to prevent blur halos
+    for (let i = 0; i < len; i++) {
+      let v = this.refinedMask[i];
+      v = (v - 0.5) * gain + 0.5 + shiftVal;
+      this.refinedMask[i] = Math.max(0, Math.min(1, v));
+    }
+    
+    // 3. Apply feather (if feather > 0)
+    if (feather > 0) {
+      this.boxFilter(this.refinedMask, this.refinedMask, feather);
+    }
+    
+    // 4. Create new transparent RGBA image array
+    const outputCanvas = document.createElement('canvas');
+    outputCanvas.width = this.w;
+    outputCanvas.height = this.h;
+    const outputCtx = outputCanvas.getContext('2d');
+    
+    const outputImgData = outputCtx.createImageData(this.w, this.h);
+    const d = outputImgData.data;
+    const orig = this.originalImgData;
+    const mask = this.refinedMask;
+    
+    for (let i = 0; i < len; i++) {
+      const i4 = i * 4;
+      d[i4] = orig[i4];
+      d[i4+1] = orig[i4+1];
+      d[i4+2] = orig[i4+2];
+      d[i4+3] = Math.round(orig[i4+3] * mask[i]);
+    }
+    
+    outputCtx.putImageData(outputImgData, 0, 0);
+    
+    // Update target image element asynchronously, ignoring old loads
+    const newImg = new Image();
+    const targetRef = this.target;
+    newImg.onload = () => {
+      if (this.active && myUpdateId === this.updateId) {
+        targetRef.img = newImg;
+        invalidateAdjCache();
+        renderCanvas();
+      }
+    };
+    newImg.src = outputCanvas.toDataURL('image/png');
+  }
+};
+
+// Throttled slider handler to maintain 16fps updates
+let bgrRefineThrottleTimer = null;
+let bgrRefinePendingArgs = null;
+function onBGRRefineSliderInput() {
+  const shift = parseInt(document.getElementById('bgr-refine-shift').value);
+  const smoothness = parseInt(document.getElementById('bgr-refine-smooth').value);
+  const feather = parseInt(document.getElementById('bgr-refine-feather').value);
+  
+  if (bgrRefineThrottleTimer) {
+    bgrRefinePendingArgs = [shift, smoothness, feather];
+    return;
+  }
+  
+  BGRRefine.update(shift, smoothness, feather);
+  
+  bgrRefineThrottleTimer = setTimeout(() => {
+    bgrRefineThrottleTimer = null;
+    if (bgrRefinePendingArgs) {
+      BGRRefine.update(...bgrRefinePendingArgs);
+      bgrRefinePendingArgs = null;
+    }
+  }, 60);
+}
+
+function cancelBGRRefine() {
+  if (!BGRRefine.active) return;
+  // Restore original layer image
+  BGRRefine.target.img = BGRRefine.originalImg;
+  invalidateAdjCache();
+  renderCanvas();
+  
+  // Cleanup
+  document.getElementById('bgr-refine-bar').style.display = 'none';
+  BGRRefine.cleanup();
+  setTool('move');
+  toast('✕ Background removal discarded.');
+}
+
+function applyBGRRefine(skipSetTool) {
+  if (!BGRRefine.active) return;
+  const target = BGRRefine.target;
+  
+  // Cleanup refinement session
+  document.getElementById('bgr-refine-bar').style.display = 'none';
+  BGRRefine.cleanup();
+  
+  // Bake changes to layer
+  target.bake(target.img);
+  
+  // Set format to PNG for transparency
+  S.fmt = 'png';
+  document.querySelectorAll('.fmtb').forEach(b => b.classList.remove('active'));
+  const pngBtn = document.querySelector('.fmtb[onclick*="png"]');
+  if (pngBtn) pngBtn.classList.add('active');
+  
+  pushHist('⚡ AI Background removed');
+  if (!skipSetTool) setTool('move');
+  toast(`⚡ Background removed from ${target.name}! Export as PNG.`);
+}
+
 //  ONE-CLICK AUTO BG REMOVE
 // ════════════════════════════════════════════
-function applyAutoBGR(){
+async function applyAutoBGR(){
   if(!S.hasImg){toast('Open a photo first!');return;}
-  // Smart fixed defaults — no sliders needed
-  const tol=28, feather=1;
   const btn=document.getElementById('bgr-auto-btn');
   if(btn)btn.disabled=true;
   document.getElementById('bgr-auto-progress').style.display='block';
-  document.getElementById('bgr-auto-status').textContent='Analysing image…';
+  document.getElementById('bgr-auto-status').textContent='Initializing AI model…';
+  document.getElementById('bgr-auto-fill').style.width='15%';
 
-  setTimeout(()=>{
+  try {
     const target=getBGRTarget();
     const w=target.w, h=target.h;
+    
+    // Read selected model and resolution settings from UI
+    const quality = document.getElementById('bgr-ai-quality')?.value || 'balanced';
+    let modelName = 'isnet_fp16';
+    let maxAIDim = 1024;
+    if (quality === 'ultra') {
+      modelName = 'isnet';
+      maxAIDim = 1600;
+    } else if (quality === 'fast') {
+      modelName = 'isnet_quint8';
+      maxAIDim = 800;
+    }
+
+    const aiScale = Math.min(maxAIDim / Math.max(w, h), 1);
+    const aiW = Math.round(w * aiScale);
+    const aiH = Math.round(h * aiScale);
+    
     const offscreen=document.createElement('canvas');
-    offscreen.width=w;offscreen.height=h;
+    offscreen.width=aiW; offscreen.height=aiH;
     const offCtx=offscreen.getContext('2d');
-    offCtx.drawImage(target.img,0,0,w,h);
-    const imgData=offCtx.getImageData(0,0,w,h);
-    const d=imgData.data;
-
-    // Multi-point border sampling — sample many points around all 4 edges
-    const bgColors=[];
-    const sample=(x,y)=>{
-      const xi=Math.max(0,Math.min(w-1,x)), yi=Math.max(0,Math.min(h-1,y));
-      const i=(yi*w+xi)*4;
-      bgColors.push({r:d[i],g:d[i+1],b:d[i+2]});
-    };
-    const step=Math.max(1,Math.round(Math.min(w,h)/60));
-    for(let x=0;x<w;x+=step){sample(x,0);sample(x,h-1);}
-    for(let y=0;y<h;y+=step){sample(0,y);sample(w-1,y);}
-
-    document.getElementById('bgr-auto-status').textContent='Removing background…';
-    document.getElementById('bgr-auto-fill').style.width='20%';
-
-    // BFS flood-fill from all edges
-    const visited=new Uint8Array(w*h);
-    const lut=new Uint8Array(32768);
-    bgColors.forEach(c=>{
-      const br=Math.round(c.r/8);
-      const bg=Math.round(c.g/8);
-      const bb=Math.round(c.b/8);
-      const rad=Math.ceil(tol/8);
-      for(let r=Math.max(0,br-rad);r<=Math.min(31,br+rad);r++){
-        for(let g=Math.max(0,bg-rad);g<=Math.min(31,bg+rad);g++){
-          for(let b=Math.max(0,bb-rad);b<=Math.min(31,bb+rad);b++){
-            const dist=Math.sqrt((r*8-c.r)**2+(g*8-c.g)**2+(b*8-c.b)**2);
-            if(dist<=tol){
-              lut[(r<<10)|(g<<5)|b]=1;
-            }
-          }
+    offCtx.drawImage(target.img, 0, 0, aiW, aiH);
+    
+    document.getElementById('bgr-auto-status').textContent='Loading AI model: ' + modelName + '…';
+    document.getElementById('bgr-auto-fill').style.width='30%';
+    
+    // Dynamically import client-side background removal AI library (WASM powered)
+    const imglyModule = await import('https://cdn.jsdelivr.net/npm/@imgly/background-removal/+esm');
+    const removeBackground = imglyModule.removeBackground || imglyModule.default;
+    
+    document.getElementById('bgr-auto-fill').style.width='40%';
+    document.getElementById('bgr-auto-status').textContent='Preparing image blob…';
+    
+    // Convert HTMLCanvasElement to Blob since removeBackground does not accept canvas directly
+    const inputBlob = await new Promise((resolve, reject) => {
+      offscreen.toBlob((b) => {
+        if (b) resolve(b);
+        else reject(new Error("Canvas conversion to Blob failed."));
+      }, 'image/png');
+    });
+    
+    document.getElementById('bgr-auto-fill').style.width='50%';
+    document.getElementById('bgr-auto-status').textContent='Removing background (AI running)…';
+    
+    const blob = await removeBackground(inputBlob, {
+      model: modelName,
+      device: 'gpu', // Utilizes WebGPU with CPU fallback
+      proxyToWorker: window.crossOriginIsolated ? true : false,
+      publicPath: 'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.7.0/dist/',
+      progress: (key, current, total) => {
+        if (total > 0) {
+          const pct = Math.round((current / total) * 35);
+          document.getElementById('bgr-auto-fill').style.width = (50 + pct) + '%';
+          document.getElementById('bgr-auto-status').textContent = `Downloading AI model (${Math.round(current/1024/1024)}MB / ${Math.round(total/1024/1024)}MB)…`;
         }
       }
     });
-    function colorMatch(i){
-      const r=d[i]>>3;
-      const g=d[i+1]>>3;
-      const b=d[i+2]>>3;
-      return lut[(r<<10)|(g<<5)|b]===1;
-    }
-    const queue=[];
-    function tryAdd(x,y){
-      if(x<0||y<0||x>=w||y>=h)return;
-      const idx=y*w+x;
-      if(visited[idx])return;
-      if(colorMatch(idx*4)){visited[idx]=1;queue.push(idx);}
-    }
-    for(let x=0;x<w;x++){tryAdd(x,0);tryAdd(x,h-1);}
-    for(let y=0;y<h;y++){tryAdd(0,y);tryAdd(w-1,y);}
-    let qi=0;
-    while(qi<queue.length){
-      const idx=queue[qi++];
-      const x2=idx%w, y2=(idx/w)|0;
-      tryAdd(x2-1,y2);tryAdd(x2+1,y2);tryAdd(x2,y2-1);tryAdd(x2,y2+1);
-      if(qi%10000===0) document.getElementById('bgr-auto-fill').style.width=Math.min(75,20+qi/(queue.length+1)*55)+'%';
-    }
-    document.getElementById('bgr-auto-fill').style.width='80%';
-    document.getElementById('bgr-auto-status').textContent='Finishing edges…';
+    
+    document.getElementById('bgr-auto-status').textContent='Refining edge borders…';
+    document.getElementById('bgr-auto-fill').style.width='95%';
+    
+    // Load transparent cutout returned by the AI
+    const maskImg = new Image();
+    maskImg.onload = () => {
+      const origImgCopy = target.img;
+      document.getElementById('bgr-auto-progress').style.display='none';
+      if(btn) btn.disabled=false;
+      
+      // Initialize BGR Refine
+      BGRRefine.init(target, origImgCopy, maskImg);
+      
+      // Set slider defaults in UI
+      document.getElementById('bgr-refine-shift').value = -1;
+      document.getElementById('bgr-refine-shift-val').textContent = -1;
+      document.getElementById('bgr-refine-smooth').value = 4;
+      document.getElementById('bgr-refine-smooth-val').textContent = 4;
+      document.getElementById('bgr-refine-feather').value = 0;
+      document.getElementById('bgr-refine-feather-val').textContent = 0;
+      
+      // Run first update
+      BGRRefine.update(-1, 4, 0);
+      
+      // Close the modal dialog
+      closeBGR();
+      
+      // Open the refinement bar
+      document.getElementById('bgr-refine-bar').style.display = 'flex';
+      
+      // Notify the user
+      toast("✨ AI cutout loaded. Adjust edges below!");
+    };
+    maskImg.src = URL.createObjectURL(blob);
+  } catch (err) {
+    console.error("AI Background removal failed, falling back to smart flood-fill:", err);
+    toast("⚠️ AI failed: " + err.message + ". Running fallback...");
+    document.getElementById('bgr-auto-status').textContent='Falling back to local filter…';
+    document.getElementById('bgr-auto-fill').style.width='45%';
+    runFloodFillBGRFallback(btn);
+  }
+}
 
-    // Apply transparency with soft edge feathering
-    for(let y=0;y<h;y++){
-      for(let x=0;x<w;x++){
-        const i=y*w+x;
-        if(!visited[i])continue;
-        if(feather>0){
-          let nearFg=false;
-          for(let dy=-feather;dy<=feather&&!nearFg;dy++)
-            for(let dx=-feather;dx<=feather&&!nearFg;dx++){
-              const nx=x+dx,ny=y+dy;
-              if(nx>=0&&ny>=0&&nx<w&&ny<h&&!visited[ny*w+nx])nearFg=true;
-            }
-          d[i*4+3]=nearFg?Math.round(d[i*4+3]*0.35):0;
-        } else {
-          d[i*4+3]=0;
+function runFloodFillBGRFallback(btn) {
+  const tol=20, feather=2;
+  const target=getBGRTarget();
+  const w=target.w, h=target.h;
+  const offscreen=document.createElement('canvas');
+  offscreen.width=w;offscreen.height=h;
+  const offCtx=offscreen.getContext('2d');
+  offCtx.drawImage(target.img,0,0,w,h);
+  const imgData=offCtx.getImageData(0,0,w,h);
+  const d=imgData.data;
+
+  // Outlier-resistant corner sampling
+  const samples=[];
+  const addSample=(x,y)=>{
+    const xi=Math.max(0,Math.min(w-1,x)), yi=Math.max(0,Math.min(h-1,y));
+    const i=(yi*w+xi)*4;
+    samples.push({r:d[i],g:d[i+1],b:d[i+2]});
+  };
+  for(let y=0;y<5;y++){
+    for(let x=0;x<5;x++){
+      addSample(x,y);
+      addSample(w-1-x,y);
+      addSample(x,h-1-y);
+      addSample(w-1-x,h-1-y);
+    }
+  }
+
+  const dists=samples.map((s1,idx1)=>{
+    let sum=0;
+    samples.forEach((s2,idx2)=>{
+      if(idx1===idx2)return;
+      sum+=Math.sqrt((s1.r-s2.r)**2+(s1.g-s2.g)**2+(s1.b-s2.b)**2);
+    });
+    return {sample:s1, avgDist:sum/(samples.length-1)};
+  });
+  dists.sort((a,b)=>a.avgDist-b.avgDist);
+  const keepCount=Math.round(samples.length*0.6);
+  const bgColors=dists.slice(0,keepCount).map(item=>item.sample);
+
+  document.getElementById('bgr-auto-status').textContent='Removing background…';
+  document.getElementById('bgr-auto-fill').style.width='65%';
+
+  // BFS flood-fill from all edges
+  const visited=new Uint8Array(w*h);
+  const lut=new Uint8Array(32768);
+  bgColors.forEach(c=>{
+    const br=Math.round(c.r/8);
+    const bg=Math.round(c.g/8);
+    const bb=Math.round(c.b/8);
+    const rad=Math.ceil(tol/8);
+    for(let r=Math.max(0,br-rad);r<=Math.min(31,br+rad);r++){
+      for(let g=Math.max(0,bg-rad);g<=Math.min(31,bg+rad);g++){
+        for(let b=Math.max(0,bb-rad);b<=Math.min(31,bb+rad);b++){
+          const dist=Math.sqrt((r*8-c.r)**2+(g*8-c.g)**2+(b*8-c.b)**2);
+          if(dist<=tol){
+            lut[(r<<10)|(g<<5)|b]=1;
+          }
         }
       }
     }
-    document.getElementById('bgr-auto-fill').style.width='95%';
+  });
+  function colorMatch(i){
+    const r=d[i]>>3;
+    const g=d[i+1]>>3;
+    const b=d[i+2]>>3;
+    return lut[(r<<10)|(g<<5)|b]===1;
+  }
+  const queue=[];
+  function tryAdd(x,y){
+    if(x<0||y<0||x>=w||y>=h)return;
+    const idx=y*w+x;
+    if(visited[idx])return;
+    if(colorMatch(idx*4)){visited[idx]=1;queue.push(idx);}
+  }
+  for(let x=0;x<w;x++){tryAdd(x,0);tryAdd(x,h-1);}
+  for(let y=0;y<h;y++){tryAdd(0,y);tryAdd(w-1,y);}
+  let qi=0;
+  while(qi<queue.length){
+    const idx=queue[qi++];
+    const x2=idx%w, y2=(idx/w)|0;
+    tryAdd(x2-1,y2);tryAdd(x2+1,y2);tryAdd(x2,y2-1);tryAdd(x2,y2+1);
+  }
+  document.getElementById('bgr-auto-fill').style.width='85%';
 
-    const out=document.createElement('canvas');out.width=w;out.height=h;
-    out.getContext('2d').putImageData(imgData,0,0);
-    const newImg=new Image();
-    newImg.onload=()=>{
-      target.bake(newImg);
-      document.getElementById('bgr-auto-fill').style.width='100%';
-      setTimeout(()=>{
-        document.getElementById('bgr-auto-progress').style.display='none';
-        if(btn)btn.disabled=false;
-        closeBGR();
-        pushHist('⚡ Auto background removed');
-        toast(`⚡ Background removed from ${target.name}! Export as PNG.`);
-        S.fmt='png';
-        document.querySelectorAll('.fmtb').forEach(b=>b.classList.remove('active'));
-        document.querySelector('.fmtb[onclick*="png"]').classList.add('active');
-      },400);
-    };
-    newImg.src=out.toDataURL('image/png');
-  },30);
+  for(let y=0;y<h;y++){
+    for(let x=0;x<w;x++){
+      const i=y*w+x;
+      if(!visited[i])continue;
+      if(feather>0){
+        let nearFg=false;
+        for(let dy=-feather;dy<=feather&&!nearFg;dy++)
+          for(let dx=-feather;dx<=feather&&!nearFg;dx++){
+            const nx=x+dx,ny=y+dy;
+            if(nx>=0&&ny>=0&&nx<w&&ny<h&&!visited[ny*w+nx])nearFg=true;
+          }
+        d[i*4+3]=nearFg?Math.round(d[i*4+3]*0.35):0;
+      } else {
+        d[i*4+3]=0;
+      }
+    }
+  }
+  document.getElementById('bgr-auto-fill').style.width='95%';
+
+  const out=document.createElement('canvas');out.width=w;out.height=h;
+  out.getContext('2d').putImageData(imgData,0,0);
+  const newImg=new Image();
+  newImg.onload=()=>{
+    const origImgCopy = target.img;
+    document.getElementById('bgr-auto-fill').style.width='100%';
+    setTimeout(()=>{
+      document.getElementById('bgr-auto-progress').style.display='none';
+      if(btn)btn.disabled=false;
+      
+      // Initialize BGR Refine
+      BGRRefine.init(target, origImgCopy, newImg);
+      
+      // Set slider defaults in UI
+      document.getElementById('bgr-refine-shift').value = -1;
+      document.getElementById('bgr-refine-shift-val').textContent = -1;
+      document.getElementById('bgr-refine-smooth').value = 4;
+      document.getElementById('bgr-refine-smooth-val').textContent = 4;
+      document.getElementById('bgr-refine-feather').value = 0;
+      document.getElementById('bgr-refine-feather-val').textContent = 0;
+      
+      // Run first update
+      BGRRefine.update(-1, 4, 0);
+      
+      closeBGR();
+      document.getElementById('bgr-refine-bar').style.display = 'flex';
+      toast("✨ Smart cutout loaded. Adjust edges below!");
+    },400);
+  };
+  newImg.src=out.toDataURL('image/png');
 }
 
 
@@ -4737,6 +5272,9 @@ function cleanupBlurBrush(){
 const TOOL_PANE={move:'adjust',adjust:'adjust',filter:'adjust',crop:'adjust',text:'layers',overlay:'layers',bgr:'adjust',wm:'adjust',history:'history',eye:'adjust',blurbrush:'adjust',magic:'adjust',lasso:'adjust'};
 function setTool(tool){
   // Clean up any active exclusive modes whenever switching tools
+  if(BGRRefine.active && tool !== 'move') {
+    applyBGRRefine(true);
+  }
   if(S.tool==='ba'&&tool!=='ba') exitBA();
   if(S.tool==='crop'&&tool!=='crop') cancelCrop();
   if(S.tool==='eye'&&tool!=='eye') stopEyedropper();
@@ -4817,6 +5355,7 @@ function setTool(tool){
   document.getElementById('bgr-bar').style.display=tool==='bgr'?'block':'none';
   document.getElementById('magic-bar').style.display=tool==='magic'?'block':'none';
   document.getElementById('lasso-bar').style.display=tool==='lasso'?'block':'none';
+  document.getElementById('bgr-refine-bar').style.display=BGRRefine.active?'flex':'none';
   if(tool==='wm')initWMUI();
 }
 function switchPane(btn){
@@ -4894,7 +5433,7 @@ function startPanMomentum(){
 }
 
 function canUsePanTool(){
-  return S.hasImg&&(S.tool==='move'||spacePanHeld);
+  return S.hasImg&&(S.tool==='move'||spacePanHeld||BGRRefine.active);
 }
 
 function clearSpacePan(){
@@ -4917,7 +5456,8 @@ function startPanDrag(e){
       target.closest('#zoom-slider-wrap')||
       target.closest('#crop-bar')||
       target.closest('#blur-bar')||
-      target.closest('#wm-bar')
+      target.closest('#wm-bar')||
+      target.closest('#bgr-refine-bar')
     ) return;
   }
   stopPanMomentum();

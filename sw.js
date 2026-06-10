@@ -34,10 +34,33 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// Fetch Event: Network first, fallback to cache
+// Fetch Event: Network first, fallback to cache, and inject COOP/COEP headers to enable SharedArrayBuffer
 self.addEventListener('fetch', event => {
-  event.respondWith(
-    fetch(event.request)
-      .catch(() => caches.match(event.request))
-  );
+  const isNavigation = event.request.mode === 'navigate';
+  const isWorker = event.request.destination === 'worker' || event.request.destination === 'sharedworker';
+
+  if (isNavigation || isWorker) {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          if (!response || response.status === 0) return response;
+
+          const newHeaders = new Headers(response.headers);
+          newHeaders.set("Cross-Origin-Embedder-Policy", "require-corp");
+          newHeaders.set("Cross-Origin-Opener-Policy", "same-origin");
+
+          return new Response(response.body, {
+            status: response.status,
+            statusText: response.statusText,
+            headers: newHeaders
+          });
+        })
+        .catch(() => caches.match(event.request))
+    );
+  } else {
+    event.respondWith(
+      fetch(event.request)
+        .catch(() => caches.match(event.request))
+    );
+  }
 });
