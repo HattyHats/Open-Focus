@@ -98,9 +98,9 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);height:100
 .tlabel{font-size:9.5px;font-weight:500;letter-spacing:.3px;text-transform:uppercase;}
 .tsep{width:32px;height:1px;background:var(--border);margin:6px 0;}
 /* CANVAS AREA */
-#canvas-area{flex:1;overflow:hidden;position:relative;background:#060505;user-select:none;}
+#canvas-area{flex:1;overflow:hidden;position:relative;background:#060505;user-select:none;touch-action:none;}
 #cs{position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden;}
-#cw{position:absolute;box-shadow:0 8px 64px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.05);transform-origin:top left;}
+#cw{position:absolute;box-shadow:0 8px 64px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.05);transform-origin:top left;touch-action:none;}
 #mc{display:block;}
 /* cursor per tool */
 #canvas-area.tm{cursor:grab;}
@@ -136,11 +136,11 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);height:100
 #zoom-slider{height:120px;width:4px;cursor:pointer;accent-color:var(--accent);}
 #zoom-slider-label{font-size:10px;color:var(--text-dim);font-family:var(--font-b);white-space:nowrap;}
 /* CROP OVERLAY */
-#cro{position:absolute;inset:0;display:none;pointer-events:none;}
+#cro{position:absolute;inset:0;display:none;pointer-events:none;touch-action:none;}
 #cro.on{display:block;pointer-events:all;}
-.cshade{position:absolute;background:rgba(0,0,0,.55);}
-#cb{position:absolute;border:2px solid var(--accent);cursor:move;}
-.ch{position:absolute;width:12px;height:12px;background:var(--accent);border-radius:2px;}
+.cshade{position:absolute;background:rgba(0,0,0,.55);touch-action:none;}
+#cb{position:absolute;border:2px solid var(--accent);cursor:move;touch-action:none;}
+.ch{position:absolute;width:12px;height:12px;background:var(--accent);border-radius:2px;touch-action:none;}
 .ch.tl{top:-6px;left:-6px;cursor:nw-resize;}.ch.tr{top:-6px;right:-6px;cursor:ne-resize;}
 .ch.bl{bottom:-6px;left:-6px;cursor:sw-resize;}.ch.br{bottom:-6px;right:-6px;cursor:se-resize;}
 .ch.tc{top:-6px;left:calc(50% - 6px);cursor:n-resize;}.ch.bc{bottom:-6px;left:calc(50% - 6px);cursor:s-resize;}
@@ -1675,7 +1675,7 @@ function openFile(){
   clearTimeout(openPopupDismiss);
   setTimeout(()=>{
     openPopupDismiss=null;
-    document.addEventListener('mousedown',dismissOpenPopup,{once:true});
+    document.addEventListener('pointerdown',dismissOpenPopup,{once:true});
   },10);
 }
 function dismissOpenPopup(e){
@@ -2851,8 +2851,31 @@ function getResizeHandle(layer,cx,cy){
   return null;
 }
 
-canvas.addEventListener('mousedown',e=>{
+const activePointers = new Map();
+let ptrPanStart = null;
+let ptrPanOrig = null;
+let ptrPinchDist = null;
+let ptrPinchZoom = null;
+
+canvas.addEventListener('pointerdown',e=>{
   if(!S.hasImg)return;
+  canvas.setPointerCapture(e.pointerId);
+  activePointers.set(e.pointerId, e);
+
+  if(activePointers.size === 2){
+    layerDrag=null;layerResizing=null;polyLassoDrawing=false;
+    guides.h=false;guides.v=false;
+    const pts = Array.from(activePointers.values());
+    ptrPinchDist = Math.hypot(pts[0].clientX-pts[1].clientX, pts[0].clientY-pts[1].clientY);
+    ptrPinchZoom = S.zoom;
+    ptrPanStart = {x: (pts[0].clientX+pts[1].clientX)/2, y: (pts[0].clientY+pts[1].clientY)/2};
+    ptrPanOrig = {x: S.panX, y: S.panY};
+    stopPanMomentum();
+    resetPanVelocity();
+    return;
+  }
+  if(activePointers.size > 2) return;
+
   if(spacePanHeld)return;
   if(S.tool==='crop')return;
   if(S.tool==='bgr')return;
@@ -2915,7 +2938,6 @@ canvas.addEventListener('mousedown',e=>{
     renderLayersPanel();
   }
 
-  // 1. Check resize handles on selected layer first
   if(selLayerId){
     const sel=layers.find(l=>l.id===selLayerId);
     if(sel&&sel.visible){
@@ -2924,14 +2946,11 @@ canvas.addEventListener('mousedown',e=>{
     }
   }
 
-  // 2. Build ordered list of all layers hit at this point (top → bottom)
-  // Exclude base layer from cycling — it's selected last as fallback only
   const hits=[];
   let baseHit=null;
   for(let i=layers.length-1;i>=0;i--){
     const layer=layers[i];
     if(!layer.visible)continue;
-    // Check resize handles on any visible layer
     const handle=getResizeHandle(layer,cx,cy);
     if(handle){startLayerResize(layer,handle);return;}
     if(hitTest(layer)){
@@ -2940,33 +2959,26 @@ canvas.addEventListener('mousedown',e=>{
     }
   }
 
-  // Add base as last resort if nothing else was hit
   if(hits.length===0&&baseHit) hits.push(baseHit);
 
   if(hits.length===0){
-    // Clicked empty space — deselect
     selLayerId=null;renderCanvas();renderLayersPanel();
     return;
   }
 
   if(hits.length===1){
-    // Only one layer here — just select it
     activateLayer(hits[0]);
     return;
   }
 
-  // 3. Multiple non-base layers at this point — CYCLE through them on repeated clicks
   const curIdx=hits.findIndex(l=>l.id===selLayerId);
   let nextLayer;
   if(curIdx===-1){
-    // Currently selected layer isn't in hits — select topmost
     nextLayer=hits[0];
   } else {
-    // Cycle to the next layer underneath (wraps back to top)
     nextLayer=hits[(curIdx+1)%hits.length];
   }
 
-  // Show hint toast when cycling so user knows what's happening
   if(curIdx!==-1){
     const name=nextLayer.type==='text'?`"${nextLayer.text.slice(0,15)}"`:nextLayer.name||nextLayer.type;
     toast(`🔄 Cycled to: ${name} — click again to cycle deeper`);
@@ -2976,7 +2988,31 @@ canvas.addEventListener('mousedown',e=>{
 });
 
 let _rafPending=false;
-window.addEventListener('mousemove',e=>{
+window.addEventListener('pointermove',e=>{
+  if(activePointers.has(e.pointerId)){
+    activePointers.set(e.pointerId, e);
+  }
+
+  if(activePointers.size === 2){
+    e.preventDefault();
+    const pts = Array.from(activePointers.values());
+    const dist = Math.hypot(pts[0].clientX-pts[1].clientX, pts[0].clientY-pts[1].clientY);
+    if(ptrPinchDist) {
+      S.zoom = Math.max(0.05, Math.min(4, ptrPinchZoom * dist / ptrPinchDist));
+      applyZoom();
+    }
+    if(ptrPanStart) {
+      const midX = (pts[0].clientX+pts[1].clientX)/2;
+      const midY = (pts[0].clientY+pts[1].clientY)/2;
+      S.panX = ptrPanOrig.x + (midX - ptrPanStart.x);
+      S.panY = ptrPanOrig.y + (midY - ptrPanStart.y);
+      positionCanvas();
+    }
+    return;
+  }
+
+  if(activePointers.size > 1) return;
+
   if(polyLassoDrawing){
     const {cx,cy}=canvasCoords(e);
     lassoPoints.push({x:cx, y:cy});
@@ -3041,19 +3077,24 @@ window.addEventListener('mousemove',e=>{
   }
 });
 
-window.addEventListener('mouseup',e=>{
-  if(polyLassoDrawing) {
+function handlePointerUp(e){
+  activePointers.delete(e.pointerId);
+  if(activePointers.size === 1) { ptrPanStart = null; ptrPinchDist = null; }
+  
+  if(polyLassoDrawing && activePointers.size === 0) {
     polyLassoDrawing = false;
     finishLassoSelection(e.shiftKey);
     return;
   }
-  if(layerDrag||layerResizing){
+  if((layerDrag||layerResizing) && activePointers.size === 0){
     pushHist(layerDrag?'Moved layer':'Resized layer');
     layerDrag=null;layerResizing=null;layerDragStart=null;layerAtDragStart=null;
     guides.h=false;guides.v=false;
     renderCanvas();
   }
-});
+}
+window.addEventListener('pointerup',handlePointerUp);
+window.addEventListener('pointercancel',handlePointerUp);
 
 function canvasCoords(e){
   const rect=canvas.getBoundingClientRect();
@@ -3277,8 +3318,9 @@ function startLasso(){
   document.getElementById('bgr-lasso-apply-btn').disabled=true;
   toast('🖌 Paint over what you want to KEEP. Switch to 🔴 to mark background. Press ✂ when done.');
 
-  lassoCanvas.onmousedown=e=>{
+  lassoCanvas.onpointerdown=e=>{
     e.preventDefault();
+    lassoCanvas.setPointerCapture(e.pointerId);
     lassoDrawing=true;
     const pt=lassoCoords(e);
     const size=parseInt(document.getElementById('bgr-brush-size').value)||20;
@@ -3286,12 +3328,12 @@ function startLasso(){
     lassoStrokes.push(currentStroke);
     drawLassoStrokes();
   };
-  lassoCanvas.onmousemove=e=>{
+  lassoCanvas.onpointermove=e=>{
     if(!lassoDrawing||!currentStroke)return;
     currentStroke.points.push(lassoCoords(e));
     drawLassoStrokes();
   };
-  lassoCanvas.onmouseup=()=>{
+  lassoCanvas.onpointerup=()=>{
     lassoDrawing=false;currentStroke=null;
     const hasFg=lassoStrokes.some(s=>s.type==='fg');
     if(hasFg){
@@ -3299,7 +3341,7 @@ function startLasso(){
       document.getElementById('bgr-modal').classList.add('on');
     }
   };
-  lassoCanvas.onmouseleave=()=>{
+  lassoCanvas.onpointercancel=()=>{
     if(lassoDrawing){lassoDrawing=false;currentStroke=null;}
   };
 }
@@ -4156,27 +4198,17 @@ function initBADrag(){
   // Mouse drag on handle OR the divider line itself
   function onMouseDown(e){
     e.preventDefault();
+    handle.setPointerCapture(e.pointerId);
     const onMove=e2=>moveTo(e2.clientX);
-    const onUp=()=>{
-      window.removeEventListener('mousemove',onMove);
-      window.removeEventListener('mouseup',onUp);
+    const onUp=e2=>{
+      handle.releasePointerCapture(e2.pointerId);
+      window.removeEventListener('pointermove',onMove);
+      window.removeEventListener('pointerup',onUp);
       handle.style.cursor='ew-resize';
     };
     handle.style.cursor='grabbing';
-    window.addEventListener('mousemove',onMove);
-    window.addEventListener('mouseup',onUp);
-  }
-
-  // Touch support
-  function onTouchStart(e){
-    e.preventDefault();
-    const onMove=e2=>{ if(e2.touches[0]) moveTo(e2.touches[0].clientX); };
-    const onEnd=()=>{
-      window.removeEventListener('touchmove',onMove);
-      window.removeEventListener('touchend',onEnd);
-    };
-    window.addEventListener('touchmove',onMove,{passive:false});
-    window.addEventListener('touchend',onEnd);
+    window.addEventListener('pointermove',onMove);
+    window.addEventListener('pointerup',onUp);
   }
 
   // Also allow clicking anywhere on the canvas-area to jump the divider there
@@ -4188,11 +4220,9 @@ function initBADrag(){
     moveTo(e.clientX);
   }
 
-  handle.addEventListener('mousedown',onMouseDown);
-  divider.addEventListener('mousedown',onMouseDown);
-  handle.addEventListener('touchstart',onTouchStart,{passive:false});
-  divider.addEventListener('touchstart',onTouchStart,{passive:false});
-  ca2.addEventListener('click',onCanvasClick);
+  handle.addEventListener('pointerdown',onMouseDown);
+  divider.addEventListener('pointerdown',onMouseDown);
+  ca2.addEventListener('pointerdown',onCanvasClick);
 }
 
 // ════════════════════════════════════════════
@@ -4489,9 +4519,10 @@ function startBlurBrush(){
 }
 
 function attachBlurBrushEvents(){
-  blurOverlayCanvas.onmousedown=e=>{
+  blurOverlayCanvas.onpointerdown=e=>{
     if(spacePanHeld)return;
     e.preventDefault();
+    blurOverlayCanvas.setPointerCapture(e.pointerId);
     blurBrushDrawing=true;
     const pt=blurCanvasCoords(e);
     const size=blurBrushScaledSize();
@@ -4501,32 +4532,13 @@ function attachBlurBrushEvents(){
     document.getElementById('blur-undo-btn').disabled=false;
     drawBlurOverlay();
   };
-  blurOverlayCanvas.onmousemove=e=>{
+  blurOverlayCanvas.onpointermove=e=>{
     if(!blurBrushDrawing||!blurCurrentStroke)return;
     blurCurrentStroke.points.push(blurCanvasCoords(e));
     drawBlurOverlay();
   };
-  blurOverlayCanvas.onmouseup=()=>{blurBrushDrawing=false;blurCurrentStroke=null;};
-  blurOverlayCanvas.onmouseleave=()=>{blurBrushDrawing=false;blurCurrentStroke=null;};
-  blurOverlayCanvas.ontouchstart=e=>{
-    if(spacePanHeld)return;
-    e.preventDefault();
-    blurBrushDrawing=true;
-    const pt=blurTouchCoords(e.touches[0]);
-    const size=blurBrushScaledSize();
-    const strength=parseInt(document.getElementById('blur-brush-strength').value)||8;
-    blurCurrentStroke={points:[pt],size,strength};
-    blurStrokes.push(blurCurrentStroke);
-    document.getElementById('blur-undo-btn').disabled=false;
-    drawBlurOverlay();
-  };
-  blurOverlayCanvas.ontouchmove=e=>{
-    e.preventDefault();
-    if(!blurBrushDrawing||!blurCurrentStroke)return;
-    blurCurrentStroke.points.push(blurTouchCoords(e.touches[0]));
-    drawBlurOverlay();
-  };
-  blurOverlayCanvas.ontouchend=()=>{blurBrushDrawing=false;blurCurrentStroke=null;};
+  blurOverlayCanvas.onpointerup=()=>{blurBrushDrawing=false;blurCurrentStroke=null;};
+  blurOverlayCanvas.onpointercancel=()=>{blurBrushDrawing=false;blurCurrentStroke=null;};
 }
 
 function blurCanvasCoords(e){
@@ -4535,13 +4547,6 @@ function blurCanvasCoords(e){
   return{
     x:(e.clientX-rect.left)*(canvas.width/rect.width),
     y:(e.clientY-rect.top)*(canvas.height/rect.height)
-  };
-}
-function blurTouchCoords(t){
-  const rect=canvas.getBoundingClientRect();
-  return{
-    x:(t.clientX-rect.left)*(canvas.width/rect.width),
-    y:(t.clientY-rect.top)*(canvas.height/rect.height)
   };
 }
 // Returns brush size scaled from screen pixels to image pixels
@@ -4918,28 +4923,31 @@ function positionCanvas(){
   }
 }
 
-cw.addEventListener('mousedown',e=>{
-  if(e.button!==0||!canUsePanTool())return;
+cw.addEventListener('pointerdown',e=>{
+  if(e.pointerType==='mouse' && e.button!==0)return;
+  if(!canUsePanTool())return;
   // Let layer hit-testing run first; pan only if no layer drag started.
   requestAnimationFrame(()=>{
     if(layerDrag||layerResizing)return;
     startPanDrag(e);
   });
 });
-ca.addEventListener('mousedown',e=>{
-  if(e.button!==0||!canUsePanTool())return;
+ca.addEventListener('pointerdown',e=>{
+  if(e.pointerType==='mouse' && e.button!==0)return;
+  if(!canUsePanTool())return;
   const target=e.target;
   if(target&&target.closest&&target.closest('#cw'))return;
   startPanDrag(e);
 });
-window.addEventListener('mousemove',e=>{
+window.addEventListener('pointermove',e=>{
   if(!panStart)return;
   samplePanVelocity(e.clientX,e.clientY);
   S.panX=panOrigin.x+(e.clientX-panStart.x);
   S.panY=panOrigin.y+(e.clientY-panStart.y);
   positionCanvas();
 });
-window.addEventListener('mouseup',()=>{stopPanDrag();});
+window.addEventListener('pointerup',()=>{stopPanDrag();});
+window.addEventListener('pointercancel',()=>{stopPanDrag();});
 window.addEventListener('blur',()=>{stopPanDrag(false);clearSpacePan();});
 
 // ════════════════════════════════════════════
@@ -5302,17 +5310,18 @@ function updateCropUI(){
   cdims.textContent=`${Math.round(w)} × ${Math.round(h)} px`;
   renderCanvas();
 }
-cro.addEventListener('mousedown',e=>{
+cro.addEventListener('pointerdown',e=>{
   if(S.tool!=='crop')return;
   if(spacePanHeld)return;
   e.preventDefault();e.stopPropagation();
+  cro.setPointerCapture(e.pointerId);
   const handle=e.target.dataset.h;
   const rect=canvas.getBoundingClientRect();
   const sx=canvas.width/rect.width,sy=canvas.height/rect.height;
   cropDragStart={mx:(e.clientX-rect.left)*sx,my:(e.clientY-rect.top)*sy};
   cropRatDS={...cropR};cropDrag=handle||'box';
 });
-window.addEventListener('mousemove',e=>{
+cro.addEventListener('pointermove',e=>{
   if(!cropDrag||S.tool!=='crop')return;
   const rect=canvas.getBoundingClientRect();
   const sx=canvas.width/rect.width,sy=canvas.height/rect.height;
@@ -5340,7 +5349,8 @@ window.addEventListener('mousemove',e=>{
   }
   cropR=r;updateCropUI();
 });
-window.addEventListener('mouseup',()=>{cropDrag=null;});
+cro.addEventListener('pointerup',()=>{cropDrag=null;});
+cro.addEventListener('pointercancel',()=>{cropDrag=null;});
 
 // ════════════════════════════════════════════
 //  ZOOM
@@ -5953,179 +5963,7 @@ document.addEventListener('paste',e=>{
   }
 });
 
-// ════════════════════════════════════════════
-//  MOBILE — touch pan, pinch zoom & layer drag
-// ════════════════════════════════════════════
-let tcStart=null,tcPanOrig=null,tcPinchDist=null,tcPinchZoom=null;
-let tcLayerDragId=null,tcLayerDragStart=null,tcLayerAtStart=null;
-let tcMoved=false; // distinguish tap from drag
-let tcPanning=false;
-let tcBgStart=null,tcBgPanOrig=null,tcBgMoved=false;
 
-function tcDist(t){
-  const dx=t[0].clientX-t[1].clientX,dy=t[0].clientY-t[1].clientY;
-  return Math.sqrt(dx*dx+dy*dy);
-}
-function tcCanvasCoords(touch){
-  const rect=canvas.getBoundingClientRect();
-  return{
-    cx:(touch.clientX-rect.left)*(canvas.width/rect.width),
-    cy:(touch.clientY-rect.top)*(canvas.height/rect.height)
-  };
-}
-function tcHitTest(layer,cx,cy){
-  if(!layer.visible)return false;
-  if(layer.type==='base'){const lx=layer.x??0,ly=layer.y??0,lw=layer.w??canvas.width,lh=layer.h??canvas.height;return cx>=lx&&cx<=lx+lw&&cy>=ly&&cy<=ly+lh;}
-  if(layer.type==='image')return cx>=layer.x&&cx<=layer.x+layer.w&&cy>=layer.y&&cy<=layer.y+layer.h;
-  if(layer.type==='text'||layer.type==='watermark'){const b=getTextBounds(layer);return cx>=b.x&&cx<=b.x+b.w&&cy>=b.y&&cy<=b.y+b.h;}
-  return false;
-}
-
-canvas.addEventListener('touchstart',e=>{
-  if(e.touches.length===1){
-    const t=e.touches[0];
-    tcMoved=false;
-    tcPanning=false;
-    tcStart={x:t.clientX,y:t.clientY};
-    tcPanOrig={x:S.panX,y:S.panY};
-    stopPanMomentum();
-    resetPanVelocity();
-    samplePanVelocity(t.clientX,t.clientY);
-    // Check if touching a layer for dragging — with cycling support
-    if(S.hasImg&&S.tool==='move'){
-      const{cx,cy}=tcCanvasCoords(t);
-      // Build list of all non-base layers hit at this point (top→bottom)
-      const hits=[];
-      for(let i=layers.length-1;i>=0;i--){
-        const layer=layers[i];
-        if(!layer.visible||layer.type==='base')continue;
-        if(tcHitTest(layer,cx,cy)) hits.push(layer);
-      }
-      if(hits.length>0){
-        // Cycle: if current selection is in hits, take the next one
-        const curIdx=hits.findIndex(l=>l.id===selLayerId);
-        const picked=curIdx===-1?hits[0]:hits[(curIdx+1)%hits.length];
-        tcLayerDragId=picked.id;
-        tcLayerDragStart={cx,cy};
-        tcLayerAtStart={x:picked.x??0,y:picked.y??0};
-        selLayerId=picked.id;
-        updateAdjustHeader();
-        renderLayersPanel();
-      }
-    }
-  } else if(e.touches.length===2){
-    tcPinchDist=tcDist(e.touches);
-    tcPinchZoom=S.zoom;
-    tcStart=null;tcLayerDragId=null;
-  }
-},{passive:true});
-
-canvas.addEventListener('touchmove',e=>{
-  e.preventDefault();
-  if(e.touches.length===1){
-    if(!tcStart)return;
-    const t=e.touches[0];
-    const dx=t.clientX-tcStart.x, dy=t.clientY-tcStart.y;
-    if(Math.abs(dx)>4||Math.abs(dy)>4)tcMoved=true;
-    if(tcLayerDragId&&tcMoved){
-      // Drag the layer
-      const layer=layers.find(l=>l.id===tcLayerDragId);
-      if(layer){
-        const{cx,cy}=tcCanvasCoords(t);
-        layer.x=tcLayerAtStart.x+(cx-tcLayerDragStart.cx);
-        layer.y=tcLayerAtStart.y+(cy-tcLayerDragStart.cy);
-        if(!_rafPending){_rafPending=true;requestAnimationFrame(()=>{renderCanvas();_rafPending=false;});}
-      }
-    } else if(!tcLayerDragId){
-      // Pan canvas
-      tcPanning=true;
-      samplePanVelocity(t.clientX,t.clientY);
-      S.panX=tcPanOrig.x+dx;
-      S.panY=tcPanOrig.y+dy;
-      positionCanvas();
-    }
-  } else if(e.touches.length===2&&tcPinchDist){
-    const d=tcDist(e.touches);
-    S.zoom=Math.max(0.05,Math.min(4,tcPinchZoom*d/tcPinchDist));
-    applyZoom();
-  }
-},{passive:false});
-
-canvas.addEventListener('touchend',e=>{
-  let launchedMomentum=false;
-  if(tcLayerDragId){
-    if(!tcMoved){
-      // Tap on layer — select it and open panel
-      const layer=layers.find(l=>l.id===tcLayerDragId);
-      if(layer){
-        if(layer.type==='text'){
-          const tab=document.querySelector('#rp .ptab[data-p="layers"]');
-          if(tab)switchPane(tab);
-        } else {
-          const tab=document.querySelector('#rp .ptab[data-p="adjust"]');
-          if(tab)switchPane(tab);
-        }
-        if(typeof openMobSheet==='function')openMobSheet();
-        syncMobSliders();
-      }
-    } else {
-      pushHist('Moved layer');
-    }
-    tcLayerDragId=null;tcLayerDragStart=null;tcLayerAtStart=null;
-    renderCanvas();renderLayersPanel();
-  }
-  if(!launchedMomentum&&tcPanning&&S.hasImg){
-    startPanMomentum();
-    launchedMomentum=true;
-  }
-  tcStart=null;tcPanOrig=null;tcPinchDist=null;tcMoved=false;
-  tcPanning=false;
-  if(!launchedMomentum)resetPanVelocity();
-},{passive:true});
-
-// Touch panning from the canvas background area (outside the image) on mobile.
-ca.addEventListener('touchstart',e=>{
-  if(!S.hasImg||S.tool!=='move'||e.touches.length!==1)return;
-  const target=e.target;
-  if(target&&target.closest){
-    if(
-      target.closest('#cw')||
-      target.closest('#zoom-slider-wrap')||
-      target.closest('#crop-bar')||
-      target.closest('#blur-bar')||
-      target.closest('#wm-bar')
-    ) return;
-  }
-  const t=e.touches[0];
-  tcBgMoved=false;
-  tcBgStart={x:t.clientX,y:t.clientY};
-  tcBgPanOrig={x:S.panX,y:S.panY};
-  stopPanMomentum();
-  resetPanVelocity();
-  samplePanVelocity(t.clientX,t.clientY);
-},{passive:true});
-
-ca.addEventListener('touchmove',e=>{
-  if(!tcBgStart||e.touches.length!==1)return;
-  e.preventDefault();
-  const t=e.touches[0];
-  const dx=t.clientX-tcBgStart.x,dy=t.clientY-tcBgStart.y;
-  if(Math.abs(dx)>2||Math.abs(dy)>2)tcBgMoved=true;
-  samplePanVelocity(t.clientX,t.clientY);
-  S.panX=tcBgPanOrig.x+dx;
-  S.panY=tcBgPanOrig.y+dy;
-  positionCanvas();
-},{passive:false});
-
-function endBgTouchPan(){
-  if(tcBgStart&&tcBgMoved&&S.hasImg)startPanMomentum();
-  else resetPanVelocity();
-  tcBgStart=null;
-  tcBgPanOrig=null;
-  tcBgMoved=false;
-}
-ca.addEventListener('touchend',endBgTouchPan,{passive:true});
-ca.addEventListener('touchcancel',endBgTouchPan,{passive:true});
 
 // ════════════════════════════════════════════
 //  MOBILE BOTTOM SHEET
