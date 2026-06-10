@@ -23,7 +23,7 @@
   --backdrop-blur: blur(16px) saturate(180%);
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:var(--font-b);background:var(--bg);color:var(--text);height:100vh;overflow:hidden;display:flex;flex-direction:column;font-size:13px;-webkit-font-smoothing:antialiased;}
+html,body{font-family:var(--font-b);background:var(--bg);color:var(--text);height:100vh;overflow:hidden;display:flex;flex-direction:column;font-size:13px;-webkit-font-smoothing:antialiased;overscroll-behavior:none;}
 /* TOP BAR */
 #topbar{
   height:var(--top-h);
@@ -101,7 +101,7 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);height:100
 #canvas-area{flex:1;overflow:hidden;position:relative;background:#060505;user-select:none;touch-action:none;}
 #cs{position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden;}
 #cw{position:absolute;box-shadow:0 8px 64px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.05);transform-origin:top left;touch-action:none;}
-#mc{display:block;}
+#mc{display:block;touch-action:none;}
 /* cursor per tool */
 #canvas-area.tm{cursor:grab;}
 #canvas-area.tm #cw{cursor:inherit;}
@@ -508,7 +508,7 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 .bgr-tab:hover{border-color:var(--border-light);color:var(--text);}
 .bgr-tab.active{border-color:var(--accent);color:var(--accent);background:var(--accent-glow);}
 .bgr-panel{display:none;}.bgr-panel.active{display:block;}
-#lasso-overlay{position:absolute;top:0;left:0;display:none;cursor:crosshair;z-index:20;pointer-events:none;}
+#lasso-overlay{position:absolute;top:0;left:0;display:none;cursor:crosshair;z-index:20;pointer-events:none;touch-action:none;}
 #lasso-overlay.on{display:block;pointer-events:all;}
 #adj-layer-indicator{padding:8px 10px;background:var(--accent-glow);border:1px solid rgba(232,184,109,0.3);border-radius:var(--rs);font-size:12px;color:var(--accent);margin-bottom:4px;display:none;align-items:center;gap:6px;}
 #adj-layer-indicator.on{display:flex;}
@@ -546,6 +546,7 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
   background:linear-gradient(to bottom, transparent 0%, var(--accent) 8%, var(--accent) 92%, transparent 100%);
   pointer-events:none;display:none;z-index:15;
   box-shadow:0 0 12px var(--accent-glow), 0 0 4px var(--accent);
+  touch-action:none;
 }
 #ba-divider.on{display:block;}
 /* Drag handle — sits centred on divider */
@@ -562,6 +563,7 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
   transition: transform 0.15s, box-shadow 0.15s;
   user-select:none;
   z-index:16;
+  touch-action:none;
 }
 #ba-handle:hover{
   transform:translate(-50%,-50%) scale(1.12);
@@ -759,6 +761,9 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 /* ── Histogram ── */
 #hist-section{border-bottom:1px solid var(--border);}
 #hist-toggle-btn:hover{color:var(--text-muted)!important;}
+input[type="range"] {
+  touch-action: pan-x;
+}
 </style>
 </head>
 <body>
@@ -3013,6 +3018,10 @@ window.addEventListener('pointermove',e=>{
 
   if(activePointers.size > 1) return;
 
+  if(polyLassoDrawing || layerDrag || layerResizing){
+    e.preventDefault();
+  }
+
   if(polyLassoDrawing){
     const {cx,cy}=canvasCoords(e);
     lassoPoints.push({x:cx, y:cy});
@@ -3330,6 +3339,7 @@ function startLasso(){
   };
   lassoCanvas.onpointermove=e=>{
     if(!lassoDrawing||!currentStroke)return;
+    e.preventDefault();
     currentStroke.points.push(lassoCoords(e));
     drawLassoStrokes();
   };
@@ -4199,7 +4209,7 @@ function initBADrag(){
   function onMouseDown(e){
     e.preventDefault();
     handle.setPointerCapture(e.pointerId);
-    const onMove=e2=>moveTo(e2.clientX);
+    const onMove=e2=>{ e2.preventDefault(); moveTo(e2.clientX); };
     const onUp=e2=>{
       handle.releasePointerCapture(e2.pointerId);
       window.removeEventListener('pointermove',onMove);
@@ -4534,6 +4544,7 @@ function attachBlurBrushEvents(){
   };
   blurOverlayCanvas.onpointermove=e=>{
     if(!blurBrushDrawing||!blurCurrentStroke)return;
+    e.preventDefault();
     blurCurrentStroke.points.push(blurCanvasCoords(e));
     drawBlurOverlay();
   };
@@ -4941,6 +4952,7 @@ ca.addEventListener('pointerdown',e=>{
 });
 window.addEventListener('pointermove',e=>{
   if(!panStart)return;
+  e.preventDefault();
   samplePanVelocity(e.clientX,e.clientY);
   S.panX=panOrigin.x+(e.clientX-panStart.x);
   S.panY=panOrigin.y+(e.clientY-panStart.y);
@@ -5323,6 +5335,7 @@ cro.addEventListener('pointerdown',e=>{
 });
 cro.addEventListener('pointermove',e=>{
   if(!cropDrag||S.tool!=='crop')return;
+  e.preventDefault();
   const rect=canvas.getBoundingClientRect();
   const sx=canvas.width/rect.width,sy=canvas.height/rect.height;
   const mx=(e.clientX-rect.left)*sx,my=(e.clientY-rect.top)*sy;
@@ -6176,6 +6189,14 @@ document.addEventListener('DOMContentLoaded',function(){
       }
     });
   });
+
+  // Prevent browser pull-to-refresh and swipe navigation from the canvas area
+  const canvasArea = document.getElementById('canvas-area');
+  if(canvasArea) {
+    canvasArea.addEventListener('touchmove', e => {
+      e.preventDefault();
+    }, { passive: false });
+  }
 });
 
 // ═══════════════════════════════════════════════════
