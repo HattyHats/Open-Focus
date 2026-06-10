@@ -2125,20 +2125,23 @@ function applyAdjustments(srcCanvas, adj, layerMask, isBase, useScratch = false)
 }
 
 function renderImageLayerToCanvas(layer){
-  // Render at display size (layer.w × layer.h), not source resolution.
+  let activeImg = layer.img;
+  if (typeof BGRRefine !== 'undefined' && BGRRefine.active && BGRRefine.target) {
+    if (!BGRRefine.target.isBase && typeof selLayerId !== 'undefined' && layer.id === selLayerId) activeImg = BGRRefine.target.img;
+  }
+  
   const w=Math.max(1,Math.round(layer.w));
   const h=Math.max(1,Math.round(layer.h));
   const hasAdj=layer.adjustments&&Object.values(layer.adjustments).some(v=>v!==0);
   if(!hasAdj){
-    // No adjustments — draw directly, no canvas allocation needed
-    return layer.img;
+    return activeImg;
   }
-  // With adjustments — use per-layer adj cache keyed by layer id + adj + size
   if(!layer._adjCache) layer._adjCache={key:null,canvas:null};
-  const key=JSON.stringify(layer.adjustments)+w+'x'+h;
+  const imgSrc = activeImg.src ? activeImg.src.slice(-20) : '';
+  const key=imgSrc+JSON.stringify(layer.adjustments)+w+'x'+h;
   if(layer._adjCache.key===key&&layer._adjCache.canvas) return layer._adjCache.canvas;
   const tmp=document.createElement('canvas');tmp.width=w;tmp.height=h;
-  tmp.getContext('2d').drawImage(layer.img,0,0,w,h);
+  tmp.getContext('2d').drawImage(activeImg,0,0,w,h);
   const result=applyAdjustments(tmp,layer.adjustments);
   layer._adjCache={key,canvas:result};
   return result;
@@ -2148,14 +2151,21 @@ function renderImageLayerToCanvas(layer){
 let _adjCache={key:null, canvas:null};
 function getCachedAdjusted(layer){
   const adj=layer.adjustments||DSLIDERS;
-  // Cache key: origImg src + adjustment values + display size + selection mask (if base)
   const lw=layer.w??canvas.width, lh=layer.h??canvas.height;
   const isBase = layer.type === 'base';
   const selKey = (isBase && selectionActive) ? '_sel' + (typeof selectionVersion !== 'undefined' ? selectionVersion : 1) : '';
-  const key=origImg.src.slice(-20)+JSON.stringify(adj)+lw+'x'+lh+selKey;
+  
+  let activeImg = layer.img || origImg;
+  if (typeof BGRRefine !== 'undefined' && BGRRefine.active && BGRRefine.target) {
+    if (isBase && BGRRefine.target.isBase) activeImg = BGRRefine.target.img;
+    else if (!isBase && !BGRRefine.target.isBase && typeof selLayerId !== 'undefined' && layer.id === selLayerId) activeImg = BGRRefine.target.img;
+  }
+  
+  const imgSrc = activeImg.src ? activeImg.src.slice(-20) : '';
+  const key=imgSrc+JSON.stringify(adj)+lw+'x'+lh+selKey;
   if(_adjCache.key===key&&_adjCache.canvas) return _adjCache.canvas;
   const raw=document.createElement('canvas');raw.width=lw;raw.height=lh;
-  raw.getContext('2d').drawImage(origImg,0,0,lw,lh);
+  raw.getContext('2d').drawImage(activeImg,0,0,lw,lh);
   const result=applyAdjustments(raw,adj,null,isBase);
   _adjCache={key,canvas:result};
   return result;
