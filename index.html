@@ -1926,9 +1926,10 @@ function getSliders(){
 }
 function serializeLayers(){
   return layers.map(l=>{
-    if(l.type==='base') return {...l}; // base pixels stored separately in origImgSrc
     const out={...l};
-    if(l.type==='image'&&l.img){
+    if(out.adjustments) out.adjustments={...out.adjustments};
+    if(out.type==='base') return out; // base pixels stored separately in origImgSrc
+    if(out.type==='image'&&out.img){
       out.imgSrc=l.img.src;
       out.img=null;
     }
@@ -1979,6 +1980,7 @@ function jumpHist(idx){
   // Restore layers
   layers=e.layers.map(l=>{
     const out = {...l};
+    if(out.adjustments) out.adjustments = {...out.adjustments};
     if(out.type==='image'&&out.imgSrc){
       const img=new Image();
       img.onload = () => { if(!_rafPending){_rafPending=true;requestAnimationFrame(()=>{renderCanvas();_rafPending=false;});} };
@@ -2039,6 +2041,8 @@ function updateUndoBtns(){
 // ════════════════════════════════════════════
 const _adjScratchCanvas = document.createElement('canvas');
 const _applyScratchCanvas = document.createElement('canvas');
+const _textScratchCanvas = document.createElement('canvas');
+const _antsScratchCanvas = document.createElement('canvas');
 
 function applyAdjustments(srcCanvas, adj, layerMask, isBase, useScratch = false){
   // Apply pixel adjustments to srcCanvas in-place, return the canvas
@@ -2189,7 +2193,11 @@ function compositeClean(targetCtx, targetW, targetH){
     targetCtx.globalCompositeOperation=layer.blendMode||'source-over';
     
     if(layer.type==='adjustment'){
-      _adjScratchCanvas.width=targetW; _adjScratchCanvas.height=targetH;
+      if(_adjScratchCanvas.width!==targetW || _adjScratchCanvas.height!==targetH){
+        _adjScratchCanvas.width=targetW; _adjScratchCanvas.height=targetH;
+      } else {
+        _adjScratchCanvas.getContext('2d').clearRect(0,0,targetW,targetH);
+      }
       _adjScratchCanvas.getContext('2d').drawImage(targetCtx.canvas, 0, 0);
       const adjusted = applyAdjustments(_adjScratchCanvas, layer.adjustments, layer.mask, false, true);
       targetCtx.save();
@@ -2281,12 +2289,13 @@ function compositeClean(targetCtx, targetW, targetH){
           if(layer.strokeWidth > 0) targetCtx.strokeText(line,layer.x,ly);
           targetCtx.fillText(line,layer.x,ly);
         } else {
-const _textScratchCanvas = document.createElement('canvas');
-
-// ... (in compositeClean, inside the text rendering loop) ...
           // Curved rendering (draw to scratch to keep shadow uniform)
-          _textScratchCanvas.width = targetW;
-          _textScratchCanvas.height = targetH;
+          if(_textScratchCanvas.width!==targetW || _textScratchCanvas.height!==targetH){
+            _textScratchCanvas.width = targetW;
+            _textScratchCanvas.height = targetH;
+          } else {
+            _textScratchCanvas.getContext('2d').clearRect(0,0,targetW,targetH);
+          }
           const txtCtx = _textScratchCanvas.getContext('2d');
           
           txtCtx.font = targetCtx.font;
@@ -2419,15 +2428,17 @@ function getMarchingAntsPattern() {
   _marchingAntsPattern = patC;
   return patC;
 }
-const _antsScratchCanvas = document.createElement('canvas');
-
   // Marching Ants overlay
   if(selectionActive && selectionMaskCanvas && typeof selectionEdgeCanvas !== 'undefined') {
     ctx.save();
     selectionMarchingOffset = (selectionMarchingOffset + 1) % 16;
     
-    _antsScratchCanvas.width = canvas.width;
-    _antsScratchCanvas.height = canvas.height;
+    if(_antsScratchCanvas.width!==canvas.width || _antsScratchCanvas.height!==canvas.height){
+      _antsScratchCanvas.width = canvas.width;
+      _antsScratchCanvas.height = canvas.height;
+    } else {
+      _antsScratchCanvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height);
+    }
     const aCtx = _antsScratchCanvas.getContext('2d');
     
     aCtx.drawImage(selectionEdgeCanvas, 0, 0);
@@ -6488,6 +6499,19 @@ function toast(msg, dur=3500){
 }
 
 // ════════════════════════════════════════════
+//  GLOBAL UI STATE TRACKING
+// ════════════════════════════════════════════
+document.addEventListener('change', e => {
+  const t = e.target;
+  if(t && t.type === 'range') {
+    // Sync slider changes into the history stack when dragging finishes
+    if(t.id.startsWith('s-') || t.id.startsWith('ms-') || t.id.startsWith('bgr-refine') || t.id.startsWith('txt-') || t.id.startsWith('wm-') || t.id.startsWith('blur-')) {
+      pushHist('Slider Adjusted');
+    }
+  }
+});
+
+// ════════════════════════════════════════════
 //  KEYBOARD
 // ════════════════════════════════════════════
 document.addEventListener('keydown',e=>{
@@ -6767,17 +6791,7 @@ document.addEventListener('DOMContentLoaded',function(){
     el.addEventListener('mouseleave',()=>_pvCancel());
   });
 
-  // Attach change listener to all range sliders to push history when dragging stops
-  document.querySelectorAll('input[type="range"]').forEach(slider => {
-    slider.addEventListener('change', () => {
-      // Only push history for adjustment sliders, skip UI sliders like UI zoom
-      if(slider.id.startsWith('s-') || slider.id.startsWith('ms-')) {
-        let label = slider.previousElementSibling ? slider.previousElementSibling.querySelector('.slbl')?.textContent : null;
-        if(!label) label = 'slider';
-        pushHist('Adjusted ' + label);
-      }
-    });
-  });
+
 
   // Prevent browser pull-to-refresh and swipe navigation from the canvas area
   const canvasArea = document.getElementById('canvas-area');
