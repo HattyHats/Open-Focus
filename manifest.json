@@ -1,16 +1,16 @@
 {
-  "name": "Open Focus Pro",
-  "short_name": "Open Focus",
-  "description": "The Ultimate Open Source Photo Editor",
-  "start_url": "index.html",
+  "name": "OpenFocus Studio Pro",
+  "short_name": "OpenFocus",
+  "description": "The Ultimate Creative Photo Studio & AI Editor",
+  "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#0a0908",
-  "theme_color": "#1a1917",
+  "background_color": "#090807",
+  "theme_color": "#131211",
   "icons": [
     {
-      "src": "icon.png",
-      "sizes": "1024x1024",
-      "type": "image/png",
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='128' fill='%23e8b86d'/><circle cx='256' cy='256' r='110' stroke='%23131211' stroke-width='40' fill='none'/><circle cx='256' cy='256' r='55' fill='%23131211'/><circle cx='370' cy='142' r='24' fill='%23131211'/></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
       "purpose": "any maskable"
     }
   ]
