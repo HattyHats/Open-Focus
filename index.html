@@ -256,6 +256,7 @@ input,textarea,select{user-select:text;}
 #canvas-area.tc2 #cw{cursor:crosshair;}
 #canvas-area.teye #cw{cursor:crosshair;}
 #canvas-area.tblur #cw{cursor:crosshair;}
+#canvas-area.theal #cw{cursor:crosshair;}
 #canvas-area.tselect #cw{cursor:crosshair;}
 
 /* CROP OVERLAY */
@@ -523,7 +524,362 @@ input[type=range]::-moz-range-thumb{
 }
 #ba-label-before{left:18px;}
 #ba-label-after{right:18px;}
-#ba-label-before.on,#ba-label-after.on{display:block;opacity:1;}
+/* FLOATING LAYER QUICK-ACTION HUD */
+#layer-quick-hud{
+  position:absolute;display:none;align-items:center;gap:3px;
+  background:rgba(14, 16, 22, 0.92);
+  backdrop-filter:var(--backdrop-blur);-webkit-backdrop-filter:var(--backdrop-blur);
+  border:1px solid rgba(212,163,89,0.38);border-radius:24px;
+  padding:3px 6px;z-index:26;
+  box-shadow:0 8px 32px rgba(0,0,0,0.7), 0 0 16px rgba(212,163,89,0.15);
+  transform:translate(-50%, -100%);pointer-events:all;user-select:none;
+  animation:quick-hud-in 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes quick-hud-in{from{opacity:0;transform:translate(-50%, -90%) scale(0.92);}to{opacity:1;transform:translate(-50%, -100%) scale(1);}}
+.qhud-btn{
+  background:none;border:none;color:var(--text-muted);cursor:pointer;
+  padding:4px 7px;border-radius:14px;font-size:11.5px;font-family:var(--font-b);
+  display:inline-flex;align-items:center;gap:4px;transition:all 0.15s;
+}
+.qhud-btn:hover{background:rgba(255,255,255,0.08);color:var(--text);transform:translateY(-1px);}
+.qhud-btn.active{background:var(--accent-glow);color:var(--accent);font-weight:600;}
+.qhud-btn.danger:hover{background:rgba(239,68,68,0.2);color:var(--red);}
+.qhud-sep{width:1px;height:14px;background:rgba(255,255,255,0.12);margin:0 2px;}
+
+/* MINIMAP RADAR NAVIGATOR */
+#minimap-widget{
+  position:absolute;bottom:16px;right:16px;
+  width:140px;height:95px;
+  background:rgba(12, 14, 18, 0.88);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,0.12);border-radius:10px;
+  box-shadow:0 8px 28px rgba(0,0,0,0.6);
+  z-index:25;overflow:hidden;display:none;cursor:crosshair;
+  transition:opacity 0.25s, transform 0.25s;
+}
+#minimap-widget.vis{display:block;}
+#minimap-canvas{width:100%;height:100%;display:block;}
+#minimap-viewport{
+  position:absolute;border:1.5px solid var(--accent);border-radius:2px;
+  background:rgba(212,163,89,0.15);box-shadow:0 0 10px rgba(212,163,89,0.4);
+  pointer-events:none;transform-origin:top left;
+}
+#minimap-badge{
+  position:absolute;bottom:4px;right:6px;font-size:9px;color:var(--text-dim);
+  font-family:var(--font-m);font-weight:600;pointer-events:none;
+}
+
+/* RIGHT-CLICK CONTEXT MENU */
+#ctx-menu{
+  position:fixed;display:none;z-index:900;
+  background:rgba(18, 21, 28, 0.95);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border:1px solid var(--border-light);border-radius:10px;
+  padding:6px;min-width:185px;
+  box-shadow:0 12px 40px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.06);
+  animation:ctx-in 0.12s ease-out;user-select:none;
+}
+@keyframes ctx-in{from{opacity:0;transform:scale(0.95);}to{opacity:1;transform:scale(1);}}
+.ctx-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:7px 10px;border-radius:6px;font-size:12px;color:var(--text-muted);
+  cursor:pointer;transition:all 0.12s;
+}
+.ctx-item:hover{background:var(--accent-glow);color:var(--accent);}
+.ctx-item.danger:hover{background:rgba(239,68,68,0.18);color:var(--red);}
+.ctx-kbd{font-size:10px;color:var(--text-dim);font-family:var(--font-m);}
+.ctx-sep{height:1px;background:var(--border);margin:4px 0;}
+
+/* ENHANCED LAYER CARDS */
+.li{
+  display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--rs);
+  background:rgba(255,255,255,0.02);border:1px solid var(--border-subtle);
+  cursor:pointer;transition:all 0.15s;position:relative;
+}
+.li:hover{background:var(--surface-raised);border-color:var(--border-light);transform:translateX(2px);}
+.li.sel{background:rgba(212,163,89,0.09);border-color:rgba(212,163,89,0.35);box-shadow:0 0 16px rgba(212,163,89,0.08);}
+.li.locked{opacity:0.75;}
+.lthumb-preview{
+  width:32px;height:32px;border-radius:4px;background:#090a0e;
+  border:1px solid var(--border-light);overflow:hidden;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+}
+.lblend-select{
+  font-size:10px;background:var(--surface);border:1px solid var(--border);
+  color:var(--text-muted);border-radius:4px;padding:2px 4px;outline:none;
+  cursor:pointer;
+}
+.lblend-select:hover{border-color:var(--accent);color:var(--text);}
+
+/* SNAP BUTTON IN TOPBAR */
+.snap-btn{
+  display:flex;align-items:center;gap:5px;height:28px;padding:0 9px;
+  background:rgba(255,255,255,0.03);border:1px solid var(--border-light);
+  border-radius:var(--rs);color:var(--text-muted);font-size:11.5px;
+  font-weight:600;cursor:pointer;transition:all 0.15s;
+}
+.snap-btn:hover{background:rgba(255,255,255,0.08);color:var(--text);border-color:var(--accent);}
+.snap-btn.active{background:var(--accent-glow);border-color:var(--accent);color:var(--accent);}
+
+/* ── HEAL BRUSH TOOLBAR ── */
+#heal-bar{
+  position:absolute;top:62px;left:50%;transform:translateX(-50%);
+  display:none;align-items:center;gap:10px;
+  background:rgba(14,16,22,0.94);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  border:1px solid rgba(212,163,89,0.35);border-radius:24px;
+  padding:6px 16px;z-index:27;
+  box-shadow:0 6px 28px rgba(0,0,0,0.6),0 0 0 1px rgba(255,255,255,0.04);
+  font-size:12px;color:var(--text-muted);font-family:var(--font-b);
+}
+#heal-bar.vis{display:flex;}
+#heal-bar label{display:flex;align-items:center;gap:6px;white-space:nowrap;}
+#heal-bar input[type=range]{width:80px;accent-color:var(--accent);}
+.heal-apply-btn{
+  background:var(--accent);color:#000;border:none;border-radius:14px;
+  padding:4px 12px;font-size:11.5px;font-weight:700;cursor:pointer;
+  font-family:var(--font-b);transition:all 0.15s;
+}
+.heal-apply-btn:hover{background:#e6b96a;transform:translateY(-1px);}
+.heal-clear-btn{
+  background:rgba(239,68,68,0.15);color:var(--red);border:1px solid rgba(239,68,68,0.3);
+  border-radius:14px;padding:4px 10px;font-size:11.5px;cursor:pointer;
+  font-family:var(--font-b);transition:all 0.15s;
+}
+
+/* ── RGB CURVES EDITOR ── */
+#curves-wrap{
+  padding:12px 0 4px;
+  border-top:1px solid var(--border);margin-top:14px;
+}
+#curves-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:10px;
+}
+#curves-header span{font-size:12px;font-weight:600;color:var(--text-muted);letter-spacing:0.5px;text-transform:uppercase;}
+.curves-ch-btns{display:flex;gap:4px;}
+.curves-ch-btn{
+  padding:2px 8px;border-radius:8px;font-size:10.5px;font-weight:700;
+  border:1px solid var(--border);background:var(--surface);color:var(--text-muted);
+  cursor:pointer;transition:all 0.12s;
+}
+.curves-ch-btn:hover{border-color:var(--accent);color:var(--accent);}
+.curves-ch-btn.active{background:var(--accent-glow);border-color:var(--accent);color:var(--accent);}
+#curves-canvas{
+  display:block;border-radius:8px;cursor:crosshair;
+  border:1px solid var(--border-light);background:#0d0f14;
+  box-shadow:inset 0 2px 8px rgba(0,0,0,0.4);
+}
+#curves-reset{
+  display:block;width:100%;margin-top:6px;padding:5px;
+  background:var(--surface);border:1px solid var(--border);
+  color:var(--text-dim);border-radius:var(--rs);font-size:11px;cursor:pointer;
+  font-family:var(--font-b);transition:all 0.12s;
+}
+#curves-reset:hover{border-color:var(--accent);color:var(--accent);}
+
+/* ── OVERLAYS MODAL ── */
+#overlays-modal .mcard{width:540px;}
+.overlays-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:4px;
+}
+.overlay-thumb{
+  border-radius:10px;overflow:hidden;cursor:pointer;
+  border:2px solid transparent;transition:all 0.18s;
+  position:relative;aspect-ratio:4/3;
+  background:#0d0f14;display:flex;flex-direction:column;
+  align-items:center;justify-content:flex-end;
+}
+.overlay-thumb:hover{border-color:var(--accent);transform:scale(1.03);box-shadow:0 0 18px rgba(212,163,89,0.3);}
+.overlay-thumb canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
+.overlay-thumb-label{
+  position:relative;z-index:2;font-size:10.5px;font-weight:700;
+  color:#fff;text-shadow:0 1px 6px rgba(0,0,0,0.9);
+  padding:6px 8px;letter-spacing:0.3px;
+  background:linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+  width:100%;text-align:center;
+}
+.overlay-thumb.has-img:hover .overlay-thumb-label{opacity:1;}
+#overlays-modal .mtitle{font-size:18px;}
+
+/* ── THEME SWITCHER ── */
+/* ── ENHANCED THEME SWITCHER ── */
+#theme-dropdown{
+  position:absolute;top:100%;right:0;margin-top:6px;
+  background:rgba(14,16,22,0.96);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border:1px solid var(--border-light);border-radius:14px;
+  padding:10px;width:300px;z-index:400;
+  box-shadow:0 16px 48px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,255,255,0.06);
+  display:none;
+  animation:ctx-in 0.14s ease-out;
+}
+#theme-dropdown.open{display:block;}
+#theme-dropdown-wrap{position:relative;}
+.theme-menu-hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:2px 4px 8px;border-bottom:1px solid var(--border-subtle);
+  font-size:11px;font-weight:700;letter-spacing:0.6px;color:var(--text-dim);
+}
+.theme-count-badge{
+  font-size:9.5px;padding:2px 6px;border-radius:10px;
+  background:var(--surface-raised);color:var(--text-muted);font-family:var(--font-m);
+}
+.theme-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;
+}
+.theme-option{
+  display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px;
+  background:var(--surface);border:1px solid var(--border-subtle);
+  cursor:pointer;transition:all 0.15s;position:relative;
+}
+.theme-option:hover{background:var(--surface-raised);border-color:var(--border-light);transform:translateY(-1px);}
+.theme-option.active{border-color:var(--accent);background:var(--accent-glow);box-shadow:0 0 12px var(--accent-glow);}
+.theme-preview{
+  width:22px;height:22px;border-radius:6px;border:1.5px solid rgba(255,255,255,0.18);
+  flex-shrink:0;position:relative;overflow:hidden;display:flex;align-items:flex-end;justify-content:flex-end;
+}
+.theme-preview span{
+  width:10px;height:10px;border-radius:4px 0 0 0;display:block;
+}
+.theme-info{overflow:hidden;line-height:1.2;}
+.theme-name{font-size:11px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.theme-desc{font-size:9.5px;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;}
+.theme-zen-opt{
+  display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;
+  cursor:pointer;font-size:12px;color:var(--text-muted);transition:all 0.15s;
+  background:var(--surface);border:1px solid var(--border-subtle);margin-top:2px;
+}
+.theme-zen-opt:hover{background:var(--accent-glow);color:var(--accent);border-color:var(--accent);}
+
+/* ── ZEN MODE ── */
+body.zen-mode #toolstrip{transform:translateX(-100%);opacity:0;pointer-events:none;}
+body.zen-mode #rp{transform:translateX(100%);opacity:0;pointer-events:none;}
+body.zen-mode #topbar{transform:translateY(-100%);opacity:0;pointer-events:none;}
+body.zen-mode #main-area{top:0!important;}
+#toolstrip,#rp,#topbar{transition:transform 0.3s cubic-bezier(0.4,0,0.2,1),opacity 0.3s;}
+#zen-exit-btn{
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+  background:rgba(14,16,22,0.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border:1px solid rgba(212,163,89,0.4);border-radius:20px;
+  padding:6px 18px;font-size:12px;font-weight:600;color:var(--accent);
+  cursor:pointer;z-index:500;display:none;transition:all 0.2s;
+  box-shadow:0 4px 20px rgba(0,0,0,0.5);
+}
+body.zen-mode #zen-exit-btn{display:block;}
+#zen-exit-btn:hover{background:var(--accent);color:#000;}
+
+/* ── THEME: OLED MIDNIGHT ── */
+body.theme-oled{
+  --bg:#000000;--bg-subtle:#050505;
+  --surface:#0a0a0a;--surface-raised:#141414;--panel:#0a0a0a;
+  --border:rgba(255,255,255,0.12);--border-light:rgba(255,255,255,0.22);--border-subtle:rgba(255,255,255,0.06);
+  --glass-bg:rgba(0,0,0,0.96);--glass-border:rgba(255,255,255,0.12);
+  --accent:#f59e0b;--accent-hover:#fbbf24;--accent-glow:rgba(245,158,11,0.22);
+}
+body.theme-oled #main{background:#000!important;}
+body.theme-oled #toolstrip,body.theme-oled #rp{background:#000;}
+body.theme-oled #topbar{background:rgba(0,0,0,0.98);}
+
+/* ── THEME: NEUTRAL STUDIO (18% Lab Gray) ── */
+body.theme-neutral{
+  --bg:#262626;--bg-subtle:#2f2f2f;
+  --surface:#363636;--surface-raised:#424242;--panel:#333333;
+  --border:rgba(255,255,255,0.14);--border-light:rgba(255,255,255,0.24);--border-subtle:rgba(255,255,255,0.08);
+  --glass-bg:rgba(45,45,45,0.95);--glass-border:rgba(255,255,255,0.16);
+  --text:#f5f5f5;--text-muted:#d4d4d4;--text-dim:#a3a3a3;
+  --accent:#e2e8f0;--accent-hover:#ffffff;--accent-glow:rgba(255,255,255,0.15);
+}
+body.theme-neutral #main{background:#1e1e1e!important;}
+body.theme-neutral #toolstrip,body.theme-neutral #rp{background:#2b2b2b;}
+body.theme-neutral #topbar{background:rgba(38,38,38,0.98);}
+
+/* ── THEME: WARM SEPIA DARKROOM ── */
+body.theme-warm{
+  --bg:#140e0a;--bg-subtle:#1c140e;
+  --surface:#221811;--surface-raised:#2d2017;--panel:#201710;
+  --border:rgba(245,158,11,0.18);--border-light:rgba(245,158,11,0.28);--border-subtle:rgba(245,158,11,0.08);
+  --glass-bg:rgba(24,16,11,0.94);--glass-border:rgba(245,158,11,0.2);
+  --accent:#f59e0b;--accent-hover:#fbbf24;--accent-glow:rgba(245,158,11,0.22);
+}
+body.theme-warm #main{background:#0e0a07!important;}
+body.theme-warm #toolstrip,body.theme-warm #rp{background:#160f0a;}
+body.theme-warm #topbar{background:rgba(18,12,8,0.98);}
+
+/* ── THEME: CYBERPUNK NEON (Neo-Tokyo) ── */
+body.theme-cyberpunk{
+  --bg:#090814;--bg-subtle:#0f0d22;
+  --surface:#14122b;--surface-raised:#1c193c;--panel:#121026;
+  --border:rgba(0,240,255,0.22);--border-light:rgba(255,0,127,0.35);--border-subtle:rgba(0,240,255,0.1);
+  --glass-bg:rgba(14,12,28,0.92);--glass-border:rgba(0,240,255,0.25);
+  --accent:#00f0ff;--accent-hover:#38bdf8;--accent-glow:rgba(0,240,255,0.25);
+  --text:#f8fafc;--text-muted:#c4b5fd;--text-dim:#818cf8;
+}
+body.theme-cyberpunk #main{background:#06050e!important;}
+body.theme-cyberpunk #toolstrip,body.theme-cyberpunk #rp{background:#0e0c1f;}
+body.theme-cyberpunk #topbar{background:rgba(12,10,24,0.98);}
+
+/* ── THEME: NORDIC FROST (Arctic Slate) ── */
+body.theme-nordic{
+  --bg:#0b1120;--bg-subtle:#0f172a;
+  --surface:#162036;--surface-raised:#1e293b;--panel:#131d31;
+  --border:rgba(56,189,248,0.16);--border-light:rgba(56,189,248,0.28);--border-subtle:rgba(56,189,248,0.08);
+  --glass-bg:rgba(15,23,42,0.92);--glass-border:rgba(56,189,248,0.2);
+  --accent:#38bdf8;--accent-hover:#7dd3fc;--accent-glow:rgba(56,189,248,0.25);
+  --text:#f8fafc;--text-muted:#94a3b8;--text-dim:#64748b;
+}
+body.theme-nordic #main{background:#070b14!important;}
+body.theme-nordic #toolstrip,body.theme-nordic #rp{background:#0d1527;}
+body.theme-nordic #topbar{background:rgba(11,17,32,0.98);}
+
+/* ── THEME: EMERALD CRT DARKROOM ── */
+body.theme-emerald{
+  --bg:#05100b;--bg-subtle:#08160f;
+  --surface:#0e2017;--surface-raised:#142a1f;--panel:#0b1c13;
+  --border:rgba(16,185,129,0.18);--border-light:rgba(16,185,129,0.3);--border-subtle:rgba(16,185,129,0.08);
+  --glass-bg:rgba(8,22,16,0.93);--glass-border:rgba(16,185,129,0.2);
+  --accent:#10b981;--accent-hover:#34d399;--accent-glow:rgba(16,185,129,0.22);
+  --text:#ecfdf5;--text-muted:#a7f3d0;--text-dim:#6ee7b7;
+}
+body.theme-emerald #main{background:#030a07!important;}
+body.theme-emerald #toolstrip,body.theme-emerald #rp{background:#07160f;}
+body.theme-emerald #topbar{background:rgba(6,16,11,0.98);}
+
+/* ── THEME: DAYLIGHT STUDIO (Clean Light Mode) ── */
+body.theme-light{
+  --bg:#f1f5f9;--bg-subtle:#e2e8f0;
+  --surface:#ffffff;--surface-raised:#f8fafc;--panel:#f8fafc;
+  --border:rgba(0,0,0,0.12);--border-subtle:rgba(0,0,0,0.06);--border-light:rgba(0,0,0,0.18);
+  --border-focus:rgba(217,119,6,0.6);
+  --glass-bg:rgba(255,255,255,0.95);--glass-border:rgba(0,0,0,0.1);
+  --text:#0f172a;--text-muted:#475569;--text-dim:#94a3b8;
+  --accent:#d97706;--accent-hover:#b45309;--accent-glow:rgba(217,119,6,0.18);
+  --accent-glow-strong:rgba(217,119,6,0.35);
+}
+body.theme-light #main{background:#e2e8f0!important;}
+body.theme-light #toolstrip,body.theme-light #rp{background:#ffffff;box-shadow:0 4px 20px rgba(0,0,0,0.08);}
+body.theme-light #topbar{background:rgba(255,255,255,0.98);box-shadow:0 2px 10px rgba(0,0,0,0.06);}
+body.theme-light .tbtn{color:#475569;}
+body.theme-light .tbtn:hover{color:#0f172a;background:#f1f5f9;}
+body.theme-light .tbtn.active{color:#d97706;background:rgba(217,119,6,0.12);}
+body.theme-light .mcard{background:#ffffff;border-color:#e2e8f0;box-shadow:0 20px 50px rgba(0,0,0,0.15);}
+body.theme-light #curves-canvas{background:#f8fafc;border-color:#e2e8f0;}
+body.theme-light #curves-header span{color:#475569;}
+body.theme-light .floating-bar{background:rgba(255,255,255,0.96);border-color:#cbd5e1;color:#0f172a;box-shadow:0 10px 30px rgba(0,0,0,0.15);}
+body.theme-light #sb{background:rgba(255,255,255,0.95);border-color:#e2e8f0;color:#475569;}
+body.theme-light #layer-quick-hud{background:rgba(255,255,255,0.96);border-color:#cbd5e1;}
+body.theme-light #ctx-menu{background:rgba(255,255,255,0.96);border-color:#e2e8f0;color:#0f172a;}
+body.theme-light .ctx-item{color:#334155;}
+body.theme-light .ctx-item:hover{background:#f1f5f9;color:#0f172a;}
+body.theme-light .btn-ghost{color:#334155;}
+body.theme-light .btn-ghost:hover{background:rgba(0,0,0,0.06);color:#0f172a;}
+
+/* ── ARC TEXT SLIDER ── */
+.arc-slider-row{
+  display:flex;align-items:center;gap:8px;margin-top:6px;
+}
+.arc-slider-row label{font-size:11px;color:var(--text-dim);white-space:nowrap;min-width:50px;}
+.arc-slider-row input[type=range]{flex:1;accent-color:var(--accent);}
+.arc-slider-row span{font-size:10.5px;color:var(--text-muted);min-width:28px;text-align:right;font-family:var(--font-m);}
+
 
 /* MODALS */
 .modal-bg{
@@ -661,7 +1017,7 @@ input[type=range]::-moz-range-thumb{
 <body>
 
 <!-- WELCOME / SPLASH SCREEN (SILKY SMOOTH WITHOUT ANY UNSTYLED FLASH BOXES) -->
-<div id="welcome">
+<div id="welcome" onclick="enterApp()" title="Click anywhere to enter studio">
   <div id="wl-bg"></div>
   <canvas id="wl-canvas"></canvas>
   <div id="wl-overlay"></div>
@@ -690,6 +1046,8 @@ input[type=range]::-moz-range-thumb{
   <div class="sep"></div>
   
   <button class="btn btn-ghost" onclick="openFile()">📂 Open</button>
+  <button class="snap-btn active" id="snap-toggle-btn" onclick="toggleSnapEngine()" title="Toggle Magnetic Alignment Guides (S)">🧲 Snap</button>
+  <button class="btn btn-ghost" onclick="runAutoEnhance()" title="Auto Enhance Exposure & Dynamic Tone">🪄 Auto Fix</button>
   <button class="btn btn-ghost" onclick="openResize()">⤡ Resize</button>
   <button class="btn btn-ghost" onclick="openBorderModal()">🖼 Frame</button>
   <button class="btn btn-accent" onclick="openEM()">⬇ Export</button>
@@ -715,12 +1073,87 @@ input[type=range]::-moz-range-thumb{
   <button class="btn btn-ghost" onclick="showOB()">? Tour</button>
   <button class="btn btn-ghost" onclick="openKB()" title="Shortcuts (?)">⌨</button>
   <div class="sep"></div>
+  <div id="theme-dropdown-wrap">
+    <button class="btn btn-ghost" onclick="toggleThemeDropdown()" title="Studio Themes & Zen Mode">🎨 Theme</button>
+    <div id="theme-dropdown">
+      <div class="theme-menu-hdr">
+        <span>🎨 STUDIO THEMES</span>
+        <span class="theme-count-badge">8 Themes</span>
+      </div>
+      <div class="theme-grid">
+        <div class="theme-option active" id="topt-default" onclick="setTheme('default')" title="Obsidian Charcoal & Warm Gold">
+          <div class="theme-preview" style="background:#0e1013"><span style="background:#d4a359"></span></div>
+          <div class="theme-info">
+            <div class="theme-name">Obsidian</div>
+            <div class="theme-desc">Charcoal Gold</div>
+          </div>
+        </div>
+        <div class="theme-option" id="topt-oled" onclick="setTheme('oled')" title="Pure OLED Black #000000">
+          <div class="theme-preview" style="background:#000000"><span style="background:#f59e0b"></span></div>
+          <div class="theme-info">
+            <div class="theme-name">Midnight</div>
+            <div class="theme-desc">OLED Black</div>
+          </div>
+        </div>
+        <div class="theme-option" id="topt-neutral" onclick="setTheme('neutral')" title="Calibrated 18% Colorist Gray">
+          <div class="theme-preview" style="background:#2e2e2e"><span style="background:#e2e8f0"></span></div>
+          <div class="theme-info">
+            <div class="theme-name">Studio Lab</div>
+            <div class="theme-desc">18% Lab Gray</div>
+          </div>
+        </div>
+        <div class="theme-option" id="topt-warm" onclick="setTheme('warm')" title="Sepia Darkroom & Roasted Amber">
+          <div class="theme-preview" style="background:#1a120b"><span style="background:#f59e0b"></span></div>
+          <div class="theme-info">
+            <div class="theme-name">Darkroom</div>
+            <div class="theme-desc">Amber Sepia</div>
+          </div>
+        </div>
+        <div class="theme-option" id="topt-cyberpunk" onclick="setTheme('cyberpunk')" title="Neon Cyan & Electric Magenta">
+          <div class="theme-preview" style="background:#090814"><span style="background:#00f0ff"></span></div>
+          <div class="theme-info">
+            <div class="theme-name">Cyberpunk</div>
+            <div class="theme-desc">Neo-Tokyo Cyan</div>
+          </div>
+        </div>
+        <div class="theme-option" id="topt-nordic" onclick="setTheme('nordic')" title="Glacial Slate & Ice Blue">
+          <div class="theme-preview" style="background:#0b1120"><span style="background:#38bdf8"></span></div>
+          <div class="theme-info">
+            <div class="theme-name">Arctic Frost</div>
+            <div class="theme-desc">Glacial Slate</div>
+          </div>
+        </div>
+        <div class="theme-option" id="topt-emerald" onclick="setTheme('emerald')" title="Phosphor CRT & Forest Green">
+          <div class="theme-preview" style="background:#05100b"><span style="background:#10b981"></span></div>
+          <div class="theme-info">
+            <div class="theme-name">Emerald</div>
+            <div class="theme-desc">Phosphor CRT</div>
+          </div>
+        </div>
+        <div class="theme-option" id="topt-light" onclick="setTheme('light')" title="Daylight White Paper Studio">
+          <div class="theme-preview" style="background:#ffffff;border-color:#cbd5e1"><span style="background:#d97706"></span></div>
+          <div class="theme-info">
+            <div class="theme-name">Daylight</div>
+            <div class="theme-desc">Clean White</div>
+          </div>
+        </div>
+      </div>
+      <div style="height:1px;background:rgba(255,255,255,0.08);margin:8px 0;"></div>
+      <div class="theme-zen-opt" onclick="toggleZenMode()">
+        <span style="font-size:14px">🧘</span>
+        <span style="flex:1;font-weight:600">Zen Mode Viewport</span>
+        <kbd style="font-size:10px;padding:2px 5px;background:rgba(255,255,255,0.08);border-radius:4px;border:1px solid rgba(255,255,255,0.12)">Tab</kbd>
+      </div>
+    </div>
+  </div>
+  <div class="sep"></div>
   <a class="hatty-link" href="https://earnwithhatty.com/" target="_blank" rel="noopener">🚀 earnwithhatty.com</a>
 
   <input type="file" id="fi" accept="image/*" style="display:none" onchange="onFileInput(event)">
   <input type="file" id="fi-layer" accept="image/*" style="display:none" onchange="onLayerFileInput(event)">
   <input type="file" id="overlay-fi" accept="image/*" style="display:none" onchange="onOverlayInput(event)">
 </div>
+<button id="zen-exit-btn" onclick="toggleZenMode()">✦ Exit Zen Mode</button>
 
 <!-- MAIN WORKSPACE -->
 <div id="main">
@@ -743,6 +1176,9 @@ input[type=range]::-moz-range-thumb{
     <button class="tbtn" id="t-ba" onclick="setTool('ba')" data-tip="Compare Before / After"><div class="ticon">◑</div><div class="tlabel">Compare</div></button>
     <button class="tbtn" id="t-eye" onclick="setTool('eye')" data-tip="Eyedropper Loupe (I)"><div class="ticon">🔬</div><div class="tlabel">Picker</div></button>
     <button class="tbtn" id="t-blurbrush" onclick="setTool('blurbrush')" data-tip="Selective Blur Brush (B)"><div class="ticon">🖌</div><div class="tlabel">Blur</div></button>
+    <button class="tbtn" id="t-heal" onclick="setTool('heal')" data-tip="Smart Healing Brush — Remove Objects (G)"><div class="ticon">🩹</div><div class="tlabel">Heal</div></button>
+    <div class="tsep"></div>
+    <button class="tbtn" id="t-overlays-btn" onclick="openOverlaysModal()" data-tip="Vintage Light Leaks &amp; Film Overlays"><div class="ticon">🌈</div><div class="tlabel">Overlays</div></button>
   </div>
 
   <!-- CANVAS AREA -->
@@ -887,6 +1323,66 @@ input[type=range]::-moz-range-thumb{
       <button class="btn btn-ghost" style="font-size:12px" onclick="cancelBGRRefine()">✕ Discard</button>
       <button class="btn btn-accent" style="font-size:12px" onclick="applyBGRRefine()">✓ Bake</button>
     </div>
+
+    <!-- Floating Layer Quick-Action HUD -->
+    <div id="layer-quick-hud">
+      <button class="qhud-btn" onclick="duplicateActiveLayer()" title="Duplicate Layer"><span style="font-size:12px">📋</span> Copy</button>
+      <button class="qhud-btn" onclick="centerActiveLayer()" title="Center on Canvas"><span style="font-size:12px">🎯</span> Center</button>
+      <div class="qhud-sep"></div>
+      <button class="qhud-btn" onclick="moveActiveLayerUp()" title="Bring Forward">▲</button>
+      <button class="qhud-btn" onclick="moveActiveLayerDown()" title="Send Backward">▼</button>
+      <div class="qhud-sep"></div>
+      <button class="qhud-btn" id="qhud-lock-btn" onclick="toggleLockActiveLayer()" title="Lock / Unlock Layer">🔓</button>
+      <button class="qhud-btn danger" onclick="deleteActiveLayer()" title="Delete Layer">🗑</button>
+    </div>
+
+    <!-- Mini-Map Radar Navigator -->
+    <div id="minimap-widget" title="Radar View — Click or drag to pan">
+      <canvas id="minimap-canvas" width="140" height="95"></canvas>
+      <div id="minimap-viewport"></div>
+      <div id="minimap-badge">100%</div>
+    </div>
+
+    <!-- Right-Click Context Menu -->
+    <div id="ctx-menu">
+      <div class="ctx-item" onclick="duplicateActiveLayer()"><span>📋 Duplicate Layer</span><span class="ctx-kbd">Ctrl+D</span></div>
+      <div class="ctx-item" onclick="centerActiveLayer()"><span>🎯 Center on Canvas</span></div>
+      <div class="ctx-sep"></div>
+      <div class="ctx-item" onclick="moveActiveLayerUp()"><span>▲ Bring Forward</span><span class="ctx-kbd">]</span></div>
+      <div class="ctx-item" onclick="moveActiveLayerDown()"><span>▼ Send Backward</span><span class="ctx-kbd">[</span></div>
+      <div class="ctx-item" onclick="toggleLockActiveLayer()"><span id="ctx-lock-label">🔒 Lock Layer</span></div>
+      <div class="ctx-sep"></div>
+      <div class="ctx-item" onclick="flipLayerH()"><span>🔄 Flip Horizontal</span></div>
+      <div class="ctx-item" onclick="flipLayerV()"><span>🔃 Flip Vertical</span></div>
+      <div class="ctx-item" onclick="resetActiveLayerAdj()"><span>↺ Reset Adjustments</span></div>
+      <div class="ctx-sep"></div>
+      <div class="ctx-item danger" onclick="deleteActiveLayer()"><span>🗑 Delete Layer</span><span class="ctx-kbd">Del</span></div>
+    </div>
+
+    <!-- Heal Brush Bar -->
+    <div id="heal-bar">
+      <span style="font-size:13px;font-weight:700;color:var(--accent)">🩹 Healing Brush</span>
+      <div style="width:1px;height:16px;background:rgba(255,255,255,0.12)"></div>
+      <label>Size <input type="range" id="heal-size" min="8" max="150" value="36" oninput="document.getElementById('heal-size-val').textContent=this.value"> <span id="heal-size-val">36</span>px</label>
+      <label>Strength <input type="range" id="heal-str" min="20" max="100" value="90" oninput="document.getElementById('heal-str-val').textContent=this.value+'%'"> <span id="heal-str-val">90%</span></label>
+      <label style="cursor:pointer;display:flex;align-items:center;gap:5px;font-weight:600" title="Auto-heal on mouse release for rapid spot removal">
+        <input type="checkbox" id="heal-auto" onchange="HealBrush.instantHeal = this.checked"> Auto-Heal
+      </label>
+      <button class="heal-apply-btn" onclick="applyHeal()">✓ Apply</button>
+      <button class="heal-clear-btn" onclick="clearHealStrokes()">↺ Clear</button>
+    </div>
+  </div>
+
+  <!-- Overlays Modal -->
+  <div class="modal-bg" id="overlays-modal">
+    <div class="mcard" style="max-width:560px">
+      <div class="mtitle">🌈 Vintage & Film Overlays</div>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px">Click any overlay to add it as a blended layer. Adjust opacity &amp; blend mode in the Layers panel.</p>
+      <div class="overlays-grid" id="overlays-grid"></div>
+      <div class="macts">
+        <button class="btn btn-ghost" onclick="this.closest('.modal-bg').classList.remove('on')">Close</button>
+      </div>
+    </div>
   </div>
 
   <!-- RIGHT INSPECTOR PANEL -->
@@ -972,6 +1468,22 @@ input[type=range]::-moz-range-thumb{
             <div class="pi" onclick="applyPreset(this,'cn')"><div class="pthumb" style="background:linear-gradient(135deg,#1a2040,#202840)">💫</div><div class="pname">Cyberpunk</div></div>
             <div class="pi" onclick="applyPreset(this,'gh')"><div class="pthumb" style="background:linear-gradient(135deg,#3d3010,#504020)">🌅</div><div class="pname">Golden Hour</div></div>
             <div class="pi" onclick="applyPreset(this,'fm')"><div class="pthumb" style="background:linear-gradient(135deg,#242424,#383838)">🎭</div><div class="pname">Noir B&W</div></div>
+          </div>
+        </div>
+
+        <div class="psec">
+          <div id="curves-wrap">
+            <div id="curves-header">
+              <span>🎛 Tone Curves</span>
+              <div class="curves-ch-btns">
+                <button class="curves-ch-btn active" data-ch="rgb" onclick="CurvesEngine.setChannel('rgb',this)">RGB</button>
+                <button class="curves-ch-btn" data-ch="r" onclick="CurvesEngine.setChannel('r',this)" style="color:#f87171">R</button>
+                <button class="curves-ch-btn" data-ch="g" onclick="CurvesEngine.setChannel('g',this)" style="color:#4ade80">G</button>
+                <button class="curves-ch-btn" data-ch="b" onclick="CurvesEngine.setChannel('b',this)" style="color:#60a5fa">B</button>
+              </div>
+            </div>
+            <canvas id="curves-canvas" width="220" height="180" style="width:100%;height:auto"></canvas>
+            <button id="curves-reset" onclick="CurvesEngine.reset()">↺ Reset Curve</button>
           </div>
         </div>
       </div>
@@ -1125,6 +1637,14 @@ input[type=range]::-moz-range-thumb{
         <input type="range" id="txt-shadow-blur" min="0" max="50" value="0" oninput="document.getElementById('tsb-val').textContent=this.value">
       </div>
     </div>
+
+    <div style="font-size:11px;font-weight:700;margin:14px 0 8px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.5px">Arc Text Effect</div>
+    <div class="arc-slider-row">
+      <label>Arc Bend</label>
+      <input type="range" id="txt-arc" min="-360" max="360" value="0" oninput="document.getElementById('txt-arc-val').textContent=(this.value>0?'+':'')+this.value+'°'">
+      <span id="txt-arc-val">0°</span>
+    </div>
+    <div style="font-size:10px;color:var(--text-dim);margin-top:4px">Positive = arch up, Negative = arch down. 0 = straight.</div>
 
     <div class="macts">
       <button class="btn btn-ghost" onclick="closeTxtModal()">Cancel</button>
@@ -1514,7 +2034,7 @@ function initWelcomeParticles() {
 
   setTimeout(() => {
     if (document.getElementById('welcome')) enterApp();
-  }, 2400);
+  }, 1600);
 }
 
 function enterApp() {
@@ -1523,7 +2043,10 @@ function enterApp() {
   w.style.pointerEvents = 'none';
   w.classList.add('hide');
   if (wlAnimFrame) cancelAnimationFrame(wlAnimFrame);
-  setTimeout(() => w.remove(), 600);
+  setTimeout(() => {
+    if (w.parentNode) w.parentNode.removeChild(w);
+    else if (typeof w.remove === 'function') w.remove();
+  }, 600);
 }
 
 // FILE & WORKSPACE INITIALIZATION
@@ -1827,6 +2350,10 @@ function applyAdjustments(srcCanvas, adj) {
     d[i + 1] = Math.min(255, Math.max(0, g | 0));
     d[i + 2] = Math.min(255, Math.max(0, b | 0));
   }
+  // Apply RGB Curves LUT
+  if (typeof CurvesEngine !== 'undefined' && CurvesEngine.hasEffect()) {
+    CurvesEngine.applyToImageData(id);
+  }
   x.putImageData(id, 0, 0);
 
   // Vignette
@@ -1929,7 +2456,7 @@ function compositeClean(targetCtx, targetW, targetH) {
     if (!layer.visible) return;
     targetCtx.save();
     targetCtx.globalAlpha = (layer.opacity ?? 100) / 100;
-    targetCtx.globalCompositeOperation = layer.blendMode || 'source-over';
+    targetCtx.globalCompositeOperation = layer.blend || 'source-over';
 
     if (layer.type === 'base') {
       const adjusted = getCachedAdjusted(layer);
@@ -1944,7 +2471,14 @@ function compositeClean(targetCtx, targetW, targetH) {
         tmp.getContext('2d').drawImage(layer.img, 0, 0, lw, lh);
         imgToDraw = applyAdjustments(tmp, layer.adjustments);
       }
-      targetCtx.drawImage(imgToDraw, lx, ly, lw, lh);
+      // Apply flip transforms
+      if (layer.flipH || layer.flipV) {
+        targetCtx.translate(lx + lw / 2, ly + lh / 2);
+        targetCtx.scale(layer.flipH ? -1 : 1, layer.flipV ? -1 : 1);
+        targetCtx.drawImage(imgToDraw, -lw / 2, -lh / 2, lw, lh);
+      } else {
+        targetCtx.drawImage(imgToDraw, lx, ly, lw, lh);
+      }
     } else if (layer.type === 'watermark') {
       const lx = layer.x ?? 0, ly = layer.y ?? 0;
       targetCtx.fillStyle = layer.color || '#ffffff';
@@ -1977,13 +2511,31 @@ function compositeClean(targetCtx, targetW, targetH) {
       targetCtx.strokeStyle = layer.strokeWidth ? '#000000' : 'transparent';
       targetCtx.fillStyle = layer.color || '#ffffff';
 
-      const lines = (layer.text || '').split('\n');
-      const lineH = (layer.size || 72) * 1.25;
-      lines.forEach((line, i) => {
-        const curY = ly + i * lineH;
-        if (layer.strokeWidth > 0) targetCtx.strokeText(line, lx, curY);
-        targetCtx.fillText(line, lx, curY);
-      });
+      const arcDeg = layer.arc || 0;
+      if (arcDeg !== 0) {
+        // Arc text mode — render along a circle
+        const sz = layer.size || 72;
+        const radius = sz * (180 / Math.max(1, Math.abs(arcDeg))) * 0.7;
+        const lines = (layer.text || '').split('\n');
+        lines.forEach((line, i) => {
+          const arcY = ly + i * sz * 1.25;
+          if (layer.strokeWidth > 0) {
+            targetCtx.save();
+            targetCtx.strokeStyle = '#000000';
+            drawArcText(targetCtx, line, lx, arcY, arcDeg > 0 ? -radius : radius, arcDeg);
+            targetCtx.restore();
+          }
+          drawArcText(targetCtx, line, lx, arcY, arcDeg > 0 ? -radius : radius, arcDeg);
+        });
+      } else {
+        const lines = (layer.text || '').split('\n');
+        const lineH = (layer.size || 72) * 1.25;
+        lines.forEach((line, i) => {
+          const curY = ly + i * lineH;
+          if (layer.strokeWidth > 0) targetCtx.strokeText(line, lx, curY);
+          targetCtx.fillText(line, lx, curY);
+        });
+      }
     } else if (layer.type === 'adjustment') {
       const hasAdj = layer.adjustments && Object.values(layer.adjustments).some(v => v !== 0);
       if (hasAdj) {
@@ -2237,6 +2789,44 @@ function renderHUD() {
     hudCtx.restore();
   }
 
+  // Healing Brush preview strokes
+  if (typeof HealBrush !== 'undefined' && (S.tool === 'heal' || HealBrush.strokes.length)) {
+    HealBrush.drawPreviewHUD(hudCtx);
+  }
+
+  // Magnetic Alignment Laser Guides
+  if (activeSnapGuides && activeSnapGuides.length) {
+    hudCtx.save();
+    hudCtx.lineWidth = 1.5 / S.zoom;
+    activeSnapGuides.forEach(g => {
+      hudCtx.strokeStyle = g.color || '#00f0ff';
+      hudCtx.setLineDash([4 / S.zoom, 4 / S.zoom]);
+      hudCtx.beginPath();
+      if (g.type === 'v') {
+        hudCtx.moveTo(g.pos, -2000);
+        hudCtx.lineTo(g.pos, canvas.height + 2000);
+      } else {
+        hudCtx.moveTo(-2000, g.pos);
+        hudCtx.lineTo(canvas.width + 2000, g.pos);
+      }
+      hudCtx.stroke();
+
+      if (g.label) {
+        hudCtx.setLineDash([]);
+        hudCtx.font = `bold ${Math.max(9, 10 / S.zoom)}px Plus Jakarta Sans, sans-serif`;
+        hudCtx.fillStyle = g.color || '#00f0ff';
+        if (g.type === 'v') {
+          hudCtx.fillText(g.label, g.pos + (4 / S.zoom), 20 / S.zoom);
+        } else {
+          hudCtx.fillText(g.label, 20 / S.zoom, g.pos - (4 / S.zoom));
+        }
+      }
+    });
+    hudCtx.restore();
+  }
+
+  renderQuickHUD();
+  if (typeof MinimapEngine !== 'undefined') MinimapEngine.update();
 }
 
 function getTextBounds(layer) {
@@ -2365,7 +2955,930 @@ function resetSlidersUI() {
   loadSlidersFromLayer(base);
 }
 
+// SMART MAGNETIC SNAP ENGINE
+let activeSnapGuides = [];
+const SnapEngine = {
+  enabled: true,
+  threshold: 8,
+  
+  snap(layer, x, y, w, h) {
+    activeSnapGuides = [];
+    if (!this.enabled) return {x, y};
+
+    const thresh = this.threshold / S.zoom;
+    let sx = x, sy = y;
+    const cW = canvas.width, cH = canvas.height;
+    const layerCx = x + w / 2;
+    const layerCy = y + h / 2;
+
+    // 1. Horizontal Snapping (X-axis alignment)
+    // Canvas Center X
+    if (Math.abs(layerCx - cW / 2) < thresh) {
+      sx = cW / 2 - w / 2;
+      activeSnapGuides.push({type: 'v', pos: cW / 2, color: '#00f0ff', label: 'Center X'});
+    }
+    // Canvas Left Margin
+    else if (Math.abs(x - 0) < thresh) {
+      sx = 0;
+      activeSnapGuides.push({type: 'v', pos: 0, color: '#ff007f', label: 'Left Edge'});
+    }
+    // Canvas Right Margin
+    else if (Math.abs(x + w - cW) < thresh) {
+      sx = cW - w;
+      activeSnapGuides.push({type: 'v', pos: cW, color: '#ff007f', label: 'Right Edge'});
+    }
+
+    // Sibling Layer Horizontal Alignment
+    layers.forEach(l => {
+      if (l.id === layer.id || !l.visible) return;
+      const b = getLayerBounds(l);
+      const otherCx = b.x + b.w / 2;
+      if (Math.abs(layerCx - otherCx) < thresh) {
+        sx = otherCx - w / 2;
+        activeSnapGuides.push({type: 'v', pos: otherCx, color: '#a855f7', label: 'Align Center'});
+      } else if (Math.abs(x - b.x) < thresh) {
+        sx = b.x;
+        activeSnapGuides.push({type: 'v', pos: b.x, color: '#a855f7', label: 'Align Left'});
+      } else if (Math.abs(x + w - (b.x + b.w)) < thresh) {
+        sx = b.x + b.w - w;
+        activeSnapGuides.push({type: 'v', pos: b.x + b.w, color: '#a855f7', label: 'Align Right'});
+      }
+    });
+
+    // 2. Vertical Snapping (Y-axis alignment)
+    // Canvas Center Y
+    if (Math.abs(layerCy - cH / 2) < thresh) {
+      sy = cH / 2 - h / 2;
+      activeSnapGuides.push({type: 'h', pos: cH / 2, color: '#00f0ff', label: 'Center Y'});
+    }
+    // Canvas Top Margin
+    else if (Math.abs(y - 0) < thresh) {
+      sy = 0;
+      activeSnapGuides.push({type: 'h', pos: 0, color: '#ff007f', label: 'Top Edge'});
+    }
+    // Canvas Bottom Margin
+    else if (Math.abs(y + h - cH) < thresh) {
+      sy = cH - h;
+      activeSnapGuides.push({type: 'h', pos: cH, color: '#ff007f', label: 'Bottom Edge'});
+    }
+
+    // Sibling Layer Vertical Alignment
+    layers.forEach(l => {
+      if (l.id === layer.id || !l.visible) return;
+      const b = getLayerBounds(l);
+      const otherCy = b.y + b.h / 2;
+      if (Math.abs(layerCy - otherCy) < thresh) {
+        sy = otherCy - h / 2;
+        activeSnapGuides.push({type: 'h', pos: otherCy, color: '#a855f7', label: 'Align Middle'});
+      } else if (Math.abs(y - b.y) < thresh) {
+        sy = b.y;
+        activeSnapGuides.push({type: 'h', pos: b.y, color: '#a855f7', label: 'Align Top'});
+      } else if (Math.abs(y + h - (b.y + b.h)) < thresh) {
+        sy = b.y + b.h - h;
+        activeSnapGuides.push({type: 'h', pos: b.y + b.h, color: '#a855f7', label: 'Align Bottom'});
+      }
+    });
+
+    return {x: Math.round(sx), y: Math.round(sy)};
+  }
+};
+
+function toggleSnapEngine() {
+  SnapEngine.enabled = !SnapEngine.enabled;
+  const btn = document.getElementById('snap-toggle-btn');
+  if (btn) {
+    btn.classList.toggle('active', SnapEngine.enabled);
+    btn.textContent = SnapEngine.enabled ? '🧲 Snap' : '🧲 Snap: Off';
+  }
+  toast(SnapEngine.enabled ? '🧲 Magnetic alignment guides enabled' : '🧲 Alignment guides disabled');
+}
+
+// FLOATING LAYER QUICK-ACTION HUD
+function renderQuickHUD() {
+  const qhud = document.getElementById('layer-quick-hud');
+  if (!qhud) return;
+
+  if (!S.hasImg || !selLayerId || S.tool === 'crop' || S.tool === 'bgrbrush' || baActive) {
+    qhud.style.display = 'none';
+    return;
+  }
+
+  const sel = layers.find(l => l.id === selLayerId);
+  if (!sel || !sel.visible) {
+    qhud.style.display = 'none';
+    return;
+  }
+
+  const b = getLayerBounds(sel);
+  const aW = ca.clientWidth, aH = ca.clientHeight;
+  const iW = canvas.width * S.zoom, iH = canvas.height * S.zoom;
+  const canvasLeft = (aW - iW) / 2 + S.panX;
+  const canvasTop = (aH - iH) / 2 + S.panY;
+
+  const screenCenterX = canvasLeft + (b.x + b.w / 2) * S.zoom;
+  const screenTopY = canvasTop + b.y * S.zoom - 14;
+
+  qhud.style.display = 'inline-flex';
+  qhud.style.left = `${Math.max(120, Math.min(aW - 120, screenCenterX))}px`;
+  qhud.style.top = `${Math.max(42, screenTopY)}px`;
+
+  const lBtn = document.getElementById('qhud-lock-btn');
+  if (lBtn) {
+    lBtn.textContent = sel.locked ? '🔒' : '🔓';
+    lBtn.classList.toggle('active', !!sel.locked);
+    lBtn.title = sel.locked ? 'Unlock Layer' : 'Lock Layer';
+  }
+}
+
+// QUICK LAYER ACTIONS
+function duplicateActiveLayer() {
+  if (!selLayerId) return;
+  const sel = layers.find(l => l.id === selLayerId);
+  if (!sel) return;
+
+  const clone = {
+    ...JSON.parse(JSON.stringify(sel)),
+    id: nextLayerId++,
+    name: (sel.name || sel.type) + ' (Copy)',
+    x: (sel.x ?? 0) + 24,
+    y: (sel.y ?? 0) + 24
+  };
+  if (sel.img) clone.img = sel.img;
+
+  layers.push(clone);
+  selLayerId = clone.id;
+  updateAdjustHeader();
+  renderCanvas();
+  renderLayersPanel();
+  pushHist(`📋 Cloned "${clone.name}"`);
+  toast(`📋 Cloned "${clone.name}"`);
+}
+
+function centerActiveLayer() {
+  if (!selLayerId) return;
+  const sel = layers.find(l => l.id === selLayerId);
+  if (!sel || sel.locked) return;
+
+  const b = getLayerBounds(sel);
+  if (sel.type === 'text') {
+    sel.x = canvas.width / 2;
+    sel.y = canvas.height / 2 - (b.h / 2);
+  } else if (sel.type === 'watermark') {
+    sel.x = canvas.width / 2;
+    sel.y = canvas.height / 2;
+  } else {
+    sel.x = Math.round((canvas.width - b.w) / 2);
+    sel.y = Math.round((canvas.height - b.h) / 2);
+  }
+  updateAdjustHeader();
+  renderCanvas();
+  renderLayersPanel();
+  pushHist('🎯 Centered layer');
+  toast('🎯 Layer aligned to canvas center');
+}
+
+function toggleLockActiveLayer() {
+  if (!selLayerId) return;
+  const sel = layers.find(l => l.id === selLayerId);
+  if (!sel) return;
+  sel.locked = !sel.locked;
+  renderQuickHUD();
+  renderLayersPanel();
+  toast(sel.locked ? '🔒 Layer locked' : '🔓 Layer unlocked');
+}
+
+function deleteActiveLayer() {
+  if (!selLayerId) return;
+  const sel = layers.find(l => l.id === selLayerId);
+  if (!sel) return;
+  if (sel.type === 'base' && layers.length === 1) {
+    toast('⚠️ Cannot delete main photo layer');
+    return;
+  }
+  deleteLayer(selLayerId);
+}
+
+function moveActiveLayerUp() {
+  if (!selLayerId) return;
+  moveLayerUp(selLayerId);
+}
+
+function moveActiveLayerDown() {
+  if (!selLayerId) return;
+  moveLayerDown(selLayerId);
+}
+
+function flipLayerH() {
+  if (!selLayerId) return;
+  const sel = layers.find(l => l.id === selLayerId);
+  if (!sel) return;
+  sel.flipH = !sel.flipH;
+  renderCanvas();
+  pushHist('Flipped Horizontal');
+  toast('🔄 Flipped Horizontal');
+}
+
+function flipLayerV() {
+  if (!selLayerId) return;
+  const sel = layers.find(l => l.id === selLayerId);
+  if (!sel) return;
+  sel.flipV = !sel.flipV;
+  renderCanvas();
+  pushHist('Flipped Vertical');
+  toast('🔃 Flipped Vertical');
+}
+
+function resetActiveLayerAdj() {
+  const target = getAdjTarget();
+  if (target && target.adjustments) {
+    target.adjustments = {...DSLIDERS};
+    resetSlidersUI();
+    invalidateAdjCache();
+    renderCanvas();
+    pushHist('↺ Reset Adjustments');
+    toast('↺ Adjustments reset');
+  }
+}
+
+function runAutoEnhance() {
+  if (!S.hasImg) { toast('Open a photo first!'); return; }
+  const target = getAdjTarget();
+  if (!target.adjustments) target.adjustments = {...DSLIDERS};
+
+  target.adjustments.br = 6;
+  target.adjustments.co = 14;
+  target.adjustments.sa = 12;
+  target.adjustments.wa = 4;
+  target.adjustments.cl = 16;
+  target.adjustments.sh = 10;
+  target.adjustments.hi = -6;
+
+  Object.entries(target.adjustments).forEach(([k, v]) => {
+    const s = document.getElementById('s-' + k); if (s) s.value = v;
+    const vEl = document.getElementById('v-' + k); if (vEl) vEl.textContent = v > 0 ? `+${v}` : String(v);
+  });
+
+  invalidateAdjCache();
+  renderCanvas();
+  pushHist('🪄 Auto Enhanced Photo');
+  toast('✨ Photo auto-balanced with studio tone & clarity!');
+}
+
+// INTERACTIVE MINI-MAP RADAR NAVIGATOR
+const MinimapEngine = {
+  update() {
+    const widget = document.getElementById('minimap-widget');
+    const mCanvas = document.getElementById('minimap-canvas');
+    const viewport = document.getElementById('minimap-viewport');
+    const badge = document.getElementById('minimap-badge');
+    if (!widget || !mCanvas || !viewport) return;
+
+    if (!S.hasImg || S.zoom <= 1.05) {
+      widget.classList.remove('vis');
+      return;
+    }
+    widget.classList.add('vis');
+    if (badge) badge.textContent = `${Math.round(S.zoom * 100)}%`;
+
+    const mw = mCanvas.width, mh = mCanvas.height;
+    const mx = mCanvas.getContext('2d');
+    mx.clearRect(0, 0, mw, mh);
+    
+    const scale = Math.min(mw / canvas.width, mh / canvas.height);
+    const dw = canvas.width * scale;
+    const dh = canvas.height * scale;
+    const dx = (mw - dw) / 2;
+    const dy = (mh - dh) / 2;
+
+    mx.drawImage(canvas, dx, dy, dw, dh);
+
+    const aW = ca.clientWidth, aH = ca.clientHeight;
+    const iW = canvas.width * S.zoom, iH = canvas.height * S.zoom;
+    const canvasLeft = (aW - iW) / 2 + S.panX;
+    const canvasTop = (aH - iH) / 2 + S.panY;
+
+    const visibleLeftOnCanvas = Math.max(0, -canvasLeft / S.zoom);
+    const visibleTopOnCanvas = Math.max(0, -canvasTop / S.zoom);
+    const visibleWOnCanvas = Math.min(canvas.width, aW / S.zoom);
+    const visibleHOnCanvas = Math.min(canvas.height, aH / S.zoom);
+
+    const vpX = dx + visibleLeftOnCanvas * scale;
+    const vpY = dy + visibleTopOnCanvas * scale;
+    const vpW = Math.max(8, visibleWOnCanvas * scale);
+    const vpH = Math.max(8, visibleHOnCanvas * scale);
+
+    viewport.style.left = `${vpX}px`;
+    viewport.style.top = `${vpY}px`;
+    viewport.style.width = `${vpW}px`;
+    viewport.style.height = `${vpH}px`;
+  },
+
+  panFromMinimap(e) {
+    const widget = document.getElementById('minimap-widget');
+    const mCanvas = document.getElementById('minimap-canvas');
+    if (!widget || !mCanvas || !S.hasImg) return;
+
+    const rect = widget.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const clickY = e.clientY - rect.top;
+
+    const mw = mCanvas.width, mh = mCanvas.height;
+    const scale = Math.min(mw / canvas.width, mh / canvas.height);
+    const dw = canvas.width * scale, dh = canvas.height * scale;
+    const dx = (mw - dw) / 2, dy = (mh - dh) / 2;
+
+    const targetCanvasX = (clickX - dx) / scale;
+    const targetCanvasY = (clickY - dy) / scale;
+
+    const aW = ca.clientWidth, aH = ca.clientHeight;
+    S.panX = Math.round(aW / 2 - targetCanvasX * S.zoom);
+    S.panY = Math.round(aH / 2 - targetCanvasY * S.zoom);
+    positionCanvas();
+    renderHUD();
+  }
+};
+
+// ══════════════════════════════════════════════
+// FEATURE 1: SMART HEALING BRUSH ENGINE
+// ══════════════════════════════════════════════
+const HealBrush = {
+  strokes: [],
+  currentStroke: null,
+  painting: false,
+  instantHeal: false,
+
+  start(cx, cy) {
+    this.painting = true;
+    const r = this.getSize() / 2;
+    this.currentStroke = { r, points: [{x: cx, y: cy}] };
+    this.strokes.push(this.currentStroke);
+    renderHUD();
+  },
+
+  move(cx, cy) {
+    if (!this.painting || !this.currentStroke) return;
+    const pts = this.currentStroke.points;
+    const last = pts[pts.length - 1];
+    if (!last || Math.hypot(cx - last.x, cy - last.y) >= Math.max(2, this.currentStroke.r * 0.25)) {
+      pts.push({x: cx, y: cy});
+      renderHUD();
+    }
+  },
+
+  end() {
+    if (!this.painting) return;
+    this.painting = false;
+    this.currentStroke = null;
+    if (this.instantHeal && this.strokes.length) {
+      this.apply();
+    }
+  },
+
+  getSize() { return parseInt(document.getElementById('heal-size')?.value || 36); },
+  getStr() { return parseInt(document.getElementById('heal-str')?.value || 90) / 100; },
+
+  clear() {
+    this.strokes = [];
+    this.currentStroke = null;
+    renderHUD();
+    toast('↺ Heal strokes cleared');
+  },
+
+  drawPreviewHUD(hctx) {
+    if (!this.strokes.length) return;
+    hctx.save();
+    hctx.lineCap = 'round';
+    hctx.lineJoin = 'round';
+    
+    this.strokes.forEach(stroke => {
+      const pts = stroke.points;
+      if (!pts || !pts.length) return;
+      const r = stroke.r;
+
+      // Outer glowing halo
+      hctx.strokeStyle = 'rgba(245, 158, 11, 0.35)';
+      hctx.lineWidth = r * 2 + 4 / S.zoom;
+      hctx.beginPath();
+      if (pts.length === 1) {
+        hctx.arc(pts[0].x, pts[0].y, r, 0, Math.PI * 2);
+        hctx.stroke();
+      } else {
+        hctx.moveTo(pts[0].x, pts[0].y);
+        for (let i = 1; i < pts.length; i++) hctx.lineTo(pts[i].x, pts[i].y);
+        hctx.stroke();
+      }
+
+      // Solid luminous stroke
+      hctx.strokeStyle = 'rgba(251, 191, 36, 0.65)';
+      hctx.fillStyle = 'rgba(251, 191, 36, 0.65)';
+      hctx.lineWidth = r * 2;
+      hctx.beginPath();
+      if (pts.length === 1) {
+        hctx.arc(pts[0].x, pts[0].y, r, 0, Math.PI * 2);
+        hctx.fill();
+      } else {
+        hctx.moveTo(pts[0].x, pts[0].y);
+        for (let i = 1; i < pts.length; i++) hctx.lineTo(pts[i].x, pts[i].y);
+        hctx.stroke();
+      }
+    });
+    hctx.restore();
+  },
+
+  apply() {
+    if (!this.strokes.length) { toast('Paint over an area first!'); return; }
+    if (!S.hasImg) { toast('Open a photo first!'); return; }
+
+    const targetLayer = (selLayerId && selLayerId !== layers[0]?.id)
+      ? layers.find(l => l.id === selLayerId && l.type === 'image')
+      : layers.find(l => l.type === 'base');
+    const sourceImg = (targetLayer && targetLayer.img) ? targetLayer.img : origImg;
+    if (!sourceImg) return;
+
+    const imgW = sourceImg.naturalWidth || sourceImg.width;
+    const imgH = sourceImg.naturalHeight || sourceImg.height;
+    if (!imgW || !imgH) return;
+
+    // Offscreen raw image canvas
+    const rawCanvas = document.createElement('canvas');
+    rawCanvas.width = imgW; rawCanvas.height = imgH;
+    const rawCtx = rawCanvas.getContext('2d');
+    rawCtx.drawImage(sourceImg, 0, 0, imgW, imgH);
+
+    // Rasterize binary mask in image coordinate space
+    const maskCanvas = document.createElement('canvas');
+    maskCanvas.width = imgW; maskCanvas.height = imgH;
+    const maskCtx = maskCanvas.getContext('2d');
+    maskCtx.fillStyle = '#000000';
+    maskCtx.fillRect(0, 0, imgW, imgH);
+    maskCtx.strokeStyle = '#ffffff';
+    maskCtx.fillStyle = '#ffffff';
+    maskCtx.lineCap = 'round';
+    maskCtx.lineJoin = 'round';
+
+    const layerW = targetLayer?.w ?? canvas.width;
+    const layerH = targetLayer?.h ?? canvas.height;
+    const scaleX = imgW / Math.max(1, layerW);
+    const scaleY = imgH / Math.max(1, layerH);
+    const layerX = targetLayer?.x ?? 0;
+    const layerY = targetLayer?.y ?? 0;
+
+    let minX = imgW, minY = imgH, maxX = 0, maxY = 0;
+
+    this.strokes.forEach(stroke => {
+      const pts = stroke.points;
+      if (!pts || !pts.length) return;
+      const strokeR = stroke.r * Math.max(scaleX, scaleY);
+      maskCtx.lineWidth = strokeR * 2;
+
+      if (pts.length === 1) {
+        const ix = (pts[0].x - layerX) * scaleX;
+        const iy = (pts[0].y - layerY) * scaleY;
+        maskCtx.beginPath();
+        maskCtx.arc(ix, iy, strokeR, 0, Math.PI * 2);
+        maskCtx.fill();
+        minX = Math.min(minX, ix - strokeR);
+        minY = Math.min(minY, iy - strokeR);
+        maxX = Math.max(maxX, ix + strokeR);
+        maxY = Math.max(maxY, iy + strokeR);
+      } else {
+        maskCtx.beginPath();
+        const startX = (pts[0].x - layerX) * scaleX;
+        const startY = (pts[0].y - layerY) * scaleY;
+        maskCtx.moveTo(startX, startY);
+        minX = Math.min(minX, startX - strokeR);
+        minY = Math.min(minY, startY - strokeR);
+        maxX = Math.max(maxX, startX + strokeR);
+        maxY = Math.max(maxY, startY + strokeR);
+
+        for (let i = 1; i < pts.length; i++) {
+          const px = (pts[i].x - layerX) * scaleX;
+          const py = (pts[i].y - layerY) * scaleY;
+          maskCtx.lineTo(px, py);
+          minX = Math.min(minX, px - strokeR);
+          minY = Math.min(minY, py - strokeR);
+          maxX = Math.max(maxX, px + strokeR);
+          maxY = Math.max(maxY, py + strokeR);
+        }
+        maskCtx.stroke();
+      }
+    });
+
+    const pad = Math.max(20, Math.round(this.getSize() * 1.5));
+    const bboxX = Math.max(0, Math.floor(minX - pad));
+    const bboxY = Math.max(0, Math.floor(minY - pad));
+    const bboxW = Math.min(imgW - bboxX, Math.ceil(maxX - minX + pad * 2));
+    const bboxH = Math.min(imgH - bboxY, Math.ceil(maxY - minY + pad * 2));
+
+    if (bboxW <= 0 || bboxH <= 0) { this.clear(); return; }
+
+    const srcImgData = rawCtx.getImageData(bboxX, bboxY, bboxW, bboxH);
+    const maskImgData = maskCtx.getImageData(bboxX, bboxY, bboxW, bboxH);
+    const srcPixels = srcImgData.data;
+    const maskPixels = maskImgData.data;
+
+    const outImgData = rawCtx.createImageData(bboxW, bboxH);
+    const outPixels = outImgData.data;
+    outPixels.set(srcPixels);
+
+    // Multi-directional Fast Marching / Poisson Boundary Inpainting
+    const numRays = 16;
+    const cosTable = new Float32Array(numRays);
+    const sinTable = new Float32Array(numRays);
+    for (let k = 0; k < numRays; k++) {
+      const ang = (k / numRays) * Math.PI * 2;
+      cosTable[k] = Math.cos(ang);
+      sinTable[k] = Math.sin(ang);
+    }
+
+    const maxMarch = Math.max(bboxW, bboxH);
+    const strength = this.getStr();
+
+    for (let y = 0; y < bboxH; y++) {
+      for (let x = 0; x < bboxW; x++) {
+        const pIdx = (y * bboxW + x) * 4;
+        const maskVal = maskPixels[pIdx];
+
+        if (maskVal < 10) continue;
+
+        let totalR = 0, totalG = 0, totalB = 0, totalW = 0;
+        let minDist = 999999;
+        let nearestR = 0, nearestG = 0, nearestB = 0;
+
+        for (let k = 0; k < numRays; k++) {
+          const dx = cosTable[k];
+          const dy = sinTable[k];
+          let dist = 1;
+
+          while (dist < maxMarch) {
+            const sx = Math.round(x + dx * dist);
+            const sy = Math.round(y + dy * dist);
+
+            if (sx < 0 || sx >= bboxW || sy < 0 || sy >= bboxH) break;
+
+            const sIdx = (sy * bboxW + sx) * 4;
+            if (maskPixels[sIdx] < 10) {
+              const w = 1 / (dist * dist + 0.5);
+              totalR += srcPixels[sIdx] * w;
+              totalG += srcPixels[sIdx + 1] * w;
+              totalB += srcPixels[sIdx + 2] * w;
+              totalW += w;
+
+              if (dist < minDist) {
+                minDist = dist;
+                nearestR = srcPixels[sIdx];
+                nearestG = srcPixels[sIdx + 1];
+                nearestB = srcPixels[sIdx + 2];
+              }
+              break;
+            }
+            dist += 1.5;
+          }
+        }
+
+        if (totalW > 0) {
+          let healedR = totalR / totalW;
+          let healedG = totalG / totalW;
+          let healedB = totalB / totalW;
+
+          // Organic grain synthesis from nearest boundary pixel
+          const noise = (Math.random() - 0.5) * 8 * (1 - Math.min(1, minDist / 40));
+          healedR = Math.max(0, Math.min(255, healedR + noise));
+          healedG = Math.max(0, Math.min(255, healedG + noise));
+          healedB = Math.max(0, Math.min(255, healedB + noise));
+
+          // Feather boundary transition
+          const feather = Math.min(1, minDist / 2.5);
+          const blendAlpha = (maskVal / 255) * feather * strength;
+
+          outPixels[pIdx]     = Math.round(srcPixels[pIdx] * (1 - blendAlpha) + healedR * blendAlpha);
+          outPixels[pIdx + 1] = Math.round(srcPixels[pIdx + 1] * (1 - blendAlpha) + healedG * blendAlpha);
+          outPixels[pIdx + 2] = Math.round(srcPixels[pIdx + 2] * (1 - blendAlpha) + healedB * blendAlpha);
+          outPixels[pIdx + 3] = srcPixels[pIdx + 3];
+        }
+      }
+    }
+
+    rawCtx.putImageData(outImgData, bboxX, bboxY);
+
+    const newImg = new Image();
+    newImg.onload = () => {
+      if (targetLayer && targetLayer.type === 'image') {
+        targetLayer.img = newImg;
+      } else {
+        origImg = newImg;
+        _origDirty = true;
+        const bl = layers.find(l => l.type === 'base');
+        if (bl) bl.img = newImg;
+      }
+      this.strokes = [];
+      this.currentStroke = null;
+      invalidateAdjCache();
+      renderCanvas();
+      pushHist('🩹 Content-Aware Heal');
+      toast('🩹 Object removed cleanly!');
+    };
+    newImg.src = rawCanvas.toDataURL('image/png');
+  }
+};
+function applyHeal() { HealBrush.apply(); }
+function clearHealStrokes() { HealBrush.clear(); }
+
+// ══════════════════════════════════════════════
+// FEATURE 2: RGB CURVES ENGINE
+// ══════════════════════════════════════════════
+const CurvesEngine = {
+  channel: 'rgb',
+  points: { rgb:[{x:0,y:0},{x:255,y:255}], r:[{x:0,y:0},{x:255,y:255}], g:[{x:0,y:0},{x:255,y:255}], b:[{x:0,y:0},{x:255,y:255}] },
+  lut: { rgb:null, r:null, g:null, b:null },
+  dragging: null,
+
+  init() {
+    const c = document.getElementById('curves-canvas');
+    if (!c) return;
+    this.draw();
+    c.addEventListener('mousedown', e => this._onDown(e));
+    c.addEventListener('mousemove', e => this._onMove(e));
+    c.addEventListener('mouseup', () => { this.dragging = null; });
+    c.addEventListener('mouseleave', () => { this.dragging = null; });
+    c.addEventListener('dblclick', e => this._onDblClick(e));
+  },
+
+  setChannel(ch, btn) {
+    this.channel = ch;
+    document.querySelectorAll('.curves-ch-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    this.draw();
+  },
+
+  _coords(e) {
+    const c = document.getElementById('curves-canvas');
+    const r = c.getBoundingClientRect();
+    const px = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
+    const py = Math.max(0, Math.min(1, (e.clientY - r.top) / r.height));
+    return { x: Math.round(px * 255), y: Math.round((1 - py) * 255) };
+  },
+
+  _onDown(e) {
+    const pt = this._coords(e);
+    const pts = this.points[this.channel];
+    for (let i = 0; i < pts.length; i++) {
+      if (Math.abs(pts[i].x - pt.x) < 14 && Math.abs(pts[i].y - pt.y) < 14) { this.dragging = i; return; }
+    }
+    pts.push(pt); pts.sort((a, b) => a.x - b.x);
+    this.dragging = pts.findIndex(p => p.x === pt.x && p.y === pt.y);
+    this._update();
+  },
+
+  _onMove(e) {
+    if (this.dragging === null) return;
+    const pt = this._coords(e);
+    const pts = this.points[this.channel];
+    if (this.dragging === 0) pt.x = 0;
+    else if (this.dragging === pts.length - 1) pt.x = 255;
+    pt.x = Math.max(0, Math.min(255, pt.x));
+    pt.y = Math.max(0, Math.min(255, pt.y));
+    pts[this.dragging] = pt; pts.sort((a, b) => a.x - b.x);
+    this.dragging = pts.findIndex(p => p.x === pt.x && p.y === pt.y);
+    this._update();
+  },
+
+  _onDblClick(e) {
+    const pt = this._coords(e);
+    const pts = this.points[this.channel];
+    for (let i = 1; i < pts.length - 1; i++) {
+      if (Math.abs(pts[i].x - pt.x) < 14 && Math.abs(pts[i].y - pt.y) < 14) { pts.splice(i, 1); this._update(); return; }
+    }
+  },
+
+  _update() {
+    this.buildLUT(this.channel); this.draw();
+    invalidateAdjCache(); if (S.hasImg) renderCanvas();
+  },
+
+  buildLUT(ch) {
+    const pts = this.points[ch];
+    const isLinear = pts.length === 2 && pts[0].x === 0 && pts[0].y === 0 && pts[1].x === 255 && pts[1].y === 255;
+    if (isLinear) { this.lut[ch] = null; return; }
+    const lut = new Uint8Array(256);
+    for (let i = 0; i < 256; i++) {
+      let lo = pts[0], hi = pts[pts.length - 1];
+      for (let j = 0; j < pts.length - 1; j++) {
+        if (pts[j].x <= i && pts[j+1].x >= i) { lo = pts[j]; hi = pts[j+1]; break; }
+      }
+      const t = hi.x === lo.x ? 0 : (i - lo.x) / (hi.x - lo.x);
+      const t2 = t * t, t3 = t2 * t;
+      const val = lo.y * (2*t3 - 3*t2 + 1) + hi.y * (3*t2 - 2*t3);
+      lut[i] = Math.max(0, Math.min(255, Math.round(val)));
+    }
+    this.lut[ch] = lut;
+  },
+
+  applyToImageData(imageData) {
+    const d = imageData.data;
+    const lr = this.lut.r, lg = this.lut.g, lb = this.lut.b, lrgb = this.lut.rgb;
+    if (!lrgb && !lr && !lg && !lb) return;
+    for (let i = 0; i < d.length; i += 4) {
+      let r = d[i], g = d[i+1], b = d[i+2];
+      if (lrgb) { r = lrgb[r]; g = lrgb[g]; b = lrgb[b]; }
+      if (lr) r = lr[r]; if (lg) g = lg[g]; if (lb) b = lb[b];
+      d[i] = r; d[i+1] = g; d[i+2] = b;
+    }
+  },
+
+  hasEffect() {
+    return ['rgb','r','g','b'].some(ch => this.lut[ch] !== null);
+  },
+
+  reset() {
+    ['rgb','r','g','b'].forEach(ch => { this.points[ch] = [{x:0,y:0},{x:255,y:255}]; this.lut[ch] = null; });
+    this.draw(); invalidateAdjCache(); if (S.hasImg) renderCanvas(); toast('↺ Curves reset');
+  },
+
+  draw() {
+    const c = document.getElementById('curves-canvas'); if (!c) return;
+    const ctx = c.getContext('2d'); const W = c.width, H = c.height;
+    ctx.clearRect(0, 0, W, H);
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)'; ctx.lineWidth = 1;
+    for (let i = 1; i < 4; i++) {
+      ctx.beginPath(); ctx.moveTo(i*W/4, 0); ctx.lineTo(i*W/4, H); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, i*H/4); ctx.lineTo(W, i*H/4); ctx.stroke();
+    }
+    ctx.strokeStyle = 'rgba(255,255,255,0.12)'; ctx.setLineDash([4,4]);
+    ctx.beginPath(); ctx.moveTo(0, H); ctx.lineTo(W, 0); ctx.stroke(); ctx.setLineDash([]);
+    const chC = {rgb:'#d4a359', r:'#f87171', g:'#4ade80', b:'#60a5fa'};
+    const pts = this.points[this.channel];
+    ctx.strokeStyle = chC[this.channel]; ctx.lineWidth = 2;
+    ctx.shadowColor = chC[this.channel]; ctx.shadowBlur = 6;
+    ctx.beginPath();
+    pts.forEach((p, i) => { const sx = p.x/255*W, sy = (1-p.y/255)*H; i===0 ? ctx.moveTo(sx,sy) : ctx.lineTo(sx,sy); });
+    ctx.stroke(); ctx.shadowBlur = 0;
+    pts.forEach(p => {
+      const sx = p.x/255*W, sy = (1-p.y/255)*H;
+      ctx.beginPath(); ctx.arc(sx, sy, 5, 0, Math.PI*2);
+      ctx.fillStyle = chC[this.channel]; ctx.fill();
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
+    });
+  }
+};
+
+// ══════════════════════════════════════════════
+// FEATURE 3: ARC TEXT HELPER
+// ══════════════════════════════════════════════
+function drawArcText(ctx, text, cx, cy, radius, arcDeg) {
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  const chars = text.split('');
+  const totalAngle = (arcDeg / 180) * Math.PI;
+  const charAngle = chars.length > 1 ? totalAngle / (chars.length - 1) : 0;
+  const startA = -totalAngle / 2 - Math.PI / 2;
+  const r = Math.abs(radius);
+  chars.forEach((ch, i) => {
+    const a = startA + i * charAngle;
+    ctx.save();
+    ctx.translate(cx + r * Math.cos(a), cy + r * Math.sin(a));
+    ctx.rotate(a + Math.PI / 2);
+    ctx.fillText(ch, 0, 0);
+    ctx.restore();
+  });
+}
+
+// ══════════════════════════════════════════════
+// FEATURE 4: VINTAGE OVERLAYS ENGINE
+// ══════════════════════════════════════════════
+const OVERLAY_TYPES = [
+  { id:'lightleak', name:'☀️ Light Leak', blend:'screen' },
+  { id:'sunburst',  name:'✨ Sunburst',   blend:'screen' },
+  { id:'bokeh',     name:'🫧 Bokeh',      blend:'screen' },
+  { id:'prismflare',name:'🌈 Prism Flare',blend:'screen' },
+  { id:'dustfilm',  name:'🎞 Film Dust',  blend:'multiply' },
+  { id:'vignette2', name:'🌑 Vignette',   blend:'multiply' },
+];
+
+function generateOverlayCanvas(type, W, H) {
+  const oc = document.createElement('canvas'); oc.width = W; oc.height = H;
+  const ox = oc.getContext('2d');
+  if (type === 'lightleak') {
+    const g1 = ox.createRadialGradient(W*.15,H*.2,0,W*.15,H*.2,W*.7);
+    g1.addColorStop(0,'rgba(255,200,80,0.7)'); g1.addColorStop(0.4,'rgba(255,80,40,0.4)'); g1.addColorStop(1,'rgba(255,0,80,0)');
+    ox.fillStyle=g1; ox.fillRect(0,0,W,H);
+    const g2=ox.createRadialGradient(W*.85,H*.8,0,W*.85,H*.8,W*.5);
+    g2.addColorStop(0,'rgba(180,80,255,0.5)'); g2.addColorStop(1,'rgba(180,80,255,0)');
+    ox.fillStyle=g2; ox.fillRect(0,0,W,H);
+  } else if (type === 'sunburst') {
+    const cx=W/2, cy=H*.3, rays=18;
+    for (let i=0;i<rays;i++) {
+      const a=(i/rays)*Math.PI*2;
+      const g=ox.createLinearGradient(cx,cy,cx+Math.cos(a)*W,cy+Math.sin(a)*H);
+      g.addColorStop(0,'rgba(255,230,100,0.22)'); g.addColorStop(1,'rgba(255,230,100,0)');
+      ox.beginPath(); ox.moveTo(cx,cy); ox.arc(cx,cy,W*1.2,a-Math.PI/rays,a+Math.PI/rays);
+      ox.closePath(); ox.fillStyle=g; ox.fill();
+    }
+  } else if (type === 'bokeh') {
+    for (let i=0;i<50;i++) {
+      const bx=Math.random()*W, by=Math.random()*H, br=12+Math.random()*38, hue=Math.random()*360;
+      const bg=ox.createRadialGradient(bx,by,0,bx,by,br);
+      bg.addColorStop(0,`hsla(${hue},100%,80%,0.32)`); bg.addColorStop(1,'hsla(0,0%,100%,0)');
+      ox.beginPath(); ox.arc(bx,by,br,0,Math.PI*2); ox.fillStyle=bg; ox.fill();
+    }
+  } else if (type === 'prismflare') {
+    [{c:'rgba(255,0,80,',x:.2},{c:'rgba(255,160,0,',x:.32},{c:'rgba(80,255,0,',x:.46},
+     {c:'rgba(0,200,255,',x:.6},{c:'rgba(120,0,255,',x:.75}].forEach(({c,x}) => {
+      const g=ox.createLinearGradient(W*x,0,W*(x+0.12),H);
+      g.addColorStop(0,c+'0)'); g.addColorStop(0.5,c+'0.28)'); g.addColorStop(1,c+'0)');
+      ox.fillStyle=g; ox.fillRect(0,0,W,H);
+    });
+  } else if (type === 'dustfilm') {
+    for (let i=0;i<600;i++) {
+      ox.fillStyle=`rgba(0,0,0,${Math.random()*.35})`;
+      ox.beginPath(); ox.arc(Math.random()*W,Math.random()*H,Math.random()*1.5,0,Math.PI*2); ox.fill();
+    }
+    for (let i=0;i<4;i++) {
+      ox.strokeStyle=`rgba(0,0,0,${0.08+Math.random()*.18})`; ox.lineWidth=Math.random()*1.5;
+      ox.beginPath(); ox.moveTo(Math.random()*W,0); ox.lineTo(Math.random()*W,H); ox.stroke();
+    }
+  } else if (type === 'vignette2') {
+    const g=ox.createRadialGradient(W/2,H/2,H*.2,W/2,H/2,H*.85);
+    g.addColorStop(0,'rgba(0,0,0,0)'); g.addColorStop(0.6,'rgba(0,0,0,0.18)'); g.addColorStop(1,'rgba(0,0,0,0.8)');
+    ox.fillStyle=g; ox.fillRect(0,0,W,H);
+  }
+  return oc;
+}
+
+function addOverlay(type) {
+  if (!S.hasImg) { toast('Open a photo first!'); return; }
+  const def = OVERLAY_TYPES.find(o => o.id === type); if (!def) return;
+  const W = canvas.width, H = canvas.height;
+  const oc = generateOverlayCanvas(type, W, H);
+  const img = new Image();
+  img.onload = () => {
+    const id = nextLayerId++;
+    layers.push({ id, type:'image', name:def.name, visible:true, locked:false, opacity:70, blend:def.blend,
+                  x:0, y:0, w:W, h:H, img, adjustments:{...DSLIDERS} });
+    selLayerId = id;
+    renderCanvas(); renderLayersPanel(); pushHist(`🌈 ${def.name}`); toast(`🌈 Added: ${def.name}`);
+    document.getElementById('overlays-modal')?.classList.remove('on');
+  };
+  img.src = oc.toDataURL('image/png');
+}
+
+function openOverlaysModal() {
+  const modal = document.getElementById('overlays-modal');
+  const grid = document.getElementById('overlays-grid');
+  if (!modal || !grid) return;
+  grid.innerHTML = '';
+  OVERLAY_TYPES.forEach(def => {
+    const thumb = document.createElement('div'); thumb.className = 'overlay-thumb';
+    const tc = generateOverlayCanvas(def.id, 120, 90); thumb.appendChild(tc);
+    const label = document.createElement('div'); label.className = 'overlay-thumb-label'; label.textContent = def.name;
+    thumb.appendChild(label); thumb.onclick = () => addOverlay(def.id); grid.appendChild(thumb);
+  });
+  modal.classList.add('on');
+}
+
+// ══════════════════════════════════════════════
+// FEATURE 5: STUDIO THEMES + ZEN MODE
+// ══════════════════════════════════════════════
+let _currentTheme = 'default';
+let _zenMode = false;
+
+function setTheme(name) {
+  const allThemes = ['oled','neutral','warm','cyberpunk','nordic','emerald','light'];
+  allThemes.forEach(t => document.body.classList.remove(`theme-${t}`));
+  if (name !== 'default') document.body.classList.add(`theme-${name}`);
+  _currentTheme = name;
+  ['default', ...allThemes].forEach(n => {
+    const el = document.getElementById(`topt-${n}`);
+    if (el) el.classList.toggle('active', n === name);
+  });
+  try { localStorage.setItem('of_theme', name); } catch(e) {}
+  document.getElementById('theme-dropdown')?.classList.remove('open');
+  const names = {
+    default: 'Obsidian Dark',
+    oled: 'OLED Midnight',
+    neutral: 'Studio 18% Gray',
+    warm: 'Warm Sepia',
+    cyberpunk: 'Cyberpunk Neon',
+    nordic: 'Arctic Frost',
+    emerald: 'Emerald CRT',
+    light: 'Daylight Studio'
+  };
+  toast(`🎨 Theme: ${names[name] || name}`);
+}
+
+function toggleThemeDropdown() {
+  document.getElementById('theme-dropdown')?.classList.toggle('open');
+}
+
+function toggleZenMode() {
+  _zenMode = !_zenMode;
+  document.body.classList.toggle('zen-mode', _zenMode);
+  document.getElementById('theme-dropdown')?.classList.remove('open');
+  toast(_zenMode ? '🧘 Zen Mode — press Tab to exit' : '✦ Zen Mode exited');
+  setTimeout(() => { positionCanvas(); renderHUD(); }, 320);
+}
+
 function quickFix() {
+
   if (!S.hasImg) { toast('Open a photo first!'); return; }
   const target = getAdjTarget();
   if (!target.adjustments) target.adjustments = {...DSLIDERS};
@@ -2430,12 +3943,13 @@ function updateToolstripUI(tool) {
   const sttool = document.getElementById('sttool');
   if (sttool) sttool.textContent = tool.charAt(0).toUpperCase() + tool.slice(1);
 
-  ca.className = ca.className.replace(/\b(tm|thand|tc2|teye|tblur|tselect)\b/g, '').trim();
+  ca.className = ca.className.replace(/\b(tm|thand|tc2|teye|tblur|tselect|theal)\b/g, '').trim();
   if (tool === 'move') ca.classList.add('tm');
   else if (tool === 'hand') ca.classList.add('thand');
   else if (tool === 'crop') ca.classList.add('tc2');
   else if (tool === 'eye') ca.classList.add('teye');
   else if (tool === 'blurbrush') ca.classList.add('tblur');
+  else if (tool === 'heal') ca.classList.add('theal');
   else if (tool === 'magic' || tool === 'lasso') ca.classList.add('tselect');
   else ca.classList.add('tm');
 
@@ -2444,11 +3958,13 @@ function updateToolstripUI(tool) {
     'magic': 'magic-bar',
     'lasso': 'lasso-bar',
     'blurbrush': 'blur-bar',
-    'wm': 'wm-bar'
+    'wm': 'wm-bar',
+    'heal': 'heal-bar'
   };
   Object.entries(bars).forEach(([k, barId]) => {
     const el = document.getElementById(barId);
-    if (el) el.classList.toggle('on', tool === k);
+    if (el) el.classList.toggle('vis', tool === k);
+    if (el && el.classList.contains('on')) el.classList.toggle('on', tool === k);
   });
 }
 
@@ -2471,6 +3987,7 @@ function setTool(tool) {
   if (S.tool === 'eye' && tool !== 'eye') stopEyedropper();
   if (S.tool === 'blurbrush' && tool !== 'blurbrush') cancelBlurBrush();
   if (S.tool === 'wm' && tool !== 'wm') cancelWMDrag();
+  if (S.tool === 'heal' && tool !== 'heal') { HealBrush.end(); }
 
   S.tool = tool;
   updateToolstripUI(tool);
@@ -2482,6 +3999,7 @@ function setTool(tool) {
   else if (tool === 'ba') { if (!S.hasImg) { toast('Open a photo first!'); S.tool = 'move'; updateToolstripUI('move'); return; } enterBA(); }
   else if (tool === 'eye') { if (!S.hasImg) { toast('Open a photo first!'); S.tool = 'move'; updateToolstripUI('move'); return; } startEyedropper(); }
   else if (tool === 'blurbrush') { if (!S.hasImg) { toast('Open a photo first!'); S.tool = 'move'; updateToolstripUI('move'); return; } startBlurBrush(); }
+  else if (tool === 'heal') { if (!S.hasImg) { toast('Open a photo first!'); S.tool = 'move'; updateToolstripUI('move'); return; } toast('🩹 Paint over areas to heal. Click Apply when done.'); }
   else if (tool === 'adjust') {
     const tab = document.querySelector('#rp .ptab[data-p="adjust"]');
     if (tab) switchPane(tab);
@@ -2789,6 +4307,12 @@ ca.addEventListener('pointerdown', e => {
     return;
   }
 
+  if (S.tool === 'heal') {
+    HealBrush.start(cx, cy);
+    renderHUD();
+    return;
+  }
+
   if (S.tool === 'bgrbrush') {
     isLassoBrushDrawing = true;
     const sz = parseInt(document.getElementById('bb-size')?.value) || 32;
@@ -2826,7 +4350,7 @@ ca.addEventListener('pointerdown', e => {
     // 1. Check if clicking any transform handle on the currently selected layer
     if (selLayerId) {
       const curSel = layers.find(l => l.id === selLayerId);
-      if (curSel && curSel.visible) {
+      if (curSel && curSel.visible && !curSel.locked) {
         const b = getLayerBounds(curSel);
         const handleHit = hitTestHandle(cx, cy, b);
         if (handleHit) {
@@ -2844,28 +4368,72 @@ ca.addEventListener('pointerdown', e => {
       }
     }
 
-    // 2. Check if clicking inside any layer
-    let hitLayer = null;
-    for (let i = layers.length - 1; i >= 0; i--) {
-      const layer = layers[i];
-      if (!layer.visible) continue;
-      const b = getLayerBounds(layer);
-      if (cx >= b.x && cx <= b.x + b.w && cy >= b.y && cy <= b.y + b.h) {
-        hitLayer = layer;
-        break;
+    // 2. Intelligent Layer Targeting & Drag Resolution
+    let targetToDrag = null;
+
+    // A) If a layer is currently selected, check if clicking inside or near its bounding box
+    if (selLayerId) {
+      const curSel = layers.find(l => l.id === selLayerId);
+      if (curSel && curSel.visible && !curSel.locked) {
+        const b = getLayerBounds(curSel);
+        const pad = 12 / S.zoom;
+        if (cx >= b.x - pad && cx <= b.x + b.w + pad && cy >= b.y - pad && cy <= b.y + b.h + pad) {
+          targetToDrag = curSel;
+        }
       }
     }
 
-    if (hitLayer) {
-      selLayerId = hitLayer.id;
-      layerDrag = hitLayer.id;
+    // B) If not clicked on the currently selected layer, check other visible layers (top to bottom)
+    // Priority given to non-base layers (text, stickers, image overlays, watermarks)
+    if (!targetToDrag) {
+      for (let i = layers.length - 1; i >= 0; i--) {
+        const layer = layers[i];
+        if (!layer.visible || layer.locked || layer.type === 'base') continue;
+        const b = getLayerBounds(layer);
+        if (cx >= b.x && cx <= b.x + b.w && cy >= b.y && cy <= b.y + b.h) {
+          targetToDrag = layer;
+          break;
+        }
+      }
+    }
+
+    // C) If user already has a layer selected and clicks within canvas bounds, move the selected layer!
+    if (!targetToDrag && selLayerId) {
+      const curSel = layers.find(l => l.id === selLayerId);
+      if (curSel && curSel.visible && !curSel.locked) {
+        if (cx >= 0 && cx <= canvas.width && cy >= 0 && cy <= canvas.height) {
+          targetToDrag = curSel;
+        }
+      }
+    }
+
+    // D) Fallback: If no specific layer is selected or clicked, target the base photo
+    if (!targetToDrag) {
+      const baseLayer = layers.find(l => l.type === 'base');
+      if (baseLayer && baseLayer.visible && !baseLayer.locked) {
+        const b = getLayerBounds(baseLayer);
+        if (cx >= b.x && cx <= b.x + b.w && cy >= b.y && cy <= b.y + b.h) {
+          targetToDrag = baseLayer;
+        }
+      }
+    }
+
+    if (targetToDrag) {
+      selLayerId = targetToDrag.id;
+      layerDrag = targetToDrag.id;
       layerDragStart = {cx, cy};
-      layerAtDragStart = {x: hitLayer.x ?? 0, y: hitLayer.y ?? 0, w: hitLayer.w ?? canvas.width, h: hitLayer.h ?? canvas.height};
+      layerAtDragStart = {
+        x: targetToDrag.x ?? 0,
+        y: targetToDrag.y ?? 0,
+        w: targetToDrag.w ?? canvas.width,
+        h: targetToDrag.h ?? canvas.height
+      };
       updateAdjustHeader();
       renderCanvas();
       renderLayersPanel();
+      e.preventDefault();
     } else {
-      // Clicked on blank canvas space outside layers
+      // Clicked on blank canvas space outside all layers -> viewport panning
       isPanning = true;
       panStartX = e.clientX; panStartY = e.clientY;
       panOrigX = S.panX; panOrigY = S.panY;
@@ -2944,9 +4512,13 @@ window.addEventListener('pointermove', e => {
   if (layerDrag) {
     const {cx, cy} = canvasCoords(e);
     const layer = layers.find(l => l.id === layerDrag);
-    if (layer) {
-      layer.x = Math.round(layerAtDragStart.x + (cx - layerDragStart.cx));
-      layer.y = Math.round(layerAtDragStart.y + (cy - layerDragStart.cy));
+    if (layer && !layer.locked) {
+      const rawX = Math.round(layerAtDragStart.x + (cx - layerDragStart.cx));
+      const rawY = Math.round(layerAtDragStart.y + (cy - layerDragStart.cy));
+      const b = getLayerBounds(layer);
+      const snapped = SnapEngine.snap(layer, rawX, rawY, b.w, b.h);
+      layer.x = snapped.x;
+      layer.y = snapped.y;
       renderCanvas();
     }
   }
@@ -2961,6 +4533,11 @@ window.addEventListener('pointermove', e => {
     const {cx, cy} = canvasCoords(e);
     currentBlurStroke.points.push({x: cx, y: cy});
     renderHUD();
+  }
+
+  if (S.tool === 'heal' && HealBrush.painting) {
+    const {cx, cy} = canvasCoords(e);
+    HealBrush.move(cx, cy);
   }
 
   if (isLassoBrushDrawing && currentLassoStroke && S.tool === 'bgrbrush') {
@@ -3005,9 +4582,13 @@ window.addEventListener('pointerup', () => {
   }
 
   if (layerDrag) {
+    activeSnapGuides = [];
     pushHist('Moved layer');
     layerDrag = null;
     renderCanvas();
+  }
+  if (layerResizeMode) {
+    activeSnapGuides = [];
   }
 
   if (isLassoDrawing && S.tool === 'lasso') {
@@ -3018,6 +4599,10 @@ window.addEventListener('pointerup', () => {
   if (isBlurDrawing && S.tool === 'blurbrush') {
     isBlurDrawing = false;
     currentBlurStroke = null;
+  }
+
+  if (S.tool === 'heal' && HealBrush.painting) {
+    HealBrush.end();
   }
 
   if (isLassoBrushDrawing && S.tool === 'bgrbrush') {
@@ -3365,6 +4950,23 @@ function openTxtModal(layer) {
   document.getElementById('txt-font').value = layer ? layer.font : 'Plus Jakarta Sans';
   document.getElementById('txt-size').value = layer ? layer.size : Math.round(canvas.width / 12);
   document.getElementById('txt-color').value = layer ? layer.color : '#ffffff';
+  if (document.getElementById('txt-align') && layer?.align) document.getElementById('txt-align').value = layer.align;
+  if (document.getElementById('txt-weight') && layer?.weight) document.getElementById('txt-weight').value = layer.weight;
+  const strokeW = layer ? (layer.strokeWidth || 0) : 0;
+  if (document.getElementById('txt-stroke-width')) {
+    document.getElementById('txt-stroke-width').value = strokeW;
+    const tsw = document.getElementById('tsw-val'); if (tsw) tsw.textContent = strokeW;
+  }
+  const shadowB = layer ? (layer.shadowBlur || 0) : 0;
+  if (document.getElementById('txt-shadow-blur')) {
+    document.getElementById('txt-shadow-blur').value = shadowB;
+    const tsb = document.getElementById('tsb-val'); if (tsb) tsb.textContent = shadowB;
+  }
+  const arcVal = layer ? (layer.arc || 0) : 0;
+  if (document.getElementById('txt-arc')) {
+    document.getElementById('txt-arc').value = arcVal;
+    const tav = document.getElementById('txt-arc-val'); if (tav) tav.textContent = (arcVal > 0 ? '+' : '') + arcVal + '°';
+  }
   document.getElementById('txt-modal').classList.add('on');
 }
 function closeTxtModal() { document.getElementById('txt-modal').classList.remove('on'); }
@@ -3379,15 +4981,16 @@ function commitText() {
   const weight = document.getElementById('txt-weight').value;
   const strokeWidth = parseInt(document.getElementById('txt-stroke-width').value) || 0;
   const shadowBlur = parseInt(document.getElementById('txt-shadow-blur').value) || 0;
+  const arc = parseInt(document.getElementById('txt-arc')?.value || 0);
 
   if (editingLayerId) {
     const layer = layers.find(l => l.id === editingLayerId);
-    if (layer) Object.assign(layer, {text, font, size, color, align, weight, strokeWidth, shadowBlur});
+    if (layer) Object.assign(layer, {text, font, size, color, align, weight, strokeWidth, shadowBlur, arc});
     pushHist('Edited text');
   } else {
     const layer = {
       id: nextLayerId++, type: 'text', name: 'Text: ' + text.slice(0, 14), visible: true, opacity: 100,
-      text, font, size, color, align, weight, strokeWidth, shadowBlur,
+      text, font, size, color, align, weight, strokeWidth, shadowBlur, arc,
       x: canvas.width / 2, y: canvas.height / 2 - size / 2
     };
     layers.push(layer);
@@ -4111,7 +5714,7 @@ function addSticker(emoji) {
   img.onload = () => {
     const layer = {
       id: nextLayerId++, type: 'image', name: emoji + ' Sticker', visible: true, opacity: 100,
-      blendMode: 'source-over',
+      blend: 'source-over', blendMode: 'source-over',
       img, x: (canvas.width - sz) / 2, y: (canvas.height - sz) / 2, w: sz, h: sz,
       adjustments: {...DSLIDERS}
     };
@@ -4141,6 +5744,7 @@ function addImageOverlayFromFile(f) {
         name: f.name || 'Image Overlay',
         visible: true,
         opacity: 100,
+        blend: 'source-over',
         blendMode: 'source-over',
         img,
         x: Math.round((canvas.width - w) / 2),
@@ -4169,6 +5773,7 @@ function addAdjustmentLayer() {
     name: 'Adjustment Layer ' + layers.length,
     visible: true,
     opacity: 100,
+    blend: 'source-over',
     blendMode: 'source-over',
     adjustments: {...DSLIDERS}
   };
@@ -4262,6 +5867,26 @@ function onLayerDrop(e, targetId) {
   toast('↕ Layer stack order updated!');
 }
 
+function setLayerBlendMode(id, blendMode) {
+  const l = layers.find(x => x.id === id);
+  if (l) {
+    l.blend = blendMode;
+    renderCanvas();
+    pushHist('Changed blend mode');
+    toast(`Blend mode: ${blendMode === 'source-over' ? 'Normal' : blendMode}`);
+  }
+}
+
+function toggleLockLayer(id) {
+  const l = layers.find(x => x.id === id);
+  if (l) {
+    l.locked = !l.locked;
+    renderQuickHUD();
+    renderLayersPanel();
+    toast(l.locked ? `🔒 Locked "${l.name || l.type}"` : `🔓 Unlocked "${l.name || l.type}"`);
+  }
+}
+
 function renderLayersPanel() {
   const ll = document.getElementById('ll');
   if (!ll) return;
@@ -4270,31 +5895,41 @@ function renderLayersPanel() {
 
   displayed.forEach((layer, index) => {
     const isSelected = layer.id === selLayerId;
+    const isLocked = !!layer.locked;
     const realIdx = layers.findIndex(l => l.id === layer.id);
     const canMoveUp = realIdx < layers.length - 1;
     const canMoveDown = realIdx > 0;
 
     const div = document.createElement('div');
-    div.className = 'li' + (isSelected ? ' sel' : '');
-    div.draggable = true;
+    div.className = 'li' + (isSelected ? ' sel' : '') + (isLocked ? ' locked' : '');
+    div.draggable = !isLocked;
     div.ondragstart = (e) => onLayerDragStart(e, layer.id);
     div.ondragover = (e) => onLayerDragOver(e);
     div.ondragleave = (e) => onLayerDragLeave(e);
     div.ondrop = (e) => onLayerDrop(e, layer.id);
 
+    const blends = ['source-over', 'multiply', 'screen', 'overlay', 'darken', 'lighten', 'color-dodge', 'color-burn', 'hard-light', 'soft-light', 'difference', 'exclusion', 'hue', 'saturation', 'color', 'luminosity'];
+    const blendOpts = blends.map(b => `<option value="${b}" ${layer.blend === b ? 'selected' : ''}>${b === 'source-over' ? 'Normal' : b}</option>`).join('');
+
     div.innerHTML = `
       <div class="lthumb">${layer.type==='text'?'T':layer.type==='watermark'?'💧':layer.type==='adjustment'?'🎚':'📷'}</div>
-      <div class="linfo">
-        <div class="lname">${layer.name||layer.text||'Layer'}</div>
-        <div class="lsub">
+      <div class="linfo" style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:4px">
+          <div class="lname" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${layer.name||layer.text||'Layer'}</div>
+          ${isLocked ? '<span style="font-size:10px">🔒</span>' : ''}
+        </div>
+        <div class="lsub" style="display:flex;align-items:center;gap:6px;margin-top:2px;flex-wrap:wrap">
           <span class="lbadge">${layer.type.toUpperCase()}</span>
-          <span>• ${layer.opacity}%</span>
-          ${isSelected ? '<span style="color:var(--accent);font-weight:700">• ACTIVE</span>' : ''}
+          <span>${layer.opacity}%</span>
+          <select class="lblend-select" onclick="event.stopPropagation()" onchange="setLayerBlendMode(${layer.id}, this.value)">
+            ${blendOpts}
+          </select>
         </div>
       </div>
       <div class="lactions">
         <button class="lbtn" title="Move Layer Up (Bring Forward)" ${!canMoveUp ? 'disabled' : ''} onclick="event.stopPropagation();moveLayerUp(${layer.id})">▲</button>
         <button class="lbtn" title="Move Layer Down (Send Backward)" ${!canMoveDown ? 'disabled' : ''} onclick="event.stopPropagation();moveLayerDown(${layer.id})">▼</button>
+        <button class="lbtn" title="Lock / Unlock Layer" onclick="event.stopPropagation();toggleLockLayer(${layer.id})">${isLocked?'🔒':'🔓'}</button>
         <button class="lbtn" title="Toggle Visibility" onclick="event.stopPropagation();toggleLayerVis(${layer.id})">${layer.visible?'👁':'🙈'}</button>
         ${layer.type!=='base'?`<button class="lbtn" title="Delete Layer" onclick="event.stopPropagation();deleteLayer(${layer.id})">🗑</button>`:''}
       </div>
@@ -4600,12 +6235,30 @@ document.addEventListener('keydown', e => {
   if (e.ctrlKey || e.metaKey) {
     if (e.key === 'z' || e.key === 'Z') { e.preventDefault(); e.shiftKey ? doRedo() : doUndo(); }
     else if (e.key === 'y') { e.preventDefault(); doRedo(); }
+    else if (e.key === 'd' || e.key === 'D') { e.preventDefault(); duplicateActiveLayer(); }
     else if (e.key === 's' || e.key === 'e') { e.preventDefault(); openEM(); }
     else if (e.key === 'o') { e.preventDefault(); openFile(); }
     else if (e.key === '=' || e.key === '+') { e.preventDefault(); zIn(); }
     else if (e.key === '-') { e.preventDefault(); zOut(); }
     return;
   }
+  if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+    if (selLayerId) {
+      const curSel = layers.find(l => l.id === selLayerId);
+      if (curSel && !curSel.locked) {
+        e.preventDefault();
+        const delta = e.shiftKey ? 10 : 1;
+        if (e.key === 'ArrowUp') curSel.y = (curSel.y ?? 0) - delta;
+        if (e.key === 'ArrowDown') curSel.y = (curSel.y ?? 0) + delta;
+        if (e.key === 'ArrowLeft') curSel.x = (curSel.x ?? 0) - delta;
+        if (e.key === 'ArrowRight') curSel.x = (curSel.x ?? 0) + delta;
+        renderCanvas();
+        return;
+      }
+    }
+  }
+  if (e.key === ']') moveActiveLayerUp();
+  if (e.key === '[') moveActiveLayerDown();
   if (e.key === 'Escape') {
     document.querySelectorAll('.modal-bg').forEach(m => m.classList.remove('on'));
     if (baActive) exitBA();
@@ -4625,6 +6278,9 @@ document.addEventListener('keydown', e => {
   else if (e.key === 't') setTool('text');
   else if (e.key === 'i') setTool('eye');
   else if (e.key === 'b') setTool('blurbrush');
+  else if (e.key === 'g') setTool('heal');
+  else if (e.key === 'Tab') { e.preventDefault(); toggleZenMode(); }
+  else if (e.key === 's') toggleSnapEngine();
   else if (e.key === '0') { e.preventDefault(); zFit(); }
   else if (e.key === '?') openKB();
 });
@@ -4647,11 +6303,85 @@ document.addEventListener('paste', e => {
 });
 
 // STARTUP
-document.addEventListener('DOMContentLoaded', () => {
+function initApp() {
   initWelcomeParticles();
   initDB();
   initCropHandlers();
-});
+
+  // Mini-map interaction
+  const miniWidget = document.getElementById('minimap-widget');
+  if (miniWidget) {
+    let isMiniDragging = false;
+    miniWidget.addEventListener('pointerdown', e => {
+      isMiniDragging = true;
+      MinimapEngine.panFromMinimap(e);
+    });
+    window.addEventListener('pointermove', e => {
+      if (isMiniDragging) MinimapEngine.panFromMinimap(e);
+    });
+    window.addEventListener('pointerup', () => { isMiniDragging = false; });
+  }
+
+  // Right-Click Context Menu
+  ca.addEventListener('contextmenu', e => {
+    if (!S.hasImg) return;
+    e.preventDefault();
+
+    const {cx, cy} = canvasCoords(e);
+    let hit = null;
+    for (let i = layers.length - 1; i >= 0; i--) {
+      const l = layers[i];
+      if (!l.visible) continue;
+      const b = getLayerBounds(l);
+      if (cx >= b.x && cx <= b.x + b.w && cy >= b.y && cy <= b.y + b.h) {
+        hit = l; break;
+      }
+    }
+    if (hit) {
+      selLayerId = hit.id;
+      updateAdjustHeader();
+      renderCanvas();
+      renderLayersPanel();
+    }
+
+    const menu = document.getElementById('ctx-menu');
+    if (!menu) return;
+    menu.style.display = 'block';
+    menu.style.left = `${Math.min(window.innerWidth - 200, e.clientX)}px`;
+    menu.style.top = `${Math.min(window.innerHeight - 260, e.clientY)}px`;
+
+    const lockLabel = document.getElementById('ctx-lock-label');
+    if (lockLabel && hit) {
+      lockLabel.textContent = hit.locked ? '🔓 Unlock Layer' : '🔒 Lock Layer';
+    }
+  });
+
+  window.addEventListener('click', e => {
+    const menu = document.getElementById('ctx-menu');
+    if (menu) menu.style.display = 'none';
+    if (!e.target.closest('#theme-dropdown-wrap')) {
+      document.getElementById('theme-dropdown')?.classList.remove('open');
+    }
+  });
+
+  // Initialize Curves Engine and Theme
+  if (typeof CurvesEngine !== 'undefined') CurvesEngine.init();
+  try {
+    const savedTheme = localStorage.getItem('of_theme');
+    if (savedTheme) setTheme(savedTheme);
+  } catch(e) {}
+
+  // Safety fallback: always dismiss splash screen smoothly
+  setTimeout(() => {
+    if (document.getElementById('welcome')) enterApp();
+  }, 1800);
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initApp);
+} else {
+  initApp();
+}
 </script>
 </body>
 </html>
