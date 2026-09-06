@@ -704,16 +704,35 @@ input[type=range]::-moz-range-thumb{
 /* ── THEME SWITCHER ── */
 /* ── ENHANCED THEME SWITCHER ── */
 #theme-dropdown{
-  position:absolute;top:100%;right:0;margin-top:6px;
+  position:absolute;bottom:calc(100% + 8px);right:0;
   background:rgba(14,16,22,0.96);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
   border:1px solid var(--border-light);border-radius:14px;
   padding:10px;width:300px;z-index:400;
-  box-shadow:0 16px 48px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,255,255,0.06);
+  box-shadow:0 -16px 48px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,255,255,0.06);
   display:none;
   animation:ctx-in 0.14s ease-out;
 }
 #theme-dropdown.open{display:block;}
 #theme-dropdown-wrap{position:relative;}
+
+.sb-theme-btn{
+  height:24px;padding:0 9px;border-radius:var(--rs);
+  border:1px solid var(--border);background:rgba(255,255,255,0.04);
+  color:var(--text);font-family:var(--font-b);font-size:11px;font-weight:600;
+  display:inline-flex;align-items:center;gap:6px;cursor:pointer;
+  transition:all 0.18s;white-space:nowrap;
+}
+.sb-theme-btn:hover{
+  background:var(--surface-raised);border-color:var(--accent);color:var(--accent);
+  box-shadow:0 0 10px var(--accent-glow);
+}
+.sb-theme-dot{
+  width:7px;height:7px;border-radius:50%;background:var(--accent);
+  box-shadow:0 0 6px var(--accent);flex-shrink:0;
+}
+#sb .hatty-link{
+  height:24px;padding:0 9px;font-size:11px;
+}
 .theme-menu-hdr{
   display:flex;align-items:center;justify-content:space-between;
   padding:2px 4px 8px;border-bottom:1px solid var(--border-subtle);
@@ -880,6 +899,128 @@ body.theme-light .btn-ghost:hover{background:rgba(0,0,0,0.06);color:#0f172a;}
 .arc-slider-row input[type=range]{flex:1;accent-color:var(--accent);}
 .arc-slider-row span{font-size:10.5px;color:var(--text-muted);min-width:28px;text-align:right;font-family:var(--font-m);}
 
+/* ── NEW PROJECT MODAL ── */
+.new-opt-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+  padding:14px;cursor:pointer;transition:all 0.18s;text-align:center;
+}
+.new-opt-card:hover{
+  background:var(--surface-raised);border-color:var(--accent);transform:translateY(-2px);
+  box-shadow:0 8px 24px var(--accent-glow);
+}
+
+
+/* ── STUDIO SHORTCUTS BUTTON (PROMINENT & EXPANDED) ── */
+.btn-shortcuts{
+  height:34px;padding:0 12px;background:rgba(255,255,255,0.04);
+  border:1px solid var(--border-light);border-radius:var(--rs);
+  color:var(--text);font-size:12.5px;font-weight:600;
+  display:inline-flex;align-items:center;gap:7px;cursor:pointer;
+  transition:all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.btn-shortcuts:hover{
+  background:var(--surface-raised);border-color:var(--accent);
+  color:var(--accent);box-shadow:0 0 16px var(--accent-glow);
+  transform:translateY(-1.5px);
+}
+.btn-shortcuts .sc-icon{font-size:15px;line-height:1;}
+.btn-shortcuts .sc-kbd{
+  font-size:10px;font-family:var(--font-m);background:rgba(255,255,255,0.08);
+  border:1px solid var(--border);border-radius:3px;padding:1px 5px;
+  color:var(--text-muted);font-weight:700;
+}
+.btn-shortcuts:hover .sc-kbd{border-color:var(--accent);color:var(--accent);background:rgba(212,163,89,0.15);}
+
+/* ── TOUR BUTTON ── */
+.btn-tour{
+  height:34px;padding:0 13px;
+  background:linear-gradient(135deg, rgba(212,163,89,0.16) 0%, rgba(212,163,89,0.05) 100%);
+  border:1px solid rgba(212,163,89,0.4);border-radius:var(--rs);
+  color:var(--accent);font-weight:600;font-size:12.5px;
+  display:inline-flex;align-items:center;gap:7px;cursor:pointer;
+  transition:all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow:0 2px 10px rgba(0,0,0,0.2);
+}
+.btn-tour:hover{
+  background:linear-gradient(135deg, rgba(212,163,89,0.32) 0%, rgba(212,163,89,0.12) 100%);
+  border-color:var(--accent);box-shadow:0 0 18px var(--accent-glow-strong);
+  color:#fff;transform:translateY(-1.5px);
+}
+.btn-tour .tour-sparkle{font-size:14px;animation:tour-sparkle-pulse 2s infinite ease-in-out;}
+@keyframes tour-sparkle-pulse{
+  0%,100%{transform:scale(1);filter:drop-shadow(0 0 2px var(--accent));}
+  50%{transform:scale(1.25) rotate(10deg);filter:drop-shadow(0 0 8px var(--accent));}
+}
+
+/* ── INTERACTIVE GUIDED STUDIO TOUR OVERLAY & CARD ── */
+#studio-tour{
+  position:fixed;inset:0;z-index:9000;pointer-events:none;display:none;
+}
+#studio-tour.active{display:block;}
+
+#tour-spotlight{
+  position:fixed;pointer-events:none;z-index:9001;border-radius:12px;
+  border:2px solid var(--accent);
+  box-shadow:0 0 0 9999px rgba(6,8,12,0.76), 0 0 35px var(--accent-glow-strong);
+  transition:all 0.38s cubic-bezier(0.16, 1, 0.3, 1);box-sizing:border-box;
+}
+
+#tour-card{
+  position:fixed;z-index:9002;pointer-events:all;width:450px;max-width:calc(100vw - 32px);
+  background:var(--surface-raised);backdrop-filter:blur(22px) saturate(180%);
+  -webkit-backdrop-filter:blur(22px) saturate(180%);
+  border:1px solid var(--border-light);border-radius:18px;padding:22px 24px;
+  box-shadow:0 20px 50px rgba(0,0,0,0.65), 0 0 30px var(--accent-glow);
+  transition:all 0.38s cubic-bezier(0.16, 1, 0.3, 1);
+  display:flex;flex-direction:column;gap:12px;
+}
+
+.tour-card-hdr{display:flex;align-items:center;justify-content:space-between;}
+.tour-step-badge{
+  display:inline-flex;align-items:center;gap:7px;
+  background:rgba(212,163,89,0.12);border:1px solid rgba(212,163,89,0.3);
+  padding:3px 10px;border-radius:100px;font-size:11px;font-weight:700;
+  letter-spacing:0.8px;color:var(--accent);text-transform:uppercase;
+}
+.tour-pulse-dot{
+  width:6px;height:6px;border-radius:50%;background:var(--accent);
+  box-shadow:0 0 8px var(--accent);animation:tour-dot-pulse 1.6s infinite ease-in-out;
+}
+@keyframes tour-dot-pulse{0%,100%{transform:scale(1);opacity:1;}50%{transform:scale(1.4);opacity:0.6;}}
+
+.tour-close-btn{
+  background:transparent;border:none;color:var(--text-dim);font-size:16px;
+  cursor:pointer;padding:4px 8px;border-radius:6px;transition:all 0.15s;
+}
+.tour-close-btn:hover{background:rgba(255,255,255,0.08);color:var(--text);}
+
+.tour-zone-tag{font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;}
+.tour-title{font-family:var(--font-d);font-size:19px;font-weight:700;color:var(--text);letter-spacing:-0.01em;margin:3px 0 5px 0;line-height:1.25;}
+.tour-desc{font-size:12.5px;color:var(--text-muted);line-height:1.45;margin:0 0 10px 0;}
+
+.tour-points{
+  display:flex;flex-direction:column;gap:7px;background:rgba(0,0,0,0.28);
+  border:1px solid var(--border-subtle);border-radius:12px;padding:12px 14px;
+}
+.tour-point-item{display:flex;align-items:flex-start;gap:9px;font-size:12px;color:var(--text);line-height:1.45;}
+.tour-point-icon{font-size:14px;flex-shrink:0;margin-top:1px;}
+.tour-point-item kbd{
+  background:var(--surface-raised);border:1px solid var(--border-light);border-radius:4px;
+  padding:1px 5px;font-size:10px;font-family:var(--font-m);color:var(--accent);font-weight:600;
+}
+
+.tour-extra-action{margin-top:4px;}
+.tour-footer{
+  display:flex;align-items:center;justify-content:space-between;padding-top:8px;
+  border-top:1px solid var(--border-subtle);margin-top:2px;
+}
+.tour-dots{display:flex;align-items:center;gap:6px;}
+.tour-dot{width:8px;height:8px;border-radius:4px;background:rgba(255,255,255,0.2);cursor:pointer;transition:all 0.2s;}
+.tour-dot:hover{background:rgba(255,255,255,0.5);transform:scale(1.2);}
+.tour-dot.active{width:22px;background:var(--accent);box-shadow:0 0 10px var(--accent-glow);}
+.tour-actions{display:flex;align-items:center;gap:8px;}
+.tour-btn-prev{height:32px;padding:0 12px;font-size:12px;}
+.tour-btn-next{height:32px;padding:0 16px;font-size:12.5px;font-weight:600;}
 
 /* MODALS */
 .modal-bg{
@@ -1045,7 +1186,8 @@ body.theme-light .btn-ghost:hover{background:rgba(0,0,0,0.06);color:#0f172a;}
   </div>
   <div class="sep"></div>
   
-  <button class="btn btn-ghost" onclick="openFile()">📂 Open</button>
+  <button class="btn btn-ghost" onclick="openNewModal()" title="Start New Edit or Blank Canvas (Ctrl+N)">＋ New</button>
+  <button class="btn btn-ghost" onclick="openFile()" title="Open Image File (Ctrl+O)">📂 Open</button>
   <button class="snap-btn active" id="snap-toggle-btn" onclick="toggleSnapEngine()" title="Toggle Magnetic Alignment Guides (S)">🧲 Snap</button>
   <button class="btn btn-ghost" onclick="runAutoEnhance()" title="Auto Enhance Exposure & Dynamic Tone">🪄 Auto Fix</button>
   <button class="btn btn-ghost" onclick="openResize()">⤡ Resize</button>
@@ -1070,84 +1212,8 @@ body.theme-light .btn-ghost:hover{background:rgba(0,0,0,0.06);color:#0f172a;}
   </div>
   <div class="sep"></div>
 
-  <button class="btn btn-ghost" onclick="showOB()">? Tour</button>
-  <button class="btn btn-ghost" onclick="openKB()" title="Shortcuts (?)">⌨</button>
-  <div class="sep"></div>
-  <div id="theme-dropdown-wrap">
-    <button class="btn btn-ghost" onclick="toggleThemeDropdown()" title="Studio Themes & Zen Mode">🎨 Theme</button>
-    <div id="theme-dropdown">
-      <div class="theme-menu-hdr">
-        <span>🎨 STUDIO THEMES</span>
-        <span class="theme-count-badge">8 Themes</span>
-      </div>
-      <div class="theme-grid">
-        <div class="theme-option active" id="topt-default" onclick="setTheme('default')" title="Obsidian Charcoal & Warm Gold">
-          <div class="theme-preview" style="background:#0e1013"><span style="background:#d4a359"></span></div>
-          <div class="theme-info">
-            <div class="theme-name">Obsidian</div>
-            <div class="theme-desc">Charcoal Gold</div>
-          </div>
-        </div>
-        <div class="theme-option" id="topt-oled" onclick="setTheme('oled')" title="Pure OLED Black #000000">
-          <div class="theme-preview" style="background:#000000"><span style="background:#f59e0b"></span></div>
-          <div class="theme-info">
-            <div class="theme-name">Midnight</div>
-            <div class="theme-desc">OLED Black</div>
-          </div>
-        </div>
-        <div class="theme-option" id="topt-neutral" onclick="setTheme('neutral')" title="Calibrated 18% Colorist Gray">
-          <div class="theme-preview" style="background:#2e2e2e"><span style="background:#e2e8f0"></span></div>
-          <div class="theme-info">
-            <div class="theme-name">Studio Lab</div>
-            <div class="theme-desc">18% Lab Gray</div>
-          </div>
-        </div>
-        <div class="theme-option" id="topt-warm" onclick="setTheme('warm')" title="Sepia Darkroom & Roasted Amber">
-          <div class="theme-preview" style="background:#1a120b"><span style="background:#f59e0b"></span></div>
-          <div class="theme-info">
-            <div class="theme-name">Darkroom</div>
-            <div class="theme-desc">Amber Sepia</div>
-          </div>
-        </div>
-        <div class="theme-option" id="topt-cyberpunk" onclick="setTheme('cyberpunk')" title="Neon Cyan & Electric Magenta">
-          <div class="theme-preview" style="background:#090814"><span style="background:#00f0ff"></span></div>
-          <div class="theme-info">
-            <div class="theme-name">Cyberpunk</div>
-            <div class="theme-desc">Neo-Tokyo Cyan</div>
-          </div>
-        </div>
-        <div class="theme-option" id="topt-nordic" onclick="setTheme('nordic')" title="Glacial Slate & Ice Blue">
-          <div class="theme-preview" style="background:#0b1120"><span style="background:#38bdf8"></span></div>
-          <div class="theme-info">
-            <div class="theme-name">Arctic Frost</div>
-            <div class="theme-desc">Glacial Slate</div>
-          </div>
-        </div>
-        <div class="theme-option" id="topt-emerald" onclick="setTheme('emerald')" title="Phosphor CRT & Forest Green">
-          <div class="theme-preview" style="background:#05100b"><span style="background:#10b981"></span></div>
-          <div class="theme-info">
-            <div class="theme-name">Emerald</div>
-            <div class="theme-desc">Phosphor CRT</div>
-          </div>
-        </div>
-        <div class="theme-option" id="topt-light" onclick="setTheme('light')" title="Daylight White Paper Studio">
-          <div class="theme-preview" style="background:#ffffff;border-color:#cbd5e1"><span style="background:#d97706"></span></div>
-          <div class="theme-info">
-            <div class="theme-name">Daylight</div>
-            <div class="theme-desc">Clean White</div>
-          </div>
-        </div>
-      </div>
-      <div style="height:1px;background:rgba(255,255,255,0.08);margin:8px 0;"></div>
-      <div class="theme-zen-opt" onclick="toggleZenMode()">
-        <span style="font-size:14px">🧘</span>
-        <span style="flex:1;font-weight:600">Zen Mode Viewport</span>
-        <kbd style="font-size:10px;padding:2px 5px;background:rgba(255,255,255,0.08);border-radius:4px;border:1px solid rgba(255,255,255,0.12)">Tab</kbd>
-      </div>
-    </div>
-  </div>
-  <div class="sep"></div>
-  <a class="hatty-link" href="https://earnwithhatty.com/" target="_blank" rel="noopener">🚀 earnwithhatty.com</a>
+  <button class="btn btn-tour" onclick="startStudioTour()" title="Interactive Guided Studio Tour"><span class="tour-sparkle">✨</span> <span>Take Tour</span></button>
+  <button class="btn btn-shortcuts" onclick="openKB()" title="Studio Shortcuts (?)"><span class="sc-icon">⌨</span> <span class="sc-label">Shortcuts</span> <kbd class="sc-kbd">?</kbd></button>
 
   <input type="file" id="fi" accept="image/*" style="display:none" onchange="onFileInput(event)">
   <input type="file" id="fi-layer" accept="image/*" style="display:none" onchange="onLayerFileInput(event)">
@@ -1373,6 +1439,66 @@ body.theme-light .btn-ghost:hover{background:rgba(0,0,0,0.06);color:#0f172a;}
     </div>
   </div>
 
+  <!-- New Project / New Edit Modal -->
+  <div class="modal-bg" id="new-modal">
+    <div class="mcard" style="max-width:540px">
+      <div class="mtitle">✨ Start New Edit</div>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:16px">Open a new photo, create a custom blank canvas, or reset your current workspace cleanly.</p>
+      
+      <!-- Option cards -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+        <div class="new-opt-card" onclick="openFile(); closeNewModal();">
+          <div style="font-size:24px;margin-bottom:6px">📂</div>
+          <div style="font-weight:700;color:var(--text);font-size:13px">Open Photo</div>
+          <div style="font-size:11px;color:var(--text-dim);margin-top:2px">Browse image from device</div>
+        </div>
+        <div class="new-opt-card" onclick="loadSample(); closeNewModal();">
+          <div style="font-size:24px;margin-bottom:6px">🌅</div>
+          <div style="font-weight:700;color:var(--text);font-size:13px">Sample Sunset</div>
+          <div style="font-size:11px;color:var(--text-dim);margin-top:2px">Instant 1400×900 demo photo</div>
+        </div>
+      </div>
+
+      <!-- Blank Canvas Creator Section -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px;margin-bottom:16px">
+        <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:8px">📄 Blank Custom Canvas</div>
+        <!-- Canvas Presets -->
+        <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
+          <button class="crop-ratio-btn active" onclick="setNewPreset(1080,1080,this)">1:1 Square (1080×1080)</button>
+          <button class="crop-ratio-btn" onclick="setNewPreset(1080,1920,this)">9:16 Story (1080×1920)</button>
+          <button class="crop-ratio-btn" onclick="setNewPreset(1920,1080,this)">16:9 HD (1920×1080)</button>
+          <button class="crop-ratio-btn" onclick="setNewPreset(3840,2160,this)">4K UHD (3840×2160)</button>
+        </div>
+        <!-- Dimensions Inputs -->
+        <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px">
+          <div style="flex:1">
+            <span style="font-size:10.5px;color:var(--text-dim);display:block;margin-bottom:3px">Width (px)</span>
+            <input type="number" id="new-w" value="1080" min="64" max="8192" style="width:100%;padding:6px;background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-family:var(--font-m)">
+          </div>
+          <span style="color:var(--text-dim);margin-top:14px">×</span>
+          <div style="flex:1">
+            <span style="font-size:10.5px;color:var(--text-dim);display:block;margin-bottom:3px">Height (px)</span>
+            <input type="number" id="new-h" value="1080" min="64" max="8192" style="width:100%;padding:6px;background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-family:var(--font-m)">
+          </div>
+          <div style="flex:1">
+            <span style="font-size:10.5px;color:var(--text-dim);display:block;margin-bottom:3px">Background</span>
+            <select id="new-bg" style="width:100%;padding:6px;background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);color:var(--text)">
+              <option value="#090a0d">Dark Studio</option>
+              <option value="#ffffff">Pure White</option>
+              <option value="transparent">Transparent</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-accent" style="width:100%" onclick="submitNewBlankCanvas()">＋ Create Blank Canvas</button>
+      </div>
+
+      <div class="macts" style="justify-content:space-between">
+        <button class="btn btn-ghost" onclick="closeNewModal()">Cancel</button>
+        <button class="btn btn-ghost" style="color:var(--red)" onclick="confirmResetAll()">↺ Reset Workspace</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Overlays Modal -->
   <div class="modal-bg" id="overlays-modal">
     <div class="mcard" style="max-width:560px">
@@ -1474,7 +1600,7 @@ body.theme-light .btn-ghost:hover{background:rgba(0,0,0,0.06);color:#0f172a;}
         <div class="psec">
           <div id="curves-wrap">
             <div id="curves-header">
-              <span>🎛 Tone Curves</span>
+              <span style="font-size:12px;font-weight:700">🎛 Curves: <span id="curves-target-label" style="color:var(--accent);font-weight:600">Photo</span></span>
               <div class="curves-ch-btns">
                 <button class="curves-ch-btn active" data-ch="rgb" onclick="CurvesEngine.setChannel('rgb',this)">RGB</button>
                 <button class="curves-ch-btn" data-ch="r" onclick="CurvesEngine.setChannel('r',this)" style="color:#f87171">R</button>
@@ -1562,6 +1688,91 @@ body.theme-light .btn-ghost:hover{background:rgba(0,0,0,0.06);color:#0f172a;}
     <span id="st-color-hex">—</span>
   </div>
   <div class="si" style="margin-left:auto;color:var(--green)">✓ 100% Client-Side Privacy</div>
+  <div class="ssep"></div>
+
+  <!-- THEME SELECTOR IN STATUS BAR -->
+  <div id="theme-dropdown-wrap">
+    <button class="sb-theme-btn" onclick="toggleThemeDropdown()" title="Studio Themes & Zen Mode (8 Themes)">
+      <span class="sb-theme-dot"></span>
+      <span>🎨 Theme</span>
+      <span id="sb-theme-name" style="color:var(--accent);font-size:10.5px;font-family:var(--font-m);font-weight:600">Obsidian</span>
+    </button>
+    <div id="theme-dropdown">
+      <div class="theme-menu-hdr">
+        <span>🎨 STUDIO THEMES</span>
+        <span class="theme-count-badge">8 Themes</span>
+      </div>
+      <div class="theme-grid">
+        <div class="theme-option active" id="topt-default" onclick="setTheme('default')" title="Obsidian Charcoal & Warm Gold">
+          <div class="theme-preview" style="background:#0e1013"><span style="background:#d4a359"></span></div>
+          <div class="theme-info">
+            <div class="theme-name">Obsidian</div>
+            <div class="theme-desc">Charcoal Gold</div>
+          </div>
+        </div>
+        <div class="theme-option" id="topt-oled" onclick="setTheme('oled')" title="Pure OLED Black #000000">
+          <div class="theme-preview" style="background:#000000"><span style="background:#f59e0b"></span></div>
+          <div class="theme-info">
+            <div class="theme-name">Midnight</div>
+            <div class="theme-desc">OLED Black</div>
+          </div>
+        </div>
+        <div class="theme-option" id="topt-neutral" onclick="setTheme('neutral')" title="Calibrated 18% Colorist Gray">
+          <div class="theme-preview" style="background:#2e2e2e"><span style="background:#e2e8f0"></span></div>
+          <div class="theme-info">
+            <div class="theme-name">Studio Lab</div>
+            <div class="theme-desc">18% Lab Gray</div>
+          </div>
+        </div>
+        <div class="theme-option" id="topt-warm" onclick="setTheme('warm')" title="Sepia Darkroom & Roasted Amber">
+          <div class="theme-preview" style="background:#1a120b"><span style="background:#f59e0b"></span></div>
+          <div class="theme-info">
+            <div class="theme-name">Darkroom</div>
+            <div class="theme-desc">Amber Sepia</div>
+          </div>
+        </div>
+        <div class="theme-option" id="topt-cyberpunk" onclick="setTheme('cyberpunk')" title="Neon Cyan & Electric Magenta">
+          <div class="theme-preview" style="background:#090814"><span style="background:#00f0ff"></span></div>
+          <div class="theme-info">
+            <div class="theme-name">Cyberpunk</div>
+            <div class="theme-desc">Neo-Tokyo Cyan</div>
+          </div>
+        </div>
+        <div class="theme-option" id="topt-nordic" onclick="setTheme('nordic')" title="Glacial Slate & Ice Blue">
+          <div class="theme-preview" style="background:#0b1120"><span style="background:#38bdf8"></span></div>
+          <div class="theme-info">
+            <div class="theme-name">Arctic Frost</div>
+            <div class="theme-desc">Glacial Slate</div>
+          </div>
+        </div>
+        <div class="theme-option" id="topt-emerald" onclick="setTheme('emerald')" title="Phosphor CRT & Forest Green">
+          <div class="theme-preview" style="background:#05100b"><span style="background:#10b981"></span></div>
+          <div class="theme-info">
+            <div class="theme-name">Emerald</div>
+            <div class="theme-desc">Phosphor CRT</div>
+          </div>
+        </div>
+        <div class="theme-option" id="topt-light" onclick="setTheme('light')" title="Daylight White Paper Studio">
+          <div class="theme-preview" style="background:#ffffff;border-color:#cbd5e1"><span style="background:#d97706"></span></div>
+          <div class="theme-info">
+            <div class="theme-name">Daylight</div>
+            <div class="theme-desc">Clean White</div>
+          </div>
+        </div>
+      </div>
+      <div style="height:1px;background:rgba(255,255,255,0.08);margin:8px 0;"></div>
+      <div class="theme-zen-opt" onclick="toggleZenMode()">
+        <span style="font-size:14px">🧘</span>
+        <span style="flex:1;font-weight:600">Zen Mode Viewport</span>
+        <kbd style="font-size:10px;padding:2px 5px;background:rgba(255,255,255,0.08);border-radius:4px;border:1px solid rgba(255,255,255,0.12)">Tab</kbd>
+      </div>
+    </div>
+  </div>
+
+  <div class="ssep"></div>
+
+  <!-- WEBSITE BUTTON IN STATUS BAR -->
+  <a class="hatty-link" href="https://earnwithhatty.com/" target="_blank" rel="noopener" title="Visit Earn With Hatty">🚀 earnwithhatty.com</a>
 </div>
 
 <!-- FLOATING EYEDROPPER TOOLTIP -->
@@ -1893,6 +2104,8 @@ body.theme-light .btn-ghost:hover{background:rgba(0,0,0,0.06);color:#0f172a;}
   <div class="mcard" style="width:460px">
     <div class="mtitle">⌨ Studio Shortcuts</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;font-size:12px;color:var(--text-muted)">
+      <div><kbd style="background:var(--surface-raised);border:1px solid var(--border-light);border-radius:3px;padding:2px 6px;color:var(--text);font-family:var(--font-m)">Ctrl+N</kbd> New Edit Project</div>
+      <div><kbd style="background:var(--surface-raised);border:1px solid var(--border-light);border-radius:3px;padding:2px 6px;color:var(--text);font-family:var(--font-m)">Ctrl+O</kbd> Open Photo</div>
       <div><kbd style="background:var(--surface-raised);border:1px solid var(--border-light);border-radius:3px;padding:2px 6px;color:var(--text);font-family:var(--font-m)">Ctrl+Z</kbd> Undo</div>
       <div><kbd style="background:var(--surface-raised);border:1px solid var(--border-light);border-radius:3px;padding:2px 6px;color:var(--text);font-family:var(--font-m)">Ctrl+Y</kbd> Redo</div>
       <div><kbd style="background:var(--surface-raised);border:1px solid var(--border-light);border-radius:3px;padding:2px 6px;color:var(--text);font-family:var(--font-m)">Space+Drag</kbd> Hand Pan Canvas</div>
@@ -1911,17 +2124,41 @@ body.theme-light .btn-ghost:hover{background:rgba(0,0,0,0.06);color:#0f172a;}
   </div>
 </div>
 
-<!-- 9. ONBOARDING TOUR MODAL -->
-<div class="modal-bg" id="ob">
-  <div class="mcard" style="text-align:center">
-    <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px" id="ostep">Step 1 of 3</div>
-    <div class="mtitle" id="otitle" style="margin-bottom:12px">Open a Photo</div>
-    <div id="obody" style="font-size:14px;color:var(--text-muted);line-height:1.6;margin-bottom:24px">
-      Drag any photo onto the canvas or click <strong>Open Photo</strong>. All processing is 100% private and runs locally on your device.
+<!-- 9. INTERACTIVE GUIDED STUDIO TOUR -->
+<div id="studio-tour">
+  <!-- Dynamic Spotlight Cutout Frame -->
+  <div id="tour-spotlight"></div>
+  
+  <!-- Interactive Tour Card -->
+  <div id="tour-card">
+    <div class="tour-card-hdr">
+      <div class="tour-step-badge">
+        <span class="tour-pulse-dot"></span>
+        <span id="tour-step-indicator">STEP 1 OF 7</span>
+      </div>
+      <button class="tour-close-btn" onclick="closeStudioTour()" title="Close Tour (Esc)">✕</button>
     </div>
-    <div class="macts" style="justify-content:center">
-      <button class="btn btn-ghost" onclick="closeOB()">Skip</button>
-      <button class="btn btn-accent" id="onxt" onclick="nextOB()">Next →</button>
+    
+    <div class="tour-body">
+      <div class="tour-zone-tag" id="tour-zone-tag">Top Navigation Hub</div>
+      <h3 class="tour-title" id="tour-title">1. Control Bar & Project Hub</h3>
+      <p class="tour-desc" id="tour-desc">Everything you need to manage your document, presets, and export.</p>
+      
+      <div class="tour-points" id="tour-points">
+        <!-- Points dynamically injected -->
+      </div>
+      
+      <div class="tour-extra-action" id="tour-extra-action" style="display:none"></div>
+    </div>
+    
+    <div class="tour-footer">
+      <div class="tour-dots" id="tour-dots">
+        <!-- 7 clickable step dots -->
+      </div>
+      <div class="tour-actions">
+        <button class="btn btn-ghost tour-btn-prev" id="tour-btn-prev" onclick="prevTourStep()">◂ Back</button>
+        <button class="btn btn-accent tour-btn-next" id="tour-btn-next" onclick="nextTourStep()">Next ▸</button>
+      </div>
     </div>
   </div>
 </div>
@@ -2122,20 +2359,107 @@ function loadSample() {
   img.src = oc.toDataURL();
 }
 
+function openNewModal() {
+  document.getElementById('new-modal').classList.add('on');
+}
+function closeNewModal() {
+  document.getElementById('new-modal').classList.remove('on');
+}
+function setNewPreset(w, h, btn) {
+  document.querySelectorAll('#new-modal .crop-ratio-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  document.getElementById('new-w').value = w;
+  document.getElementById('new-h').value = h;
+}
+function submitNewBlankCanvas() {
+  const w = parseInt(document.getElementById('new-w').value) || 1080;
+  const h = parseInt(document.getElementById('new-h').value) || 1080;
+  const bg = document.getElementById('new-bg').value;
+  newBlankCanvas(w, h, bg);
+}
+function newBlankCanvas(w, h, bg = '#090a0d') {
+  w = Math.max(64, Math.min(8192, parseInt(w) || 1920));
+  h = Math.max(64, Math.min(8192, parseInt(h) || 1080));
+  const oc = document.createElement('canvas');
+  oc.width = w; oc.height = h;
+  const ox = oc.getContext('2d');
+  if (bg && bg !== 'transparent') {
+    ox.fillStyle = bg;
+    ox.fillRect(0, 0, w, h);
+  } else {
+    ox.clearRect(0, 0, w, h);
+  }
+  const img = new Image();
+  img.onload = () => {
+    initCanvas(img, `Canvas (${w}×${h})`);
+    closeNewModal();
+  };
+  img.src = oc.toDataURL();
+}
+
+function confirmResetAll() {
+  if (!S.hasImg) { closeNewModal(); return; }
+  origImg = null;
+  _origDirty = false;
+  S.hasImg = false;
+  layers = [];
+  selLayerId = null;
+  invalidateAdjCache();
+  if (typeof CurvesEngine !== 'undefined') CurvesEngine.resetForNewProject();
+  if (typeof clearHealStrokes === 'function') clearHealStrokes();
+  blurStrokes = [];
+  lassoPoints = []; lassoBrushStrokes = [];
+  selectionActive = false; selectionMask = null;
+  activeSnapGuides = [];
+  hist = []; hIdx = -1;
+  ca.classList.remove('has-img');
+  cw.style.display = 'none';
+  document.getElementById('docname').innerHTML = '<strong>No photo open</strong>';
+  document.getElementById('stsize').textContent = '—';
+  closeNewModal();
+  const wel = document.getElementById('welcome');
+  if (wel) {
+    wel.style.display = 'flex';
+    wel.style.opacity = '1';
+    wel.style.pointerEvents = 'all';
+  }
+  toast('↺ Workspace reset! Ready for a new edit.');
+}
+
 function initCanvas(img, name) {
   origImg = img;
+  _origDirty = false;
   S.hasImg = true;
   canvas.width = hudCanvas.width = lassoOverlay.width = img.width;
   canvas.height = hudCanvas.height = lassoOverlay.height = img.height;
   
+  // Clean all previous tool and edit states so NO prior edits carry over
+  invalidateAdjCache();
+  if (typeof CurvesEngine !== 'undefined') CurvesEngine.resetForNewProject();
+  if (typeof clearHealStrokes === 'function') clearHealStrokes();
+  blurStrokes = [];
+  lassoPoints = []; lassoBrushStrokes = [];
+  selectionActive = false; selectionMask = null;
+  activeSnapGuides = [];
+  freeRotateAngle = 0;
+  canvas.style.transform = '';
+  const rotS = document.getElementById('s-rot'); if (rotS) rotS.value = 0;
+  const rotV = document.getElementById('v-rot'); if (rotV) rotV.textContent = '0°';
+  document.querySelectorAll('.pi').forEach(b => b.classList.remove('active'));
+  const normPi = document.querySelector('.pi[data-preset="none"]');
+  if (normPi) normPi.classList.add('active');
+
   layers = [{
     id: nextLayerId++,
     type: 'base',
     name: name || 'Photo',
     visible: true,
     opacity: 100,
+    blend: 'source-over',
     blendMode: 'source-over',
     adjustments: {...DSLIDERS},
+    curves: null,
+    curvesLUT: null,
     x: 0, y: 0, w: img.width, h: img.height
   }];
   
@@ -2172,6 +2496,8 @@ function serializeLayers() {
   return layers.map(l => {
     const out = {...l};
     if (out.adjustments) out.adjustments = {...out.adjustments};
+    if (out.curves) out.curves = JSON.parse(JSON.stringify(out.curves));
+    out.curvesLUT = null;
     if (out.type === 'image' && out.img) {
       out.imgSrc = l.img.src;
       out.img = null;
@@ -2229,6 +2555,12 @@ function jumpHist(idx) {
   layers = e.layers.map(l => {
     const out = {...l};
     if (out.adjustments) out.adjustments = {...out.adjustments};
+    if (out.curves) {
+      out.curves = JSON.parse(JSON.stringify(out.curves));
+      if (typeof CurvesEngine !== 'undefined') {
+        out.curvesLUT = CurvesEngine.buildAllLUTs(out.curves);
+      }
+    }
     if (out.type === 'image' && out.imgSrc) {
       const img = new Image();
       img.onload = () => renderCanvas();
@@ -2288,7 +2620,7 @@ function updateUndoBtns() {
 }
 
 // IMAGE FILTER & ADJUSTMENT PIPELINE
-function applyAdjustments(srcCanvas, adj) {
+function applyAdjustments(srcCanvas, adj, curvesLUT) {
   const c = document.createElement('canvas');
   c.width = srcCanvas.width; c.height = srcCanvas.height;
   const x = c.getContext('2d');
@@ -2351,8 +2683,9 @@ function applyAdjustments(srcCanvas, adj) {
     d[i + 2] = Math.min(255, Math.max(0, b | 0));
   }
   // Apply RGB Curves LUT
-  if (typeof CurvesEngine !== 'undefined' && CurvesEngine.hasEffect()) {
-    CurvesEngine.applyToImageData(id);
+  const targetLUT = curvesLUT !== undefined ? curvesLUT : (typeof CurvesEngine !== 'undefined' ? CurvesEngine.lut : null);
+  if (targetLUT && typeof CurvesEngine !== 'undefined' && CurvesEngine.hasEffect(targetLUT)) {
+    CurvesEngine.applyLUTToImageData(id, targetLUT);
   }
   x.putImageData(id, 0, 0);
 
@@ -2433,12 +2766,13 @@ function getCachedAdjusted(layer) {
   }
 
   const imgSrc = activeImg.src ? activeImg.src.slice(-20) : '';
-  const key = imgSrc + JSON.stringify(adj) + lw + 'x' + lh;
+  const curveKey = layer.curves ? JSON.stringify(layer.curves) : '';
+  const key = imgSrc + JSON.stringify(adj) + curveKey + lw + 'x' + lh;
   if (_adjCache.key === key && _adjCache.canvas) return _adjCache.canvas;
 
   const raw = document.createElement('canvas'); raw.width = lw; raw.height = lh;
   raw.getContext('2d').drawImage(activeImg, 0, 0, lw, lh);
-  const result = applyAdjustments(raw, adj);
+  const result = applyAdjustments(raw, adj, layer.curvesLUT);
   _adjCache = {key, canvas: result};
   return result;
 }
@@ -2465,11 +2799,12 @@ function compositeClean(targetCtx, targetW, targetH) {
     } else if (layer.type === 'image' && layer.img) {
       const lx = layer.x ?? 0, ly = layer.y ?? 0, lw = layer.w ?? targetW, lh = layer.h ?? targetH;
       const hasAdj = layer.adjustments && Object.values(layer.adjustments).some(v => v !== 0);
+      const hasCurve = layer.curvesLUT && ['rgb','r','g','b'].some(ch => layer.curvesLUT[ch] !== null);
       let imgToDraw = layer.img;
-      if (hasAdj) {
+      if (hasAdj || hasCurve) {
         const tmp = document.createElement('canvas'); tmp.width = lw; tmp.height = lh;
         tmp.getContext('2d').drawImage(layer.img, 0, 0, lw, lh);
-        imgToDraw = applyAdjustments(tmp, layer.adjustments);
+        imgToDraw = applyAdjustments(tmp, layer.adjustments, layer.curvesLUT);
       }
       // Apply flip transforms
       if (layer.flipH || layer.flipV) {
@@ -2538,10 +2873,11 @@ function compositeClean(targetCtx, targetW, targetH) {
       }
     } else if (layer.type === 'adjustment') {
       const hasAdj = layer.adjustments && Object.values(layer.adjustments).some(v => v !== 0);
-      if (hasAdj) {
+      const hasCurve = layer.curvesLUT && ['rgb','r','g','b'].some(ch => layer.curvesLUT[ch] !== null);
+      if (hasAdj || hasCurve) {
         const snap = document.createElement('canvas'); snap.width = targetW; snap.height = targetH;
         snap.getContext('2d').drawImage(canvas, 0, 0);
-        const filtered = applyAdjustments(snap, layer.adjustments);
+        const filtered = applyAdjustments(snap, layer.adjustments, layer.curvesLUT);
         targetCtx.drawImage(filtered, 0, 0, targetW, targetH);
       }
     }
@@ -2938,6 +3274,7 @@ function updateAdjustHeader() {
     badge.textContent = target.type === 'base' ? 'MAIN PHOTO' : (target.name || target.type).toUpperCase();
   }
   loadSlidersFromLayer(target);
+  if (typeof CurvesEngine !== 'undefined') CurvesEngine.syncFromLayer(target);
   updateLayerPropsUI();
 }
 
@@ -3585,7 +3922,7 @@ function applyHeal() { HealBrush.apply(); }
 function clearHealStrokes() { HealBrush.clear(); }
 
 // ══════════════════════════════════════════════
-// FEATURE 2: RGB CURVES ENGINE
+// FEATURE 2: RGB CURVES ENGINE (PER-LAYER)
 // ══════════════════════════════════════════════
 const CurvesEngine = {
   channel: 'rgb',
@@ -3599,9 +3936,41 @@ const CurvesEngine = {
     this.draw();
     c.addEventListener('mousedown', e => this._onDown(e));
     c.addEventListener('mousemove', e => this._onMove(e));
-    c.addEventListener('mouseup', () => { this.dragging = null; });
+    c.addEventListener('mouseup', () => {
+      if (this.dragging !== null) {
+        this.dragging = null;
+        pushHist('Adjust Curves (' + this.channel.toUpperCase() + ')');
+      }
+    });
     c.addEventListener('mouseleave', () => { this.dragging = null; });
     c.addEventListener('dblclick', e => this._onDblClick(e));
+  },
+
+  getTargetLayer() {
+    return (typeof getAdjTarget === 'function') ? getAdjTarget() : null;
+  },
+
+  syncFromLayer(target) {
+    const t = target || this.getTargetLayer();
+    const lbl = document.getElementById('curves-target-label');
+    if (lbl) {
+      lbl.textContent = t ? (t.type === 'base' ? 'Main Photo' : (t.name || t.type).slice(0, 14)) : 'None';
+    }
+    if (!t) return;
+    if (!t.curves) {
+      t.curves = {
+        rgb: [{x:0,y:0},{x:255,y:255}],
+        r: [{x:0,y:0},{x:255,y:255}],
+        g: [{x:0,y:0},{x:255,y:255}],
+        b: [{x:0,y:0},{x:255,y:255}]
+      };
+    }
+    if (!t.curvesLUT) {
+      t.curvesLUT = this.buildAllLUTs(t.curves);
+    }
+    this.points = t.curves;
+    this.lut = t.curvesLUT;
+    this.draw();
   },
 
   setChannel(ch, btn) {
@@ -3647,19 +4016,31 @@ const CurvesEngine = {
     const pt = this._coords(e);
     const pts = this.points[this.channel];
     for (let i = 1; i < pts.length - 1; i++) {
-      if (Math.abs(pts[i].x - pt.x) < 14 && Math.abs(pts[i].y - pt.y) < 14) { pts.splice(i, 1); this._update(); return; }
+      if (Math.abs(pts[i].x - pt.x) < 14 && Math.abs(pts[i].y - pt.y) < 14) {
+        pts.splice(i, 1);
+        this._update();
+        pushHist('Removed Curve Point');
+        return;
+      }
     }
   },
 
   _update() {
-    this.buildLUT(this.channel); this.draw();
-    invalidateAdjCache(); if (S.hasImg) renderCanvas();
+    this.buildLUT(this.channel);
+    const target = this.getTargetLayer();
+    if (target) {
+      target.curves = this.points;
+      target.curvesLUT = this.lut;
+    }
+    this.draw();
+    invalidateAdjCache();
+    if (S.hasImg) renderCanvas();
   },
 
-  buildLUT(ch) {
-    const pts = this.points[ch];
+  calculateLUT(pts) {
+    if (!pts) return null;
     const isLinear = pts.length === 2 && pts[0].x === 0 && pts[0].y === 0 && pts[1].x === 255 && pts[1].y === 255;
-    if (isLinear) { this.lut[ch] = null; return; }
+    if (isLinear) return null;
     const lut = new Uint8Array(256);
     for (let i = 0; i < 256; i++) {
       let lo = pts[0], hi = pts[pts.length - 1];
@@ -3671,28 +4052,80 @@ const CurvesEngine = {
       const val = lo.y * (2*t3 - 3*t2 + 1) + hi.y * (3*t2 - 2*t3);
       lut[i] = Math.max(0, Math.min(255, Math.round(val)));
     }
-    this.lut[ch] = lut;
+    return lut;
   },
 
-  applyToImageData(imageData) {
-    const d = imageData.data;
-    const lr = this.lut.r, lg = this.lut.g, lb = this.lut.b, lrgb = this.lut.rgb;
+  buildLUT(ch) {
+    this.lut[ch] = this.calculateLUT(this.points[ch]);
+  },
+
+  buildAllLUTs(ptsObj) {
+    const pts = ptsObj || this.points;
+    const lut = { rgb: null, r: null, g: null, b: null };
+    ['rgb', 'r', 'g', 'b'].forEach(ch => {
+      lut[ch] = this.calculateLUT(pts[ch]);
+    });
+    return lut;
+  },
+
+  applyLUTToImageData(imageData, lut) {
+    if (!lut) return;
+    const lr = lut.r, lg = lut.g, lb = lut.b, lrgb = lut.rgb;
     if (!lrgb && !lr && !lg && !lb) return;
+    const d = imageData.data;
     for (let i = 0; i < d.length; i += 4) {
       let r = d[i], g = d[i+1], b = d[i+2];
       if (lrgb) { r = lrgb[r]; g = lrgb[g]; b = lrgb[b]; }
-      if (lr) r = lr[r]; if (lg) g = lg[g]; if (lb) b = lb[b];
+      if (lr) r = lr[r];
+      if (lg) g = lg[g];
+      if (lb) b = lb[b];
       d[i] = r; d[i+1] = g; d[i+2] = b;
     }
   },
 
-  hasEffect() {
-    return ['rgb','r','g','b'].some(ch => this.lut[ch] !== null);
+  applyToImageData(imageData) {
+    this.applyLUTToImageData(imageData, this.lut);
+  },
+
+  hasEffect(lut) {
+    const l = lut || this.lut;
+    return !!(l && ['rgb','r','g','b'].some(ch => l[ch] !== null));
   },
 
   reset() {
-    ['rgb','r','g','b'].forEach(ch => { this.points[ch] = [{x:0,y:0},{x:255,y:255}]; this.lut[ch] = null; });
-    this.draw(); invalidateAdjCache(); if (S.hasImg) renderCanvas(); toast('↺ Curves reset');
+    ['rgb','r','g','b'].forEach(ch => {
+      this.points[ch] = [{x:0,y:0},{x:255,y:255}];
+      this.lut[ch] = null;
+    });
+    const target = this.getTargetLayer();
+    if (target) {
+      target.curves = this.points;
+      target.curvesLUT = this.lut;
+    }
+    this.draw();
+    invalidateAdjCache();
+    if (S.hasImg) renderCanvas();
+    const targetName = target ? (target.type === 'base' ? 'Main Photo' : (target.name || target.type)) : 'layer';
+    pushHist('Reset Curves (' + targetName + ')');
+    toast(`↺ Curves reset for ${targetName}`);
+  },
+
+  resetForNewProject() {
+    this.channel = 'rgb';
+    this.points = {
+      rgb: [{x:0,y:0},{x:255,y:255}],
+      r: [{x:0,y:0},{x:255,y:255}],
+      g: [{x:0,y:0},{x:255,y:255}],
+      b: [{x:0,y:0},{x:255,y:255}]
+    };
+    this.lut = { rgb: null, r: null, g: null, b: null };
+    document.querySelectorAll('.curves-ch-btn').forEach(b => {
+      if (b.dataset.ch === 'rgb') b.classList.add('active');
+      else b.classList.remove('active');
+    });
+    const lbl = document.getElementById('curves-target-label');
+    if (lbl) lbl.textContent = 'Photo';
+    this.draw();
   },
 
   draw() {
@@ -3862,6 +4295,20 @@ function setTheme(name) {
     emerald: 'Emerald CRT',
     light: 'Daylight Studio'
   };
+  const sbTheme = document.getElementById('sb-theme-name');
+  if (sbTheme) {
+    const shortNames = {
+      default: 'Obsidian',
+      oled: 'Midnight',
+      neutral: 'Studio Lab',
+      warm: 'Darkroom',
+      cyberpunk: 'Cyberpunk',
+      nordic: 'Arctic',
+      emerald: 'Emerald',
+      light: 'Daylight'
+    };
+    sbTheme.textContent = shortNames[name] || name;
+  }
   toast(`🎨 Theme: ${names[name] || name}`);
 }
 
@@ -6199,21 +6646,286 @@ function toast(msg, dur = 3200) {
   tTimer = setTimeout(() => t.classList.remove('on'), dur);
 }
 
-function showOB() { document.getElementById('ob').classList.add('on'); S.obStep = 0; renderOB(); }
-function closeOB() { document.getElementById('ob').classList.remove('on'); }
-const OSTEPS = [
-  {t:"Open a Photo", b:"Drag a photo onto the canvas, paste from clipboard, or click <strong>Open Photo</strong>. Everything is 100% private."},
-  {t:"Adjust & Enhance", b:"Use <strong>⚡ Auto-Enhance</strong> or fine-tune with the Light, Color, and Detail sliders."},
-  {t:"Layers & Export", b:"Add typography, stickers, stamps, and remove backgrounds with AI. Download crisp JPG, PNG, or WebP."}
-];
-function renderOB() {
-  const s = OSTEPS[S.obStep];
-  document.getElementById('ostep').textContent = `Step ${S.obStep + 1} of 3`;
-  document.getElementById('otitle').textContent = s.t;
-  document.getElementById('obody').innerHTML = s.b;
-  document.getElementById('onxt').textContent = S.obStep < 2 ? 'Next →' : 'Start Creating ✨';
+// ══════════════════════════════════════════════
+// INTERACTIVE GUIDED STUDIO TOUR
+// ══════════════════════════════════════════════
+const StudioTour = {
+  active: false,
+  step: 0,
+  steps: [
+    {
+      target: '#topbar',
+      tag: 'Top Navigation • Workspace Hub',
+      title: '1. Control Bar & Project Hub',
+      desc: 'Your command center for opening photos, canvas management, smart alignment, AI enhancements, and exporting.',
+      points: [
+        { icon: '📂', text: '<strong>Open Photo</strong> & <strong>＋ New (<kbd>Ctrl+N</kbd>)</strong>: Load photos privately or start blank canvases (1:1, 9:16, 16:9, 4K).' },
+        { icon: '🧲', text: '<strong>Snap Guides (<kbd>S</kbd>)</strong>: Magnetic smart alignment guides that snap layers to canvas center and sibling edges.' },
+        { icon: '🪄', text: '<strong>Auto Fix</strong>: Instant intelligent exposure, contrast, and color balance optimization.' },
+        { icon: '⤡', text: '<strong>Resize & Frame</strong>: Custom dimension scaling, letterboxing, and aesthetic border framing.' },
+        { icon: '⬇', text: '<strong>Export Studio</strong>: High-resolution JPG, PNG, and WebP exports with quality control.' }
+      ],
+      pos: 'bottom',
+      onEnter: () => {}
+    },
+    {
+      target: '#toolstrip',
+      tag: 'Left Toolbar • Precision Tools',
+      title: '2. Creative Precision Toolstrip',
+      desc: 'Essential desktop editing and retouching tools mapped for muscle memory.',
+      points: [
+        { icon: '↖', text: '<strong><kbd>M</kbd> Move & Transform</strong>: Move, rotate, scale, or mirror any active layer with handles.' },
+        { icon: '✋', text: '<strong><kbd>H</kbd> Hand Pan (<kbd>Space</kbd>)</strong>: Pan across ultra-high-resolution images with zero lag.' },
+        { icon: '✂', text: '<strong><kbd>C</kbd> Crop & Rotate</strong>: Rule-of-thirds grid with free angle straightening.' },
+        { icon: '🔤', text: '<strong><kbd>T</kbd> Typography</strong>: Rich text layers with curved arc pathing, shadows, and outlines.' },
+        { icon: '💧', text: '<strong><kbd>I</kbd> Eyedropper Loupe</strong>: Real-time pixel magnifier with instant HEX/RGB color copying.' },
+        { icon: '🖌', text: '<strong><kbd>B</kbd> Selective Blur Brush</strong>: Paint smooth depth-of-field and optical bokeh.' },
+        { icon: '🩹', text: '<strong><kbd>G</kbd> Object Removal Heal</strong>: Content-aware brush that magically vanishes unwanted objects!' }
+      ],
+      pos: 'right',
+      onEnter: () => {}
+    },
+    {
+      target: '#ca',
+      tag: 'Center Viewport • GPU Canvas',
+      title: '3. Interactive Studio Viewport',
+      desc: 'Hardware-accelerated viewport rendering your creative edits in real time.',
+      points: [
+        { icon: '🔍', text: '<strong>Fluid Zoom & Fit</strong>: Zoom 10% to 800% with <kbd>+</kbd> / <kbd>-</kbd>, or press <kbd>0</kbd> to fit to screen.' },
+        { icon: '👁', text: '<strong>Hold <kbd>\\</kbd> Key</strong>: Press and hold backslash anytime to instantly preview the original unedited photo.' },
+        { icon: '⚖', text: '<strong>Split Curtain Slider</strong>: Interactive before/after split to inspect color grading fidelity.' },
+        { icon: '🎯', text: '<strong>Direct Canvas Selection</strong>: Click any sticker, watermark, or text overlay on canvas to select and transform it.' }
+      ],
+      pos: 'center',
+      onEnter: () => {}
+    },
+    {
+      target: '#rp',
+      tag: 'Right Inspector • Adjustments',
+      title: '4. Pro Adjustments & Film Presets',
+      desc: '12 non-destructive sliders and 6 curated film emulation styles.',
+      points: [
+        { icon: '🎚', text: '<strong>12 Precision Sliders</strong>: Brightness, Contrast, Highlights, Shadows, Temperature, Tint, Clarity, Vignette, and Film Grain.' },
+        { icon: '🎞', text: '<strong>6 Film Presets</strong>: Golden Hour, Warm Film, Cyberpunk, Portrait, Noir B&W, and Original.' },
+        { icon: '📊', text: '<strong>Live RGB Histogram</strong>: Real-time multi-channel luminance histogram tracking dynamic range.' }
+      ],
+      pos: 'left',
+      onEnter: () => { switchPaneByName('adjust'); }
+    },
+    {
+      target: '#curves-wrap',
+      tag: 'Color Grading • Per-Layer Curves',
+      title: '5. RGB Tone Curves (Per-Layer)',
+      desc: 'Studio-grade spline tone mapping across Master RGB, Red, Green, and Blue channels.',
+      points: [
+        { icon: '🎛', text: '<strong>True Per-Layer Control</strong>: Tone curves are stored independently for every photo and overlay layer!' },
+        { icon: '🎨', text: '<strong>4 Color Channels</strong>: Target RGB Master, Red, Green, or Blue channels independently.' },
+        { icon: '📍', text: '<strong>Spline Anchor Editing</strong>: Click to place curve points, drag to bend the curve, double-click to remove.' },
+        { icon: '🏷', text: '<strong>Layer Target Badge</strong>: Clearly shows which layer is currently being curved.' }
+      ],
+      pos: 'left',
+      onEnter: () => { switchPaneByName('adjust'); }
+    },
+    {
+      target: '#pane-layers',
+      tag: 'Layer Stack • Advanced Compositing',
+      title: '6. Multi-Layer Stack & AI Magic',
+      desc: 'Photoshop-style layer stacking with blend modes, masking, and stickers.',
+      points: [
+        { icon: '📑', text: '<strong>Unlimited Layer Compositing</strong>: Base photos, secondary image overlays, text, stickers, and watermarks.' },
+        { icon: '🎭', text: '<strong>Blend Modes & Opacity</strong>: Multiply, Screen, Overlay, Soft Light, plus individual layer opacity.' },
+        { icon: '🪄', text: '<strong>AI Background Removal</strong>: 1-click cutout with interactive Defringe edge-refinement brush.' },
+        { icon: '📋', text: '<strong>Reorder & Duplicate (<kbd>Ctrl+D</kbd>)</strong>: Drag and drop to reorder layers, lock, or duplicate.' }
+      ],
+      pos: 'left',
+      onEnter: () => { switchPaneByName('layers'); }
+    },
+    {
+      target: '#theme-dropdown-wrap',
+      tag: 'Studio Status • Themes & Privacy',
+      title: '7. Themes, Privacy & Shortcuts',
+      desc: 'Personalize your studio workspace and export production-ready graphics.',
+      points: [
+        { icon: '🎨', text: '<strong>8 Studio Themes</strong>: Switch themes anytime from the bottom right bar (Obsidian Charcoal, OLED Dark, Sepia, Cyberpunk, and more).' },
+        { icon: '🧘', text: '<strong>Zen Mode (<kbd>Tab</kbd>)</strong>: Instant distraction-free full-screen workspace.' },
+        { icon: '⌨', text: '<strong>Studio Shortcuts (<kbd>?</kbd>)</strong>: Click the Shortcuts button in the topbar or press <kbd>?</kbd> for the full keyboard guide.' },
+        { icon: '🔒', text: '<strong>100% Client-Side Privacy</strong>: Zero server uploads—all pixels remain securely on your local machine.' }
+      ],
+      pos: 'top',
+      onEnter: () => {}
+    }
+  ],
+
+  start() {
+    if (typeof enterApp === 'function') enterApp();
+    const tour = document.getElementById('studio-tour');
+    if (!tour) return;
+    this.active = true;
+    this.step = 0;
+    tour.classList.add('active');
+    this.renderStep(0);
+  },
+
+  close() {
+    const tour = document.getElementById('studio-tour');
+    if (tour) tour.classList.remove('active');
+    this.active = false;
+  },
+
+  renderStep(idx) {
+    if (idx < 0) idx = 0;
+    if (idx >= this.steps.length) {
+      this.close();
+      toast('✨ You are ready to create! Enjoy Open Focus.');
+      return;
+    }
+    this.step = idx;
+    const s = this.steps[idx];
+    if (s.onEnter) s.onEnter();
+
+    const stepInd = document.getElementById('tour-step-indicator');
+    if (stepInd) stepInd.textContent = `STEP ${idx + 1} OF ${this.steps.length}`;
+
+    const tagEl = document.getElementById('tour-zone-tag');
+    if (tagEl) tagEl.textContent = s.tag;
+
+    const titleEl = document.getElementById('tour-title');
+    if (titleEl) titleEl.textContent = s.title;
+
+    const descEl = document.getElementById('tour-desc');
+    if (descEl) descEl.textContent = s.desc;
+
+    const ptsEl = document.getElementById('tour-points');
+    if (ptsEl) {
+      ptsEl.innerHTML = s.points.map(p => `
+        <div class="tour-point-item">
+          <span class="tour-point-icon">${p.icon}</span>
+          <div>${p.text}</div>
+        </div>
+      `).join('');
+    }
+
+    const extraEl = document.getElementById('tour-extra-action');
+    if (extraEl) {
+      if (!S.hasImg && (idx === 0 || idx === 2)) {
+        extraEl.style.display = 'block';
+        extraEl.innerHTML = `
+          <button class="btn btn-accent" style="width:100%;height:32px;font-size:12px;font-weight:600" onclick="loadSample(); StudioTour.renderStep(StudioTour.step);">
+            🌅 Load Sunset Demo Photo to Explore Live
+          </button>
+        `;
+      } else {
+        extraEl.style.display = 'none';
+        extraEl.innerHTML = '';
+      }
+    }
+
+    const dotsEl = document.getElementById('tour-dots');
+    if (dotsEl) {
+      dotsEl.innerHTML = this.steps.map((_, i) => `
+        <div class="tour-dot${i === idx ? ' active' : ''}" onclick="StudioTour.renderStep(${i})" title="Go to Step ${i + 1}"></div>
+      `).join('');
+    }
+
+    const prevBtn = document.getElementById('tour-btn-prev');
+    if (prevBtn) {
+      prevBtn.disabled = (idx === 0);
+      prevBtn.style.opacity = (idx === 0) ? '0.4' : '1';
+    }
+
+    const nextBtn = document.getElementById('tour-btn-next');
+    if (nextBtn) {
+      nextBtn.textContent = (idx === this.steps.length - 1) ? 'Finish Tour ✨' : 'Next ▸';
+    }
+
+    requestAnimationFrame(() => {
+      const targetEl = document.querySelector(s.target);
+      this.positionElements(targetEl, s.pos);
+    });
+  },
+
+  next() {
+    this.renderStep(this.step + 1);
+  },
+
+  prev() {
+    this.renderStep(this.step - 1);
+  },
+
+  positionElements(targetEl, preferredPos) {
+    const card = document.getElementById('tour-card');
+    const spotlight = document.getElementById('tour-spotlight');
+    if (!card || !spotlight) return;
+
+    const r = targetEl ? targetEl.getBoundingClientRect() : {
+      left: window.innerWidth / 2,
+      top: window.innerHeight / 2,
+      width: 0,
+      height: 0,
+      right: window.innerWidth / 2,
+      bottom: window.innerHeight / 2
+    };
+
+    if (targetEl) {
+      const pad = 6;
+      spotlight.style.display = 'block';
+      spotlight.style.left = Math.max(0, r.left - pad) + 'px';
+      spotlight.style.top = Math.max(0, r.top - pad) + 'px';
+      spotlight.style.width = Math.min(window.innerWidth, r.width + pad * 2) + 'px';
+      spotlight.style.height = Math.min(window.innerHeight, r.height + pad * 2) + 'px';
+    } else {
+      spotlight.style.display = 'none';
+    }
+
+    const cardW = Math.min(460, window.innerWidth - 32);
+    card.style.width = cardW + 'px';
+    const cardH = card.offsetHeight || 380;
+
+    let left, top;
+
+    if (preferredPos === 'bottom') {
+      left = Math.max(16, Math.min(window.innerWidth - cardW - 16, r.left + (r.width - cardW) / 2));
+      top = Math.min(window.innerHeight - cardH - 16, r.bottom + 14);
+    } else if (preferredPos === 'top') {
+      left = Math.max(16, Math.min(window.innerWidth - cardW - 16, r.right - cardW));
+      top = Math.max(16, r.top - cardH - 14);
+    } else if (preferredPos === 'right') {
+      left = Math.min(window.innerWidth - cardW - 16, r.right + 18);
+      top = Math.max(16, Math.min(window.innerHeight - cardH - 16, r.top + 16));
+    } else if (preferredPos === 'left') {
+      left = Math.max(16, r.left - cardW - 18);
+      top = Math.max(16, Math.min(window.innerHeight - cardH - 16, r.top + 16));
+    } else { // center
+      left = Math.max(16, (window.innerWidth - cardW) / 2);
+      top = Math.max(16, (window.innerHeight - cardH) / 2);
+    }
+
+    card.style.left = Math.round(left) + 'px';
+    card.style.top = Math.round(top) + 'px';
+  }
+};
+
+function startStudioTour() { StudioTour.start(); }
+function closeStudioTour() { StudioTour.close(); }
+function nextTourStep() { StudioTour.next(); }
+function prevTourStep() { StudioTour.prev(); }
+function showOB() { StudioTour.start(); }
+function closeOB() { StudioTour.close(); }
+function nextOB() { StudioTour.next(); }
+function switchPaneByName(name) {
+  const tab = document.querySelector(`#rp .ptab[data-p="${name}"]`);
+  if (tab) switchPane(tab);
 }
-function nextOB() { if (S.obStep < 2) { S.obStep++; renderOB(); } else closeOB(); }
+
+window.addEventListener('resize', () => {
+  if (StudioTour.active) {
+    const s = StudioTour.steps[StudioTour.step];
+    if (s) {
+      const targetEl = document.querySelector(s.target);
+      StudioTour.positionElements(targetEl, s.pos);
+    }
+  }
+});
 
 function openKB() { document.getElementById('kb-modal').classList.add('on'); }
 function closeKB() { document.getElementById('kb-modal').classList.remove('on'); }
@@ -6221,6 +6933,12 @@ function closeKB() { document.getElementById('kb-modal').classList.remove('on');
 // KEYBOARD SHORTCUTS
 document.addEventListener('keydown', e => {
   if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
+  
+  if (typeof StudioTour !== 'undefined' && StudioTour.active) {
+    if (e.key === 'ArrowRight') { e.preventDefault(); StudioTour.next(); return; }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); StudioTour.prev(); return; }
+    if (e.key === 'Escape') { e.preventDefault(); StudioTour.close(); return; }
+  }
   
   if (e.code === 'Space') {
     e.preventDefault();
@@ -6237,6 +6955,7 @@ document.addEventListener('keydown', e => {
     else if (e.key === 'y') { e.preventDefault(); doRedo(); }
     else if (e.key === 'd' || e.key === 'D') { e.preventDefault(); duplicateActiveLayer(); }
     else if (e.key === 's' || e.key === 'e') { e.preventDefault(); openEM(); }
+    else if (e.key === 'n' || e.key === 'N') { e.preventDefault(); openNewModal(); }
     else if (e.key === 'o') { e.preventDefault(); openFile(); }
     else if (e.key === '=' || e.key === '+') { e.preventDefault(); zIn(); }
     else if (e.key === '-') { e.preventDefault(); zOut(); }
@@ -6260,6 +6979,7 @@ document.addEventListener('keydown', e => {
   if (e.key === ']') moveActiveLayerUp();
   if (e.key === '[') moveActiveLayerDown();
   if (e.key === 'Escape') {
+    if (typeof StudioTour !== 'undefined' && StudioTour.active) StudioTour.close();
     document.querySelectorAll('.modal-bg').forEach(m => m.classList.remove('on'));
     if (baActive) exitBA();
     if (cropOn) cancelCrop();
