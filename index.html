@@ -3327,7 +3327,7 @@ function getCachedAdjusted(layer) {
     return activeImg;
   }
 
-  const imgSrc = activeImg.src ? activeImg.src.slice(-20) : '';
+  const imgSrc = activeImg._v ? String(activeImg._v) : (activeImg.src ? activeImg.src.slice(-20) : '');
   const curveKey = layer.curves ? JSON.stringify(layer.curves) : '';
 
   // Interactive 60fps Proxy Mode for large photos on tablets & phones
@@ -5095,8 +5095,12 @@ function setTool(tool) {
     document.getElementById('ba-label-after')?.classList.remove('on');
   }
   if (S.tool === 'crop' && tool !== 'crop') cancelCrop();
-  if (S.tool === 'eye' && tool !== 'eye') stopEyedropper();
-  if (S.tool === 'blurbrush' && tool !== 'blurbrush') cancelBlurBrush();
+  if (S.tool === 'blurbrush' && tool !== 'blurbrush') {
+    blurBrushActive = false; blurStrokes = [];
+    const bar = document.getElementById('blur-bar');
+    if (bar) { bar.classList.remove('on'); bar.classList.remove('vis'); }
+    renderHUD();
+  }
   if (S.tool === 'wm' && tool !== 'wm') cancelWMDrag();
   if (S.tool === 'heal' && tool !== 'heal') { HealBrush.end(); }
 
@@ -6036,17 +6040,22 @@ function startBlurBrush() {
   toast('🖌 Paint over areas to blur. Click Apply when done.');
 }
 function cancelBlurBrush() {
-  blurBrushActive = false; blurStrokes = [];
+  blurBrushActive = false;
+  blurStrokes = [];
   const bar = document.getElementById('blur-bar');
   if (bar) { bar.classList.remove('on'); bar.classList.remove('vis'); }
-  setTool('move');
-  renderCanvas();
+  renderHUD();
+  if (S.tool === 'blurbrush') {
+    S.tool = 'move';
+    updateToolstripUI('move');
+    renderCanvas();
+  }
 }
 function undoLastBlurStroke() {
   if (blurStrokes.length) { blurStrokes.pop(); renderHUD(); }
 }
 function applyBlurBrush() {
-  if (!blurStrokes.length) { cancelBlurBrush(); return; }
+  if (!blurStrokes.length) { toast('⚠️ Paint over areas to blur first!'); return; }
   const target = getAdjTarget();
   const w = canvas.width, h = canvas.height;
 
@@ -6072,11 +6081,12 @@ function applyBlurBrush() {
   const blurred = document.createElement('canvas'); blurred.width = w; blurred.height = h;
   const bx = blurred.getContext('2d');
   bx.filter = `blur(${maxStrength}px)`;
-  bx.drawImage(target.img || origImg, 0, 0, w, h);
+  const baseSource = target.img || origImg;
+  bx.drawImage(baseSource, 0, 0, w, h);
 
   const result = document.createElement('canvas'); result.width = w; result.height = h;
   const rx = result.getContext('2d');
-  rx.drawImage(target.img || origImg, 0, 0, w, h);
+  rx.drawImage(baseSource, 0, 0, w, h);
   rx.globalCompositeOperation = 'source-over';
 
   const maskedBlur = document.createElement('canvas'); maskedBlur.width = w; maskedBlur.height = h;
@@ -6087,15 +6097,33 @@ function applyBlurBrush() {
 
   rx.drawImage(maskedBlur, 0, 0);
 
+  // Synchronous visual update right after clicking Apply (0ms latency):
+  result._v = Date.now();
+  if (target.type === 'base') {
+    _origDirty = true;
+    origImg = result;
+    const bl = layers.find(l => l.type === 'base');
+    if (bl) bl.img = result;
+  } else {
+    target.img = result;
+  }
+  blurStrokes = [];
+  invalidateAdjCache();
+  renderHUD();
+  renderCanvas();
+  pushHist('🖌 Selective Blur Applied');
+  toast('✓ Selective blur applied!');
+
+  // Async Image object creation for undo/redo serialization & persistence
   const newImg = new Image();
   newImg.onload = () => {
-    if (target.type === 'base') { _origDirty = true; origImg = newImg; }
-    else target.img = newImg;
-    cancelBlurBrush();
-    invalidateAdjCache();
-    renderCanvas();
-    pushHist('🖌 Selective Blur Applied');
-    toast('✓ Selective blur applied!');
+    if (target.type === 'base' && origImg === result) {
+      origImg = newImg;
+      const bl = layers.find(l => l.type === 'base');
+      if (bl) bl.img = newImg;
+    } else if (target.img === result) {
+      target.img = newImg;
+    }
   };
   newImg.src = result.toDataURL('image/png');
 }
