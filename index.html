@@ -1022,6 +1022,95 @@ body.theme-light .btn-ghost:hover{background:rgba(0,0,0,0.06);color:#0f172a;}
 .tour-btn-prev{height:32px;padding:0 12px;font-size:12px;}
 .tour-btn-next{height:32px;padding:0 16px;font-size:12.5px;font-weight:600;}
 
+/* ── ADVANCED EXPORT STUDIO MODAL ── */
+#em .mcard{width:520px;max-width:96vw;}
+.exp-tier-grid{
+  display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;
+}
+.exp-tier-card{
+  background:var(--surface);border:1px solid var(--border-subtle);border-radius:var(--rs);
+  padding:10px 8px;cursor:pointer;text-align:center;transition:all 0.18s;
+}
+.exp-tier-card:hover{
+  background:var(--surface-raised);border-color:var(--border-light);transform:translateY(-1px);
+}
+.exp-tier-card.active{
+  border-color:var(--accent);background:var(--accent-glow);box-shadow:0 0 14px var(--accent-glow);
+}
+.exp-tier-icon{font-size:16px;margin-bottom:2px;}
+.exp-tier-name{font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;}
+.exp-tier-sub{font-size:10px;color:var(--text-dim);margin-top:1px;white-space:nowrap;}
+
+.exp-scale-row{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;
+}
+.exp-scale-btns{display:flex;gap:6px;}
+
+.exp-stats-box{
+  display:flex;align-items:center;justify-content:space-around;
+  background:rgba(0,0,0,0.32);border:1px solid var(--border-subtle);border-radius:12px;
+  padding:10px 14px;margin:12px 0 8px 0;
+}
+.exp-stat-col{text-align:center;}
+.exp-stat-lbl{font-size:10px;color:var(--text-dim);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:2px;}
+.exp-stat-val{font-size:13px;font-weight:700;color:var(--text);font-family:var(--font-m);}
+.exp-stat-sep{width:1px;height:24px;background:var(--border-subtle);}
+
+.exp-quality-notice{
+  font-size:11px;color:var(--text-muted);background:rgba(212,163,89,0.06);
+  border:1px solid rgba(212,163,89,0.2);border-radius:8px;padding:7px 10px;
+  line-height:1.45;margin-bottom:14px;
+}
+
+.epr{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:9px 12px;border-radius:var(--rs);border:1px solid var(--border);
+  cursor:pointer;background:rgba(255,255,255,0.02);
+  transition:all 0.16s ease;user-select:none;position:relative;
+}
+.epr:hover{
+  background:rgba(255,255,255,0.05);border-color:var(--border-light);
+  transform:translateX(2px);
+}
+.epr:active{
+  transform:scale(0.99);
+}
+.epr.active{
+  background:var(--accent-glow) !important;
+  border-color:var(--accent) !important;
+  box-shadow:0 0 0 1px var(--accent), 0 2px 10px var(--accent-glow);
+}
+.epr .epr-name{
+  font-weight:600;color:var(--text);font-size:12px;
+  display:flex;align-items:center;gap:8px;transition:color 0.15s;
+}
+.epr.active .epr-name{
+  color:var(--accent) !important;font-weight:700 !important;
+}
+.epr .epr-dims{
+  color:var(--text-muted);font-family:var(--font-m);font-size:11.5px;
+  display:flex;align-items:center;gap:6px;transition:color 0.15s;
+}
+.epr.active .epr-dims{
+  color:var(--accent) !important;font-weight:700 !important;
+}
+.epr-radio{
+  width:14px;height:14px;border-radius:50%;
+  border:1.5px solid var(--border-light);
+  display:inline-flex;align-items:center;justify-content:center;
+  transition:all 0.15s;flex-shrink:0;
+}
+.epr-radio::after{
+  content:'';width:6px;height:6px;border-radius:50%;
+  background:transparent;transition:all 0.15s;
+}
+.epr.active .epr-radio{
+  border-color:var(--accent);background:var(--accent-glow);
+}
+.epr.active .epr-radio::after{
+  background:var(--accent);
+}
+
 /* MODALS */
 .modal-bg{
   position:fixed;inset:0;background:rgba(6,7,9,0.75);
@@ -1973,40 +2062,99 @@ body.theme-light .btn-ghost:hover{background:rgba(0,0,0,0.06);color:#0f172a;}
 <!-- 4. EXPORT MODAL -->
 <div class="modal-bg" id="em">
   <div class="mcard">
-    <div class="mtitle">Export Masterpiece</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px">
-      <button class="crop-ratio-btn active" onclick="setFmt(this,'jpg')">JPG</button>
-      <button class="crop-ratio-btn" onclick="setFmt(this,'png')">PNG (Transparent)</button>
-      <button class="crop-ratio-btn" onclick="setFmt(this,'webp')">WebP</button>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div class="mtitle" style="margin-bottom:0">Export Masterpiece</div>
+      <span class="badge" id="exp-header-badge" style="background:rgba(212,163,89,0.12);color:var(--accent);border:1px solid rgba(212,163,89,0.3);padding:2px 8px;border-radius:100px;font-size:10.5px;font-weight:700">STUDIO MASTER</span>
     </div>
-    
-    <div style="font-size:11px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:8px">Presets</div>
-    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px">
-      <div class="epr active" onclick="pickEP(this,'original')" style="display:flex;justify-content:space-between;padding:9px 12px;border-radius:var(--rs);border:1px solid var(--border);cursor:pointer;background:rgba(255,255,255,0.02)">
-        <span style="font-weight:600;color:var(--text)">Original Resolution</span>
-        <span style="color:var(--text-muted);font-family:var(--font-m)" id="exp-orig-res">—</span>
+
+    <!-- Format Tabs -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px">
+      <button class="crop-ratio-btn active" id="exp-fmt-jpg" onclick="setFmt(this,'jpg')">JPG (Photo)</button>
+      <button class="crop-ratio-btn" id="exp-fmt-png" onclick="setFmt(this,'png')">PNG (Lossless)</button>
+      <button class="crop-ratio-btn" id="exp-fmt-webp" onclick="setFmt(this,'webp')">WebP (Modern)</button>
+    </div>
+
+    <!-- Quality & Detail Tiers -->
+    <div style="font-size:11px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:7px">Quality & Detail Profile</div>
+    <div class="exp-tier-grid">
+      <div class="exp-tier-card" id="tier-web" onclick="setExpTier('web')">
+        <div class="exp-tier-icon">⚡</div>
+        <div class="exp-tier-name">Compact Web</div>
+        <div class="exp-tier-sub">Small file size</div>
       </div>
-      <div class="epr" onclick="pickEP(this,'instagram')" style="display:flex;justify-content:space-between;padding:9px 12px;border-radius:var(--rs);border:1px solid var(--border);cursor:pointer;background:rgba(255,255,255,0.02)">
-        <span style="font-weight:600;color:var(--text)">📷 Instagram Square</span>
-        <span style="color:var(--text-muted);font-family:var(--font-m)">1080 × 1080</span>
+      <div class="exp-tier-card active" id="tier-balanced" onclick="setExpTier('balanced')">
+        <div class="exp-tier-icon">✨</div>
+        <div class="exp-tier-name">Studio High</div>
+        <div class="exp-tier-sub">Balanced fidelity</div>
       </div>
-      <div class="epr" onclick="pickEP(this,'youtube')" style="display:flex;justify-content:space-between;padding:9px 12px;border-radius:var(--rs);border:1px solid var(--border);cursor:pointer;background:rgba(255,255,255,0.02)">
-        <span style="font-weight:600;color:var(--text)">▶ YouTube Thumbnail</span>
-        <span style="color:var(--text-muted);font-family:var(--font-m)">1280 × 720</span>
-      </div>
-      <div class="epr" onclick="pickEP(this,'tiktok')" style="display:flex;justify-content:space-between;padding:9px 12px;border-radius:var(--rs);border:1px solid var(--border);cursor:pointer;background:rgba(255,255,255,0.02)">
-        <span style="font-weight:600;color:var(--text)">♪ Story / TikTok</span>
-        <span style="color:var(--text-muted);font-family:var(--font-m)">1080 × 1920</span>
+      <div class="exp-tier-card" id="tier-ultra" onclick="setExpTier('ultra')">
+        <div class="exp-tier-icon">💎</div>
+        <div class="exp-tier-name">Ultra Master</div>
+        <div class="exp-tier-sub">Max details & print</div>
       </div>
     </div>
 
-    <div class="srow" id="exp-quality-row">
-      <div class="shdr"><span class="slbl">Image Quality</span><span class="sval" id="exp-quality-val">92%</span></div>
-      <input type="range" id="exp-quality" min="40" max="100" value="92" oninput="document.getElementById('exp-quality-val').textContent=this.value+'%';_updateSizeEst()">
+    <!-- Resolution Scale Selector -->
+    <div class="exp-scale-row">
+      <span style="font-size:11px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.6px">Resolution Scale:</span>
+      <div class="exp-scale-btns">
+        <button class="crop-ratio-btn" id="exp-scale-half" onclick="setExpScale(0.5, this)">0.5x Half</button>
+        <button class="crop-ratio-btn active" id="exp-scale-1x" onclick="setExpScale(1, this)">1x Native</button>
+        <button class="crop-ratio-btn" id="exp-scale-2x" onclick="setExpScale(2, this)">2x Super-Detail 4K</button>
+      </div>
     </div>
 
-    <div style="font-size:12px;color:var(--text-muted);text-align:center;margin:12px 0 4px">
-      Estimated File Size: <strong id="exp-size-est" style="color:var(--accent);font-family:var(--font-m)">—</strong>
+    <!-- Dimension Presets -->
+    <div style="font-size:11px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:7px">Crop / Aspect Presets</div>
+    <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:12px;max-height:140px;overflow-y:auto;padding-right:4px">
+      <div class="epr active" data-preset="original" onclick="pickEP(this,'original')">
+        <span class="epr-name"><span class="epr-radio"></span>Original Resolution</span>
+        <span class="epr-dims" id="exp-orig-res">—</span>
+      </div>
+      <div class="epr" data-preset="instagram" onclick="pickEP(this,'instagram')">
+        <span class="epr-name"><span class="epr-radio"></span>📷 Instagram Square</span>
+        <span class="epr-dims">1080 × 1080</span>
+      </div>
+      <div class="epr" data-preset="youtube" onclick="pickEP(this,'youtube')">
+        <span class="epr-name"><span class="epr-radio"></span>▶ YouTube Thumbnail</span>
+        <span class="epr-dims">1280 × 720</span>
+      </div>
+      <div class="epr" data-preset="tiktok" onclick="pickEP(this,'tiktok')">
+        <span class="epr-name"><span class="epr-radio"></span>♪ Story / TikTok</span>
+        <span class="epr-dims">1080 × 1920</span>
+      </div>
+      <div class="epr" data-preset="uhd4k" onclick="pickEP(this,'uhd4k')">
+        <span class="epr-name"><span class="epr-radio"></span>📺 4K Ultra HD</span>
+        <span class="epr-dims">3840 × 2160</span>
+      </div>
+    </div>
+
+    <!-- Quality Slider -->
+    <div class="srow" id="exp-quality-row" style="margin-bottom:10px">
+      <div class="shdr"><span class="slbl">Encoding Quality</span><span class="sval" id="exp-quality-val">92%</span></div>
+      <input type="range" id="exp-quality" min="40" max="100" value="92" oninput="onQualitySlider(this.value)">
+    </div>
+
+    <!-- Live Output Inspector -->
+    <div class="exp-stats-box">
+      <div class="exp-stat-col">
+        <span class="exp-stat-lbl">Final Dimensions</span>
+        <span class="exp-stat-val" id="exp-dims-est">—</span>
+      </div>
+      <div class="exp-stat-sep"></div>
+      <div class="exp-stat-col">
+        <span class="exp-stat-lbl">Detail Level</span>
+        <span class="exp-stat-val" id="exp-profile-est" style="color:var(--accent)">Studio High</span>
+      </div>
+      <div class="exp-stat-sep"></div>
+      <div class="exp-stat-col">
+        <span class="exp-stat-lbl">Estimated Size</span>
+        <span class="exp-stat-val" id="exp-size-est" style="color:var(--accent);font-family:var(--font-m)">—</span>
+      </div>
+    </div>
+
+    <div class="exp-quality-notice" id="exp-quality-notice">
+      💡 Modern formats compress efficiently without visual loss. For ultra-detailed master prints, select <strong>Ultra Master</strong> or <strong>2x Super-Detail 4K</strong>.
     </div>
 
     <div class="macts">
@@ -2173,7 +2321,7 @@ if ('serviceWorker' in navigator) {
 
 // CORE STATE & ENGINE
 const DSLIDERS = {br:0, co:0, hi:0, sh:0, sa:0, wa:0, ti:0, cl:0, sp:0, vi:0, bl:0, gr:0};
-let S = {tool:'move', zoom:1, hasImg:false, fmt:'jpg', expPreset:'original', obStep:0, panX:0, panY:0, canvasBg:'transparent'};
+let S = {tool:'move', zoom:1, hasImg:false, fmt:'jpg', expPreset:'original', obStep:0, panX:0, panY:0, canvasBg:'transparent', expScale:1, expTier:'balanced', imgName:'Photo'};
 
 let layers = [];
 let selLayerId = null;
@@ -2430,6 +2578,7 @@ function initCanvas(img, name) {
   origImg = img;
   _origDirty = false;
   S.hasImg = true;
+  S.imgName = (name || 'Photo').replace(/\.[^/.]+$/, "");
   canvas.width = hudCanvas.width = lassoOverlay.width = img.width;
   canvas.height = hudCanvas.height = lassoOverlay.height = img.height;
   
@@ -4120,7 +4269,7 @@ const CurvesEngine = {
     };
     this.lut = { rgb: null, r: null, g: null, b: null };
     document.querySelectorAll('.curves-ch-btn').forEach(b => {
-      if (b.dataset.ch === 'rgb') b.classList.add('active');
+      if ((b.dataset?.ch || b.getAttribute?.('data-ch')) === 'rgb') b.classList.add('active');
       else b.classList.remove('active');
     });
     const lbl = document.getElementById('curves-target-label');
@@ -4367,7 +4516,8 @@ const PNAMES = {none:'Original', sp:'Portrait', wf:'Warm Film', cn:'Cyberpunk', 
 function applyPreset(el, key) {
   if (!S.hasImg) { toast('Open a photo first!'); return; }
   document.querySelectorAll('.pi').forEach(p => p.classList.remove('active'));
-  el.classList.add('active');
+  const btn = el || document.querySelector(`.pi[data-preset="${key}"]`);
+  if (btn?.classList) btn.classList.add('active');
   
   const vals = {...DSLIDERS, ...(PRESETS[key] || {})};
   const target = getAdjTarget();
@@ -4612,8 +4762,10 @@ function initCropHandlers() {
 }
 
 function setCropRatio(btn, ratio) {
-  document.querySelectorAll('.crop-ratio-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
+  if (btn && btn.parentElement) {
+    btn.parentElement.querySelectorAll('.crop-ratio-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
   if (ratio === 'free') cropAspect = null;
   else {
     const [rw, rh] = ratio.split(':').map(Number);
@@ -6433,70 +6585,246 @@ function setCanvasBg(col) {
 }
 
 // EXPORT ENGINE & MODAL
+function formatBytes(bytes) {
+  if (!bytes || bytes <= 0) return '—';
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / 1048576).toFixed(2) + ' MB';
+}
+
+function getExpDimensions() {
+  const scale = S.expScale || 1;
+  const sizes = {
+    instagram: [1080, 1080],
+    youtube: [1280, 720],
+    tiktok: [1080, 1920],
+    uhd4k: [3840, 2160]
+  };
+  if (S.expPreset && sizes[S.expPreset]) {
+    const [pw, ph] = sizes[S.expPreset];
+    return { w: Math.round(pw * scale), h: Math.round(ph * scale) };
+  }
+  const bw = (canvas && canvas.width) ? canvas.width : 1920;
+  const bh = (canvas && canvas.height) ? canvas.height : 1080;
+  return { w: Math.round(bw * scale), h: Math.round(bh * scale) };
+}
+
 function openEM() {
   document.getElementById('em').classList.add('on');
+  if (S.hasImg && canvas) {
+    const origLabel = document.getElementById('exp-orig-res');
+    if (origLabel) origLabel.textContent = `${canvas.width} × ${canvas.height}`;
+  }
+  document.querySelectorAll('.epr').forEach(b => {
+    b.classList.toggle('active', b.getAttribute('data-preset') === (S.expPreset || 'original'));
+  });
   _updateSizeEst();
 }
-function closeEM() { document.getElementById('em').classList.remove('on'); }
+
+function closeEM() {
+  document.getElementById('em').classList.remove('on');
+}
+
 function setFmt(btn, f) {
-  btn.parentElement.querySelectorAll('.crop-ratio-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
+  if (btn && btn.parentElement) {
+    btn.parentElement.querySelectorAll('.crop-ratio-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
   S.fmt = f;
-  document.getElementById('exp-quality-row').style.display = f === 'png' ? 'none' : 'block';
+  const qr = document.getElementById('exp-quality-row');
+  if (qr) qr.style.display = f === 'png' ? 'none' : 'block';
   _updateSizeEst();
 }
+
 function pickEP(el, p) {
-  el.parentElement.querySelectorAll('.epr').forEach(b => b.classList.remove('active'));
-  el.classList.add('active');
+  if (el && el.parentElement) {
+    el.parentElement.querySelectorAll('.epr').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+  }
   S.expPreset = p;
+  _updateSizeEst();
 }
+
+function setExpTier(tier) {
+  S.expTier = tier;
+  ['web', 'balanced', 'ultra'].forEach(t => {
+    const el = document.getElementById('tier-' + t);
+    if (el) el.classList.toggle('active', t === tier);
+  });
+  const qSlider = document.getElementById('exp-quality');
+  const qVal = document.getElementById('exp-quality-val');
+  const qNotice = document.getElementById('exp-quality-notice');
+
+  if (tier === 'web') {
+    if (qSlider) qSlider.value = 75;
+    if (qVal) qVal.textContent = '75%';
+    if (qNotice) qNotice.innerHTML = '⚡ <strong>Compact Web:</strong> Optimized for ultra-fast loading, social sharing, and messaging.';
+  } else if (tier === 'balanced') {
+    if (qSlider) qSlider.value = 92;
+    if (qVal) qVal.textContent = '92%';
+    if (qNotice) qNotice.innerHTML = '✨ <strong>Studio High:</strong> Flawless visual detail with smart compression for professional digital displays.';
+  } else if (tier === 'ultra') {
+    if (qSlider) qSlider.value = 100;
+    if (qVal) qVal.textContent = '100% (Max)';
+    if (qNotice) qNotice.innerHTML = '💎 <strong>Ultra Master:</strong> Maximum sensor fidelity and zero quality compromise. Ideal for fine prints and archival master files.';
+  }
+  _updateSizeEst();
+}
+
+function setExpScale(scale, btn) {
+  S.expScale = scale;
+  if (btn && btn.parentElement) {
+    btn.parentElement.querySelectorAll('.crop-ratio-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+  _updateSizeEst();
+}
+
+function onQualitySlider(val) {
+  const qVal = document.getElementById('exp-quality-val');
+  if (qVal) qVal.textContent = val + '%';
+  const v = parseInt(val) || 92;
+  if (v <= 78) {
+    S.expTier = 'web';
+  } else if (v <= 95) {
+    S.expTier = 'balanced';
+  } else {
+    S.expTier = 'ultra';
+  }
+  ['web', 'balanced', 'ultra'].forEach(t => {
+    const el = document.getElementById('tier-' + t);
+    if (el) el.classList.toggle('active', t === S.expTier);
+  });
+  _updateSizeEst();
+}
+
 function _updateSizeEst() {
-  const el = document.getElementById('exp-size-est');
-  if (!el || !S.hasImg) return;
-  const m = {jpg: 0.08, png: 0.35, webp: 0.06};
-  const b = canvas.width * canvas.height * (m[S.fmt] || 0.08);
-  el.textContent = b < 1048576 ? (b / 1024).toFixed(0) + ' KB' : (b / 1048576).toFixed(1) + ' MB';
+  const sizeEl = document.getElementById('exp-size-est');
+  const dimsEl = document.getElementById('exp-dims-est');
+  const profEl = document.getElementById('exp-profile-est');
+  if (!S.hasImg || !canvas) return;
+
+  const dims = getExpDimensions();
+  if (dimsEl) dimsEl.textContent = `${dims.w} × ${dims.h} px`;
+
+  const scaleStr = S.expScale === 2 ? ' (2x Super-Detail)' : (S.expScale === 0.5 ? ' (0.5x Half)' : '');
+  const tierStr = S.expTier === 'ultra' ? '💎 Ultra Master' : (S.expTier === 'web' ? '⚡ Compact Web' : '✨ Studio High');
+  if (profEl) profEl.textContent = `${tierStr}${scaleStr}`;
+
+  const q = (parseInt(document.getElementById('exp-quality')?.value) || 92) / 100;
+  const pixels = dims.w * dims.h;
+  let estBytes = 0;
+  if (S.fmt === 'png') {
+    estBytes = pixels * 2.1;
+  } else if (S.fmt === 'webp') {
+    estBytes = pixels * (0.05 + (q * q) * 0.35);
+  } else {
+    if (q >= 0.99) {
+      estBytes = pixels * 0.85;
+    } else {
+      estBytes = pixels * (0.07 + Math.pow(q, 3) * 0.45);
+    }
+  }
+  if (sizeEl) sizeEl.textContent = '~' + formatBytes(Math.round(estBytes));
 }
 
 function doExport() {
   if (!S.hasImg) { toast('Open a photo first!'); closeEM(); return; }
   const quality = (parseInt(document.getElementById('exp-quality').value) || 92) / 100;
   const mime = {jpg: 'image/jpeg', png: 'image/png', webp: 'image/webp'}[S.fmt] || 'image/jpeg';
-  const sizes = {instagram: [1080, 1080], youtube: [1280, 720], tiktok: [1080, 1920]};
+  const sizes = {instagram: [1080, 1080], youtube: [1280, 720], tiktok: [1080, 1920], uhd4k: [3840, 2160]};
+  const scale = S.expScale || 1;
 
-  const src = document.createElement('canvas'); src.width = canvas.width; src.height = canvas.height;
+  const src = document.createElement('canvas');
+  src.width = canvas.width;
+  src.height = canvas.height;
   compositeClean(src.getContext('2d'), canvas.width, canvas.height);
 
-  let ew = canvas.width, eh = canvas.height;
-  const exp = document.createElement('canvas');
+  let targetW, targetH;
   if (S.expPreset === 'original' || !sizes[S.expPreset]) {
-    exp.width = ew; exp.height = eh;
-    exp.getContext('2d').drawImage(src, 0, 0);
+    targetW = Math.round(canvas.width * scale);
+    targetH = Math.round(canvas.height * scale);
   } else {
-    [ew, eh] = sizes[S.expPreset];
-    exp.width = ew; exp.height = eh;
-    const scale = Math.max(ew / canvas.width, eh / canvas.height);
-    const dw = canvas.width * scale, dh = canvas.height * scale;
-    exp.getContext('2d').drawImage(src, (ew - dw) / 2, (eh - dh) / 2, dw, dh);
+    const [pw, ph] = sizes[S.expPreset];
+    targetW = Math.round(pw * scale);
+    targetH = Math.round(ph * scale);
   }
 
-  const a = document.createElement('a');
-  a.download = `OpenFocus-Export.${S.fmt}`;
-  a.href = exp.toDataURL(mime, quality);
-  a.click();
-  closeEM();
-  toast(`✅ Exported as high-res ${S.fmt.toUpperCase()}!`);
+  const exp = document.createElement('canvas');
+  exp.width = targetW;
+  exp.height = targetH;
+  const expCtx = exp.getContext('2d');
+  expCtx.imageSmoothingEnabled = true;
+  expCtx.imageSmoothingQuality = 'high';
+
+  if (S.fmt === 'jpg') {
+    expCtx.fillStyle = (S.canvasBg && S.canvasBg !== 'transparent') ? S.canvasBg : '#ffffff';
+    expCtx.fillRect(0, 0, targetW, targetH);
+  }
+
+  if (S.expPreset === 'original' || !sizes[S.expPreset]) {
+    expCtx.drawImage(src, 0, 0, targetW, targetH);
+  } else {
+    const s = Math.max(targetW / canvas.width, targetH / canvas.height);
+    const dw = canvas.width * s;
+    const dh = canvas.height * s;
+    expCtx.drawImage(src, (targetW - dw) / 2, (targetH - dh) / 2, dw, dh);
+  }
+
+  const baseName = (S.imgName || 'Masterpiece').replace(/[^a-zA-Z0-9_-]/g, '_');
+  const filename = `OpenFocus_${baseName}_${targetW}x${targetH}.${S.fmt}`;
+
+  if (exp.toBlob) {
+    exp.toBlob((blob) => {
+      if (!blob) {
+        const a = document.createElement('a');
+        a.download = filename;
+        a.href = exp.toDataURL(mime, quality);
+        a.click();
+        closeEM();
+        toast(`✅ Exported ${targetW}×${targetH} ${S.fmt.toUpperCase()}!`);
+        return;
+      }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.download = filename;
+      a.href = url;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 8000);
+      closeEM();
+      toast(`✅ Exported ${targetW}×${targetH} ${S.fmt.toUpperCase()} (${formatBytes(blob.size)})!`);
+    }, mime, quality);
+  } else {
+    const a = document.createElement('a');
+    a.download = filename;
+    a.href = exp.toDataURL(mime, quality);
+    a.click();
+    closeEM();
+    toast(`✅ Exported ${targetW}×${targetH} ${S.fmt.toUpperCase()}!`);
+  }
 }
 
 function doCopyImage() {
   if (!S.hasImg) { toast('Open a photo first!'); return; }
-  const src = document.createElement('canvas'); src.width = canvas.width; src.height = canvas.height;
-  compositeClean(src.getContext('2d'), canvas.width, canvas.height);
+  const scale = S.expScale || 1;
+  const src = document.createElement('canvas');
+  src.width = Math.round(canvas.width * scale);
+  src.height = Math.round(canvas.height * scale);
+  const sCtx = src.getContext('2d');
+  sCtx.imageSmoothingEnabled = true;
+  sCtx.imageSmoothingQuality = 'high';
+
+  const full = document.createElement('canvas');
+  full.width = canvas.width;
+  full.height = canvas.height;
+  compositeClean(full.getContext('2d'), canvas.width, canvas.height);
+  sCtx.drawImage(full, 0, 0, src.width, src.height);
+
   src.toBlob(blob => {
     if (!blob) return;
     try {
       navigator.clipboard.write([new ClipboardItem({'image/png': blob})])
-        .then(() => { closeEM(); toast('📋 Copied crisp PNG to clipboard!'); })
+        .then(() => { closeEM(); toast(`📋 Copied crisp ${src.width}×${src.height} PNG (${formatBytes(blob.size)}) to clipboard!`); })
         .catch(() => toast('Clipboard export not permitted in this context.'));
     } catch { toast('Clipboard copy not supported by browser.'); }
   }, 'image/png');
