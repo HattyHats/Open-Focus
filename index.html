@@ -707,7 +707,8 @@ input[type=range]::-moz-range-thumb{
   position:absolute;bottom:calc(100% + 8px);right:0;
   background:rgba(14,16,22,0.96);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
   border:1px solid var(--border-light);border-radius:14px;
-  padding:10px;width:300px;z-index:400;
+  padding:10px;width:300px;max-width:92vw;z-index:400;
+  max-height:calc(100vh - 48px);max-height:calc(100dvh - 48px);overflow-y:auto;
   box-shadow:0 -16px 48px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,255,255,0.06);
   display:none;
   animation:ctx-in 0.14s ease-out;
@@ -1023,7 +1024,7 @@ body.theme-light .btn-ghost:hover{background:rgba(0,0,0,0.06);color:#0f172a;}
 .tour-btn-next{height:32px;padding:0 16px;font-size:12.5px;font-weight:600;}
 
 /* ── ADVANCED EXPORT STUDIO MODAL ── */
-#em .mcard{width:520px;max-width:96vw;}
+#em .mcard{width:520px;max-width:96vw;max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px);overflow-y:auto;}
 .exp-tier-grid{
   display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;
 }
@@ -1120,7 +1121,10 @@ body.theme-light .btn-ghost:hover{background:rgba(0,0,0,0.06);color:#0f172a;}
 .modal-bg.on{display:flex;}
 .mcard{
   background:var(--glass-bg);backdrop-filter:var(--backdrop-blur);-webkit-backdrop-filter:var(--backdrop-blur);
-  border:1px solid var(--glass-border);border-radius:16px;padding:28px;width:450px;max-width:94vw;
+  border:1px solid var(--glass-border);border-radius:16px;padding:clamp(16px, 3.5vw, 28px);
+  width:450px;max-width:94vw;
+  max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px);
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
   box-shadow:var(--glass-shadow);animation:mcard-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 @keyframes mcard-in{from{opacity:0;transform:scale(0.92) translateY(12px);}to{opacity:1;transform:scale(1) translateY(0);}}
@@ -1242,6 +1246,258 @@ body.theme-light .btn-ghost:hover{background:rgba(0,0,0,0.06);color:#0f172a;}
   background:var(--surface);border:1px solid var(--border-light);border-radius:8px;
   padding:8px 12px;box-shadow:0 6px 24px rgba(0,0,0,0.6);min-width:140px;
 }
+
+/* ══════════════════════════════════════════════════════════════════
+   RESPONSIVE MULTI-DEVICE SUITE: TABLETS, PHONES (PORTRAIT & LANDSCAPE)
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Mobile / Tablet Drawer & Toggle Controls */
+#btn-toggle-panel{display:none;}
+.btn-close-rp{display:none;}
+#rp-backdrop{
+  position:absolute;inset:0;
+  background:rgba(0,0,0,0.6);
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  z-index:45;display:none;opacity:0;
+  transition:opacity 0.25s ease;
+}
+#rp-backdrop.on{display:block;opacity:1;}
+
+/* ── TABLET BREAKPOINT (<= 1024px) ── */
+@media (max-width: 1024px) {
+  :root{
+    --panel-w: 280px;
+    --tool-w: 58px;
+  }
+  #topbar{
+    overflow-x:auto;overflow-y:hidden;white-space:nowrap;
+    -webkit-overflow-scrolling:touch;
+  }
+  #topbar::-webkit-scrollbar{display:none;}
+  .doc-name{max-width:130px;}
+  .btn-shortcuts{display:none;}
+}
+
+/* ── MOBILE SCREENS: PORTRAIT (<= 768px) ── */
+@media (max-width: 768px) {
+  :root{
+    --top-h: 48px;
+    --tool-w: 52px;
+  }
+  #topbar{
+    height:48px;padding:0 8px;gap:6px;
+    overflow-x:auto;overflow-y:hidden;
+    -webkit-overflow-scrolling:touch;
+  }
+  #topbar::-webkit-scrollbar{display:none;}
+  .logo-text span{display:inline;}
+  .doc-name-wrap{display:none;}
+  .zoom-ctrl{display:none;}
+  .btn-tour, .btn-shortcuts{display:none;}
+  .snap-btn{padding:0 7px;font-size:11px;}
+
+  /* Topbar Toggle Panel Button */
+  #btn-toggle-panel{
+    display:inline-flex;height:30px;padding:0 10px;
+    font-size:11.5px;font-weight:600;
+  }
+
+  /* Toolstrip */
+  #toolstrip{
+    width:52px;padding:8px 0;gap:3px;
+    overflow-y:auto;-webkit-overflow-scrolling:touch;
+  }
+  .tbtn{
+    width:44px;height:42px;gap:2px;
+  }
+  .ticon{font-size:16px;}
+  .tlabel{font-size:8px;}
+  .tbtn[data-tip]::after{display:none !important;}
+
+  /* Right Panel: Sliding Overlay Drawer */
+  #rp{
+    position:absolute;right:0;top:0;bottom:0;
+    width:min(320px, 86vw);z-index:90;
+    transform:translateX(100%);
+    transition:transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow:-8px 0 36px rgba(0,0,0,0.85);
+  }
+  #rp.mobile-open{
+    transform:translateX(0);
+  }
+  .btn-close-rp{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:28px;height:28px;border-radius:50%;
+    border:1px solid var(--border);background:var(--surface-raised);
+    color:var(--text-muted);font-size:13px;cursor:pointer;
+    margin-left:auto;margin-right:6px;transition:all 0.15s;flex-shrink:0;
+  }
+  .btn-close-rp:hover{
+    background:var(--red);color:#fff;border-color:var(--red);
+  }
+
+  /* Floating UI on Mobile */
+  .floating-bar{
+    bottom:10px;padding:6px 12px;max-width:95vw;gap:6px;
+  }
+  #minimap-widget{
+    display:none !important;
+  }
+  #layer-quick-hud{
+    transform:translate(-50%, -110%) scale(0.9);
+  }
+
+  /* Status Bar on Mobile */
+  #sb{
+    padding:0 8px;gap:8px;overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+  #sb::-webkit-scrollbar{display:none;}
+  .sb-hide-mobile{display:none !important;}
+
+  /* Drop zone */
+  .dring{width:120px;height:120px;}
+  .dico-svg{width:40px;height:40px;}
+  .dtitle{font-size:20px;}
+  .dsub{font-size:12px;}
+  .dsub kbd{display:none;}
+  .dacts .btn{height:38px;padding:0 16px;font-size:13px;}
+}
+
+/* ── PHONE LANDSCAPE & ULTRA-COMPACT HEIGHT (<= 540px) ── */
+/* Specifically fixes: "landscape is really bad, features are cut off" */
+@media (max-height: 540px) {
+  :root{
+    --top-h: 40px;
+    --tool-w: 48px;
+    --panel-w: 280px;
+  }
+  #topbar{
+    height:40px;padding:0 8px;gap:5px;
+    overflow-x:auto;-webkit-overflow-scrolling:touch;
+  }
+  #topbar::-webkit-scrollbar{display:none;}
+  .logo{padding-right:4px;}
+  .logo-text{font-size:15px;}
+  .logo-icon-svg{width:22px;height:22px;}
+  .btn{height:26px;padding:0 8px;font-size:11px;gap:4px;}
+  .snap-btn{height:26px;padding:0 7px;font-size:11px;}
+  .doc-name-wrap{display:none;}
+  .zoom-ctrl{display:none;}
+  .btn-tour, .btn-shortcuts{display:none;}
+
+  /* Topbar Toggle Panel Button */
+  #btn-toggle-panel{
+    display:inline-flex;height:26px;padding:0 8px;
+    font-size:11px;font-weight:600;
+  }
+
+  /* Toolstrip: Compact and easily scrollable in landscape */
+  #toolstrip{
+    width:48px;padding:4px 0;gap:2px;
+    overflow-y:auto;-webkit-overflow-scrolling:touch;
+  }
+  #toolstrip::-webkit-scrollbar{width:3px;}
+  #toolstrip::-webkit-scrollbar-thumb{background:rgba(212,163,89,0.3);border-radius:2px;}
+  .tbtn{
+    width:40px;height:36px;padding:2px;gap:1px;
+  }
+  .ticon{font-size:14px;}
+  .tlabel{font-size:7.5px;}
+  .tsep{width:20px;margin:2px 0;}
+  .tbtn[data-tip]::after{display:none !important;}
+
+  /* Right Panel: Slide-out drawer in landscape */
+  #rp{
+    position:absolute;right:0;top:0;bottom:0;
+    width:min(300px, 75vw);z-index:90;
+    transform:translateX(100%);
+    transition:transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow:-8px 0 36px rgba(0,0,0,0.85);
+  }
+  #rp.mobile-open{
+    transform:translateX(0);
+  }
+  .btn-close-rp{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:24px;height:24px;border-radius:50%;
+    border:1px solid var(--border);background:var(--surface-raised);
+    color:var(--text-muted);font-size:12px;cursor:pointer;
+    margin-left:auto;margin-right:4px;transition:all 0.15s;flex-shrink:0;
+  }
+  .btn-close-rp:hover{
+    background:var(--red);color:#fff;border-color:var(--red);
+  }
+  .ptabs{height:36px;}
+  .ptab{height:36px;font-size:10.5px;padding:0 8px;}
+  .pbody{padding:10px;gap:12px;}
+  .psec h4{font-size:9.5px;margin-bottom:6px;}
+  .srow{margin-bottom:6px;}
+  .shdr{margin-bottom:2px;}
+  .slbl{font-size:11px;}
+
+  /* Floating Toolbars in Landscape */
+  .floating-bar{
+    bottom:4px;padding:4px 8px;gap:6px;
+    font-size:11px;border-radius:8px;max-width:96vw;
+  }
+  #minimap-widget{
+    display:none !important;
+  }
+  #heal-bar{
+    top:6px;padding:3px 10px;gap:6px;font-size:11px;
+  }
+  #heal-bar input[type=range]{width:55px;}
+
+  /* Status Bar in Landscape */
+  #sb{
+    height:24px;padding:0 8px;gap:8px;font-size:10px;
+    overflow-x:auto;-webkit-overflow-scrolling:touch;
+  }
+  #sb::-webkit-scrollbar{display:none;}
+  .si{font-size:10px;gap:4px;}
+  .sb-hide-mobile{display:none !important;}
+  .hatty-link{height:20px;font-size:10px;padding:0 6px;}
+  .sb-theme-btn{height:20px;font-size:10px;padding:0 6px;}
+
+  /* Modals in Landscape */
+  .modal-bg{padding:8px;}
+  .mcard{
+    max-height:calc(100vh - 16px);
+    max-height:calc(100dvh - 16px);
+    overflow-y:auto;padding:14px 18px;border-radius:12px;
+  }
+  .mtitle{font-size:16px;margin-bottom:8px;}
+  .macts{margin-top:10px;}
+  .exp-tier-grid{margin-bottom:6px;}
+  .exp-tier-card{padding:5px 4px;}
+  .exp-scale-row{margin-bottom:6px;}
+  .exp-stats-box{margin:6px 0;padding:6px 8px;}
+
+  /* Drop zone in Landscape */
+  #dz{padding:10px;gap:10px;}
+  .dring{width:80px;height:80px;}
+  .dico-svg{width:28px;height:28px;}
+  .dtitle{font-size:18px;}
+  .dsub{font-size:11px;line-height:1.3;}
+  .dacts{margin-top:2px;}
+  .dacts .btn{height:30px;font-size:11.5px;}
+
+  /* Welcome Screen in Landscape */
+  #wl-title{font-size:clamp(28px, 6vw, 42px);margin-top:4px;}
+  #wl-tagline{font-size:12px;margin-top:4px;padding:0 10px;}
+  #wl-credit{font-size:11px;margin-top:4px;}
+  #wl-loader{margin-top:10px;}
+  .wl-spinner{width:28px;height:28px;}
+}
+
+/* ── EXTRA-SMALL PHONES (<= 480px) ── */
+@media (max-width: 480px) {
+  .logo-text{display:none;}
+  .mcard{padding:14px;}
+  .exp-tier-name{font-size:10.5px;}
+  .exp-tier-sub{display:none;}
+}
 </style>
 </head>
 <body>
@@ -1282,6 +1538,7 @@ body.theme-light .btn-ghost:hover{background:rgba(0,0,0,0.06);color:#0f172a;}
   <button class="btn btn-ghost" onclick="openResize()">⤡ Resize</button>
   <button class="btn btn-ghost" onclick="openBorderModal()">🖼 Frame</button>
   <button class="btn btn-accent" onclick="openEM()">⬇ Export</button>
+  <button class="btn btn-outline" id="btn-toggle-panel" onclick="toggleMobilePanel()" title="Toggle Adjustments & Layers Inspector"><span id="toggle-panel-icon">🎚</span> <span class="btn-lbl">Panel</span></button>
   <div class="sep"></div>
   
   <button class="btn btn-ghost" id="ubtn" onclick="doUndo()" disabled title="Undo (Ctrl+Z)">↩ Undo</button>
@@ -1312,6 +1569,7 @@ body.theme-light .btn-ghost:hover{background:rgba(0,0,0,0.06);color:#0f172a;}
 
 <!-- MAIN WORKSPACE -->
 <div id="main">
+  <div id="rp-backdrop" onclick="closeMobilePanel()"></div>
   <!-- LEFT TOOLSTRIP -->
   <div id="toolstrip">
     <button class="tbtn active" id="t-move" onclick="setTool('move')" data-tip="Move & Transform Layers (M)"><div class="ticon">✥</div><div class="tlabel">Move</div></button>
@@ -1606,6 +1864,7 @@ body.theme-light .btn-ghost:hover{background:rgba(0,0,0,0.06);color:#0f172a;}
       <button class="ptab active" data-p="adjust" onclick="switchPane(this)">🎚 Adjust</button>
       <button class="ptab" data-p="layers" onclick="switchPane(this)">◫ Layers</button>
       <button class="ptab" data-p="history" onclick="switchPane(this)">⏱ History</button>
+      <button class="btn-close-rp" onclick="closeMobilePanel()" title="Close Inspector Panel">✕</button>
     </div>
     <div class="pbody">
       <!-- ADJUST PANE -->
@@ -1768,16 +2027,16 @@ body.theme-light .btn-ghost:hover{background:rgba(0,0,0,0.06);color:#0f172a;}
   <div class="ssep"></div>
   <div class="si">Active Tool: <span id="sttool">Move</span></div>
   <div class="ssep"></div>
-  <div class="si" id="st-coords" style="display:none">Coordinates: <span id="st-xy" style="font-family:var(--font-m)">—</span></div>
-  <div class="ssep"></div>
-  <div class="si">Layers: <span id="stlayers">0</span></div>
-  <div class="ssep"></div>
+  <div class="si sb-hide-mobile" id="st-coords" style="display:none">Coordinates: <span id="st-xy" style="font-family:var(--font-m)">—</span></div>
+  <div class="ssep sb-hide-mobile"></div>
+  <div class="si sb-hide-mobile">Layers: <span id="stlayers">0</span></div>
+  <div class="ssep sb-hide-mobile"></div>
   <div class="si" id="st-color" style="display:none">
     <div id="st-color-swatch" style="width:14px;height:14px;border-radius:3px;border:1px solid rgba(255,255,255,0.2);flex-shrink:0"></div>
     <span id="st-color-hex">—</span>
   </div>
-  <div class="si" style="margin-left:auto;color:var(--green)">✓ 100% Client-Side Privacy</div>
-  <div class="ssep"></div>
+  <div class="si sb-hide-mobile" style="margin-left:auto;color:var(--green)">✓ 100% Client-Side Privacy</div>
+  <div class="ssep sb-hide-mobile"></div>
 
   <!-- THEME SELECTOR IN STATUS BAR -->
   <div id="theme-dropdown-wrap">
@@ -4600,15 +4859,60 @@ function setTool(tool) {
   else if (tool === 'adjust') {
     const tab = document.querySelector('#rp .ptab[data-p="adjust"]');
     if (tab) switchPane(tab);
+    if (window.innerWidth <= 900 || window.innerHeight <= 540) openMobilePanel();
   } else if (tool === 'filter') {
     const tab = document.querySelector('#rp .ptab[data-p="adjust"]');
     if (tab) switchPane(tab);
+    if (window.innerWidth <= 900 || window.innerHeight <= 540) openMobilePanel();
     document.getElementById('presets-anchor')?.scrollIntoView({behavior:'smooth'});
   } else if (tool === 'overlay') {
     const tab = document.querySelector('#rp .ptab[data-p="layers"]');
     if (tab) switchPane(tab);
+    if (window.innerWidth <= 900 || window.innerHeight <= 540) openMobilePanel();
+  } else {
+    if (window.innerWidth <= 768 && ['crop','move','hand','eye','magic','lasso','heal','blurbrush','ba'].includes(tool)) {
+      closeMobilePanel();
+    }
   }
   renderCanvas();
+}
+
+function toggleMobilePanel() {
+  const rp = document.getElementById('rp');
+  if (!rp) return;
+  if (rp.classList.contains('mobile-open')) {
+    closeMobilePanel();
+  } else {
+    openMobilePanel();
+  }
+}
+
+function openMobilePanel() {
+  const rp = document.getElementById('rp');
+  const bd = document.getElementById('rp-backdrop');
+  const btn = document.getElementById('btn-toggle-panel');
+  if (!rp) return;
+  rp.classList.add('mobile-open');
+  if (bd) bd.classList.add('on');
+  if (btn) {
+    btn.classList.add('active');
+    const lbl = btn.querySelector('.btn-lbl');
+    if (lbl) lbl.textContent = 'Close';
+  }
+}
+
+function closeMobilePanel() {
+  const rp = document.getElementById('rp');
+  const bd = document.getElementById('rp-backdrop');
+  const btn = document.getElementById('btn-toggle-panel');
+  if (!rp) return;
+  rp.classList.remove('mobile-open');
+  if (bd) bd.classList.remove('on');
+  if (btn) {
+    btn.classList.remove('active');
+    const lbl = btn.querySelector('.btn-lbl');
+    if (lbl) lbl.textContent = 'Panel';
+  }
 }
 
 function switchPane(btn) {
@@ -4635,7 +4939,10 @@ function zIn() { S.zoom = Math.min(4, S.zoom * 1.25); applyZoom(); }
 function zOut() { S.zoom = Math.max(0.05, S.zoom / 1.25); applyZoom(); }
 function zFit() {
   if (!S.hasImg) return;
-  const aw = ca.clientWidth - 60, ah = ca.clientHeight - 60;
+  const padW = window.innerWidth <= 768 ? 24 : 60;
+  const padH = (window.innerHeight <= 540 || window.innerWidth <= 768) ? 24 : 60;
+  const aw = Math.max(100, ca.clientWidth - padW);
+  const ah = Math.max(100, ca.clientHeight - padH);
   S.zoom = Math.min(aw / canvas.width, ah / canvas.height, 1.8);
   S.panX = 0; S.panY = 0;
   applyZoom();
@@ -4665,8 +4972,71 @@ ca.addEventListener('wheel', e => {
   S.panX += relX - (relX * (newZoom / S.zoom));
   S.panY += relY - (relY * (newZoom / S.zoom));
   S.zoom = newZoom;
-  applyZoom();
 }, {passive: false});
+
+// MULTI-TOUCH PINCH TO ZOOM & TWO-FINGER PAN FOR MOBILE & TABLET
+let activeTouches = new Map();
+let initialPinchDist = null;
+let initialPinchZoom = 1;
+let initialPinchCenter = { x: 0, y: 0 };
+let initialPan = { x: 0, y: 0 };
+
+ca.addEventListener('touchstart', e => {
+  if (!S.hasImg) return;
+  for (let i = 0; i < e.changedTouches.length; i++) {
+    const t = e.changedTouches[i];
+    activeTouches.set(t.identifier, { x: t.clientX, y: t.clientY });
+  }
+  if (activeTouches.size === 2) {
+    const [t1, t2] = Array.from(activeTouches.values());
+    initialPinchDist = Math.hypot(t1.x - t2.x, t1.y - t2.y);
+    initialPinchZoom = S.zoom;
+    initialPinchCenter = { x: (t1.x + t2.x) / 2, y: (t1.y + t2.y) / 2 };
+    initialPan = { x: S.panX, y: S.panY };
+  }
+}, { passive: true });
+
+ca.addEventListener('touchmove', e => {
+  if (!S.hasImg || activeTouches.size < 2) return;
+  if (e.cancelable) e.preventDefault();
+  for (let i = 0; i < e.changedTouches.length; i++) {
+    const t = e.changedTouches[i];
+    activeTouches.set(t.identifier, { x: t.clientX, y: t.clientY });
+  }
+  if (activeTouches.size === 2 && initialPinchDist && initialPinchDist > 0) {
+    const [t1, t2] = Array.from(activeTouches.values());
+    const currentDist = Math.hypot(t1.x - t2.x, t1.y - t2.y);
+    const scaleFactor = currentDist / initialPinchDist;
+    const newZoom = Math.max(0.05, Math.min(4, initialPinchZoom * scaleFactor));
+    
+    const currentCenter = { x: (t1.x + t2.x) / 2, y: (t1.y + t2.y) / 2 };
+    const dx = currentCenter.x - initialPinchCenter.x;
+    const dy = currentCenter.y - initialPinchCenter.y;
+    
+    S.panX = initialPan.x + dx;
+    S.panY = initialPan.y + dy;
+    S.zoom = newZoom;
+    applyZoom();
+  }
+}, { passive: false });
+
+ca.addEventListener('touchend', e => {
+  for (let i = 0; i < e.changedTouches.length; i++) {
+    activeTouches.delete(e.changedTouches[i].identifier);
+  }
+  if (activeTouches.size < 2) {
+    initialPinchDist = null;
+  }
+}, { passive: true });
+
+ca.addEventListener('touchcancel', e => {
+  for (let i = 0; i < e.changedTouches.length; i++) {
+    activeTouches.delete(e.changedTouches[i].identifier);
+  }
+  if (activeTouches.size < 2) {
+    initialPinchDist = null;
+  }
+}, { passive: true });
 
 function canvasCoords(e) {
   const rect = canvas.getBoundingClientRect();
@@ -7246,6 +7616,9 @@ function switchPaneByName(name) {
 }
 
 window.addEventListener('resize', () => {
+  if (S.hasImg) {
+    positionCanvas();
+  }
   if (StudioTour.active) {
     const s = StudioTour.steps[StudioTour.step];
     if (s) {
@@ -7253,6 +7626,14 @@ window.addEventListener('resize', () => {
       StudioTour.positionElements(targetEl, s.pos);
     }
   }
+});
+
+window.addEventListener('orientationchange', () => {
+  setTimeout(() => {
+    if (S.hasImg) {
+      zFit();
+    }
+  }, 250);
 });
 
 function openKB() { document.getElementById('kb-modal').classList.add('on'); }
