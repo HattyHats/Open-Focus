@@ -3108,7 +3108,14 @@ function pushHist(label) {
   const _oSrc = _needsCap ? captureOrigImg() : (hist[hIdx]?.origImgSrc || captureOrigImg());
   _origDirty = false;
   
-  hist.push({label, sliders: getSliders(), layers: serializeLayers(), origImgSrc: _oSrc});
+  hist.push({
+    label,
+    sliders: getSliders(),
+    layers: serializeLayers(),
+    origImgSrc: _oSrc,
+    canvasW: canvas.width,
+    canvasH: canvas.height
+  });
   if (hist.length > MAX_HIST) {
     hist = hist.slice(hist.length - MAX_HIST);
     hIdx = hist.length - 1;
@@ -3158,8 +3165,8 @@ function jumpHist(idx) {
     const img = new Image();
     img.onload = () => {
       origImg = img;
-      canvas.width = hudCanvas.width = lassoOverlay.width = img.width;
-      canvas.height = hudCanvas.height = lassoOverlay.height = img.height;
+      canvas.width = hudCanvas.width = lassoOverlay.width = e.canvasW || img.width;
+      canvas.height = hudCanvas.height = lassoOverlay.height = e.canvasH || img.height;
       updateAdjustHeader();
       renderCanvas();
       renderLayersPanel();
@@ -3168,6 +3175,10 @@ function jumpHist(idx) {
     };
     img.src = e.origImgSrc;
   } else {
+    if (e.canvasW && e.canvasH) {
+      canvas.width = hudCanvas.width = lassoOverlay.width = e.canvasW;
+      canvas.height = hudCanvas.height = lassoOverlay.height = e.canvasH;
+    }
     updateAdjustHeader();
     renderCanvas();
     renderLayersPanel();
@@ -5666,8 +5677,8 @@ ca.addEventListener('pointerdown', e => {
     return;
   }
 
-  // Move Tool: Select, Move & Scale Any Layer
-  if (S.tool === 'move' || S.tool === 'overlay' || S.tool === 'wm') {
+  // Move Tool & Adjust Mode: Select, Move & Scale Any Layer (including base photo)
+  if (S.tool === 'move' || S.tool === 'overlay' || S.tool === 'wm' || S.tool === 'adjust') {
     // 1. Check if clicking any transform handle on the currently selected layer
     if (selLayerId) {
       const curSel = layers.find(l => l.id === selLayerId);
@@ -5705,8 +5716,8 @@ ca.addEventListener('pointerdown', e => {
     }
 
     // B) If not clicked on the currently selected layer, check other visible layers (top to bottom)
-    // Priority given to non-base layers (text, stickers, image overlays, watermarks)
     if (!targetToDrag) {
+      // First check non-base layers (text, stickers, image overlays, watermarks)
       for (let i = layers.length - 1; i >= 0; i--) {
         const layer = layers[i];
         if (!layer.visible || layer.locked || layer.type === 'base') continue;
@@ -5716,35 +5727,35 @@ ca.addEventListener('pointerdown', e => {
           break;
         }
       }
-    }
-
-    // C) If user already has a layer selected and clicks within canvas bounds, move the selected layer!
-    if (!targetToDrag && selLayerId) {
-      const curSel = layers.find(l => l.id === selLayerId);
-      if (curSel && curSel.visible && !curSel.locked) {
-        if (cx >= 0 && cx <= canvas.width && cy >= 0 && cy <= canvas.height) {
-          targetToDrag = curSel;
+      // If no overlay layer was clicked, check base photo layer
+      if (!targetToDrag) {
+        const base = layers.find(l => l.type === 'base');
+        if (base && base.visible && !base.locked) {
+          const b = getLayerBounds(base);
+          if (cx >= b.x && cx <= b.x + b.w && cy >= b.y && cy <= b.y + b.h) {
+            targetToDrag = base;
+          }
         }
       }
     }
 
-    // If an overlay layer (text, sticker, secondary image) was targeted, drag that layer
-    if (targetToDrag && targetToDrag.type !== 'base') {
+    // 3. Drag the targeted layer inside the canvas box (including main photo!)
+    if (targetToDrag) {
       selLayerId = targetToDrag.id;
       layerDrag = targetToDrag.id;
       layerDragStart = {cx, cy};
       layerAtDragStart = {
         x: targetToDrag.x ?? 0,
         y: targetToDrag.y ?? 0,
-        w: targetToDrag.w ?? canvas.width,
-        h: targetToDrag.h ?? canvas.height
+        w: targetToDrag.w ?? (targetToDrag.type === 'base' ? canvas.width : 800),
+        h: targetToDrag.h ?? (targetToDrag.type === 'base' ? canvas.height : 600)
       };
       updateAdjustHeader();
       renderCanvas();
       renderLayersPanel();
       e.preventDefault();
     } else {
-      // Dragging on the photo itself or on the workspace moves the ENTIRE PHOTO around the screen!
+      // Dragging outside all layers on empty canvas or workspace background pans the viewport on screen!
       isPanning = true;
       panStartX = e.clientX; panStartY = e.clientY;
       panOrigX = S.panX; panOrigY = S.panY;
@@ -5879,7 +5890,7 @@ window.addEventListener('pointermove', e => {
   }
 
   // Dynamic Hover Cursors for handles
-  if ((S.tool === 'move' || S.tool === 'overlay' || S.tool === 'wm') && selLayerId && !layerDrag && !layerResizeMode) {
+  if ((S.tool === 'move' || S.tool === 'overlay' || S.tool === 'wm' || S.tool === 'adjust') && selLayerId && !layerDrag && !layerResizeMode) {
     const sel = layers.find(l => l.id === selLayerId);
     if (sel && sel.visible) {
       const {cx, cy} = canvasCoords(e);
@@ -5999,10 +6010,9 @@ function doMagicWand(startX, startY) {
   const w = canvas.width, h = canvas.height;
   if (startX < 0 || startX >= w || startY < 0 || startY >= h) return;
 
-  const target = getAdjTarget();
   const tc = document.createElement('canvas'); tc.width = w; tc.height = h;
   const tx = tc.getContext('2d');
-  tx.drawImage(target.img || origImg, 0, 0, w, h);
+  compositeClean(tx, w, h);
   const imgData = tx.getImageData(0, 0, w, h);
   const d = imgData.data;
 
@@ -6070,20 +6080,52 @@ function invertSelection() {
 function deleteSelectedPixels() {
   if (!selectionActive || !selectionMask) { toast('No active selection!'); return; }
   const target = getAdjTarget();
-  const tc = document.createElement('canvas'); tc.width = target.w || canvas.width; tc.height = target.h || canvas.height;
-  const tx = tc.getContext('2d'); tx.drawImage(target.img || origImg, 0, 0);
-  const id = tx.getImageData(0, 0, tc.width, tc.height), d = id.data;
-  
-  for (let i = 0; i < selectionMask.length; i++) {
-    if (selectionMask[i]) d[i * 4 + 3] = 0;
+  if (!target) return;
+  const baseSource = target.img || origImg;
+  if (!baseSource) return;
+
+  const lx = target.x ?? 0, ly = target.y ?? 0;
+  const lw = target.w ?? canvas.width, lh = target.h ?? canvas.height;
+  const srcW = baseSource.naturalWidth || baseSource.width || lw;
+  const srcH = baseSource.naturalHeight || baseSource.height || lh;
+
+  const tc = document.createElement('canvas'); tc.width = srcW; tc.height = srcH;
+  const tx = tc.getContext('2d');
+  tx.drawImage(baseSource, 0, 0, srcW, srcH);
+  const id = tx.getImageData(0, 0, srcW, srcH), d = id.data;
+
+  // Map canvas selection mask (w x h) to layer pixels (srcW x srcH)
+  const cW = canvas.width, cH = canvas.height;
+  for (let cy = 0; cy < cH; cy++) {
+    const lyPos = cy - ly;
+    if (lyPos < 0 || lyPos >= lh) continue;
+    const sy = Math.floor((lyPos / lh) * srcH);
+    if (sy < 0 || sy >= srcH) continue;
+
+    for (let cx = 0; cx < cW; cx++) {
+      if (!selectionMask[cy * cW + cx]) continue;
+      const lxPos = cx - lx;
+      if (lxPos < 0 || lxPos >= lw) continue;
+      const sx = Math.floor((lxPos / lw) * srcW);
+      if (sx < 0 || sx >= srcW) continue;
+
+      const pIdx = (sy * srcW + sx) * 4;
+      d[pIdx + 3] = 0; // Transparent
+    }
   }
+
   tx.putImageData(id, 0, 0);
   const newImg = new Image();
   newImg.onload = () => {
-    if (target.type === 'base') { _origDirty = true; origImg = newImg; }
-    else target.img = newImg;
+    if (target.type === 'base') {
+      _origDirty = true;
+      origImg = newImg;
+      target.img = newImg;
+    } else {
+      target.img = newImg;
+    }
     clearSelection();
-    invalidateAdjCache();
+    invalidateAdjCache(target.id);
     renderCanvas();
     pushHist('Cut selected pixels');
     toast('🗑 Cut pixels from layer');
@@ -6117,39 +6159,58 @@ function undoLastBlurStroke() {
 function applyBlurBrush() {
   if (!blurStrokes.length) { toast('⚠️ Paint over areas to blur first!'); return; }
   const target = getAdjTarget();
-  const w = canvas.width, h = canvas.height;
+  if (!target) return;
+  const baseSource = target.img || origImg;
+  if (!baseSource) return;
 
-  const maskCanvas = document.createElement('canvas'); maskCanvas.width = w; maskCanvas.height = h;
+  const lx = target.x ?? 0, ly = target.y ?? 0;
+  const lw = target.w ?? canvas.width, lh = target.h ?? canvas.height;
+
+  const srcW = baseSource.naturalWidth || baseSource.width || lw;
+  const srcH = baseSource.naturalHeight || baseSource.height || lh;
+  const scaleX = srcW / Math.max(1, lw);
+  const scaleY = srcH / Math.max(1, lh);
+
+  const maskCanvas = document.createElement('canvas'); maskCanvas.width = srcW; maskCanvas.height = srcH;
   const mx = maskCanvas.getContext('2d');
   mx.lineCap = 'round';
   mx.lineJoin = 'round';
   mx.strokeStyle = '#ffffff';
   mx.fillStyle = '#ffffff';
   blurStrokes.forEach(str => {
-    mx.lineWidth = str.size;
+    const strokeR = (str.size / 2) * Math.max(scaleX, scaleY);
+    mx.lineWidth = strokeR * 2;
     if (!str.points || !str.points.length) return;
     if (str.points.length === 1) {
-      mx.beginPath(); mx.arc(str.points[0].x, str.points[0].y, str.size / 2, 0, Math.PI * 2); mx.fill();
+      const px = (str.points[0].x - lx) * scaleX;
+      const py = (str.points[0].y - ly) * scaleY;
+      mx.beginPath(); mx.arc(px, py, strokeR, 0, Math.PI * 2); mx.fill();
     } else {
-      mx.beginPath(); mx.moveTo(str.points[0].x, str.points[0].y);
-      for (let i = 1; i < str.points.length; i++) mx.lineTo(str.points[i].x, str.points[i].y);
+      mx.beginPath();
+      const p0x = (str.points[0].x - lx) * scaleX;
+      const p0y = (str.points[0].y - ly) * scaleY;
+      mx.moveTo(p0x, p0y);
+      for (let i = 1; i < str.points.length; i++) {
+        const px = (str.points[i].x - lx) * scaleX;
+        const py = (str.points[i].y - ly) * scaleY;
+        mx.lineTo(px, py);
+      }
       mx.stroke();
     }
   });
 
-  const maxStrength = Math.max(...blurStrokes.map(s => s.strength || 16));
-  const blurred = document.createElement('canvas'); blurred.width = w; blurred.height = h;
+  const maxStrength = Math.max(...blurStrokes.map(s => (s.strength || 16) * Math.max(scaleX, scaleY)));
+  const blurred = document.createElement('canvas'); blurred.width = srcW; blurred.height = srcH;
   const bx = blurred.getContext('2d');
-  bx.filter = `blur(${maxStrength}px)`;
-  const baseSource = target.img || origImg;
-  bx.drawImage(baseSource, 0, 0, w, h);
+  bx.filter = `blur(${Math.max(2, maxStrength)}px)`;
+  bx.drawImage(baseSource, 0, 0, srcW, srcH);
 
-  const result = document.createElement('canvas'); result.width = w; result.height = h;
+  const result = document.createElement('canvas'); result.width = srcW; result.height = srcH;
   const rx = result.getContext('2d');
-  rx.drawImage(baseSource, 0, 0, w, h);
+  rx.drawImage(baseSource, 0, 0, srcW, srcH);
   rx.globalCompositeOperation = 'source-over';
 
-  const maskedBlur = document.createElement('canvas'); maskedBlur.width = w; maskedBlur.height = h;
+  const maskedBlur = document.createElement('canvas'); maskedBlur.width = srcW; maskedBlur.height = srcH;
   const mbx = maskedBlur.getContext('2d');
   mbx.drawImage(maskCanvas, 0, 0);
   mbx.globalCompositeOperation = 'source-in';
@@ -6163,12 +6224,12 @@ function applyBlurBrush() {
     _origDirty = true;
     origImg = result;
     const bl = layers.find(l => l.type === 'base');
-    if (bl) bl.img = result;
+    if (bl) { bl.img = result; }
   } else {
     target.img = result;
   }
   blurStrokes = [];
-  invalidateAdjCache();
+  invalidateAdjCache(target.id);
   renderHUD();
   renderCanvas();
   pushHist('🖌 Selective Blur Applied');
@@ -6386,11 +6447,18 @@ function commitText() {
 function getBGRTarget() {
   const sel = selLayerId ? layers.find(l => l.id === selLayerId) : null;
   if (sel && sel.type === 'image' && sel.img) {
-    const w = sel.w || sel.img.naturalWidth || sel.img.width || (canvas ? canvas.width : 800);
-    const h = sel.h || sel.img.naturalHeight || sel.img.height || (canvas ? canvas.height : 600);
+    const w = sel.img.naturalWidth || sel.img.width || sel.w || (canvas ? canvas.width : 800);
+    const h = sel.img.naturalHeight || sel.img.height || sel.h || (canvas ? canvas.height : 600);
     return {
       img: sel.img, w, h, isBase: false,
-      bake: (newImg) => { sel.img = newImg; sel.w = newImg.width; sel.h = newImg.height; invalidateAdjCache(); renderCanvas(); renderLayersPanel(); },
+      bake: (newImg) => {
+        sel.img = newImg;
+        if (!sel.w) sel.w = newImg.width;
+        if (!sel.h) sel.h = newImg.height;
+        invalidateAdjCache(sel.id);
+        renderCanvas();
+        renderLayersPanel();
+      },
       name: sel.name || 'Image Layer'
     };
   }
@@ -6400,7 +6468,19 @@ function getBGRTarget() {
   const h = imgToUse ? (imgToUse.naturalHeight || imgToUse.height || (base ? base.h : (canvas ? canvas.height : 0))) : (canvas ? canvas.height : 0);
   return {
     img: imgToUse, w, h, isBase: true,
-    bake: (newImg) => { _origDirty = true; origImg = newImg; if (base) { base.w = newImg.width; base.h = newImg.height; } resetSlidersUI(); renderCanvas(); renderLayersPanel(); },
+    bake: (newImg) => {
+      _origDirty = true;
+      origImg = newImg;
+      if (base) {
+        base.img = newImg;
+        if (!base.w) base.w = newImg.width;
+        if (!base.h) base.h = newImg.height;
+      }
+      invalidateAdjCache();
+      resetSlidersUI();
+      renderCanvas();
+      renderLayersPanel();
+    },
     name: base?.name || 'Photo'
   };
 }
