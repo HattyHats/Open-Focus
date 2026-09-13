@@ -1667,6 +1667,205 @@ body.theme-light .btn-ghost:hover{background:rgba(0,0,0,0.06);color:#0f172a;}
   .exp-tier-name{font-size:10.5px;}
   .exp-tier-sub{display:none;}
 }
+
+/* ══════════════════════════════════════════════
+   STUDIO OVERHAUL: FLOATING PILL, ACCORDION & SLIDERS
+   ══════════════════════════════════════════════ */
+.floating-context-pill {
+  position: absolute;
+  display: none;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 8px;
+  background: rgba(14, 16, 20, 0.94);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(212, 163, 89, 0.38);
+  border-radius: 9999px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.7), 0 0 20px rgba(212, 163, 89, 0.15);
+  z-index: 45;
+  pointer-events: auto;
+  user-select: none;
+  white-space: nowrap;
+  max-width: calc(100% - 24px);
+  overflow-x: auto;
+  scrollbar-width: none;
+  transform: translateX(-50%);
+  animation: pill-appear 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.floating-context-pill::-webkit-scrollbar {
+  display: none;
+}
+@keyframes pill-appear {
+  from { opacity: 0; transform: translateX(-50%) translateY(4px) scale(0.96); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+}
+.pill-btn {
+  background: transparent;
+  border: none;
+  color: var(--text);
+  padding: 5px 8px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+}
+.pill-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--accent);
+  transform: translateY(-1px);
+}
+.pill-btn:active {
+  transform: translateY(0) scale(0.95);
+}
+.pill-btn.pill-del:hover {
+  background: rgba(239, 68, 68, 0.22);
+  color: #f87171;
+}
+.pill-sep {
+  width: 1px;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.15);
+  margin: 0 2px;
+}
+.pill-ico {
+  font-size: 13px;
+}
+
+/* Magic Enhance Hero Card */
+.magic-enhance-card {
+  background: linear-gradient(135deg, rgba(212, 163, 89, 0.18) 0%, rgba(168, 85, 247, 0.16) 100%);
+  border: 1px solid rgba(212, 163, 89, 0.45);
+  border-radius: var(--rs);
+  padding: 11px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3), 0 0 14px rgba(212, 163, 89, 0.12);
+}
+.magic-enhance-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.45), 0 0 24px rgba(212, 163, 89, 0.28);
+  background: linear-gradient(135deg, rgba(212, 163, 89, 0.28) 0%, rgba(168, 85, 247, 0.24) 100%);
+}
+.magic-enhance-card:active {
+  transform: translateY(0);
+}
+.magic-enhance-sparkle {
+  font-size: 22px;
+  animation: sparkle-pulse 2.2s infinite ease-in-out;
+}
+@keyframes sparkle-pulse {
+  0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.9; }
+  50% { transform: scale(1.22) rotate(14deg); opacity: 1; filter: drop-shadow(0 0 10px #d4a359); }
+}
+
+/* Accordion Cards */
+.accordion-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--rs);
+  margin-bottom: 8px;
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.accordion-card.open {
+  border-color: rgba(212, 163, 89, 0.3);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+.accordion-header {
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+  background: var(--surface-raised);
+  transition: background 0.15s ease;
+}
+.accordion-header:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+.accordion-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-transform: uppercase;
+}
+.accordion-chevron {
+  font-size: 10px;
+  color: var(--text-dim);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  margin-left: 6px;
+}
+.accordion-card.open .accordion-chevron {
+  transform: rotate(180deg);
+}
+.accordion-body {
+  padding: 10px 12px;
+  display: none;
+}
+.accordion-card.open .accordion-body {
+  display: block;
+}
+.accordion-reset-btn {
+  font-size: 10px;
+  color: var(--text-dim);
+  background: none;
+  border: 1px solid transparent;
+  cursor: pointer;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-weight: 600;
+  transition: all 0.15s ease;
+}
+.accordion-reset-btn:hover {
+  color: var(--accent);
+  background: rgba(212, 163, 89, 0.12);
+  border-color: rgba(212, 163, 89, 0.25);
+}
+
+/* Gradient Slider Tracks */
+input[type=range].slider-gradient-warmth::-webkit-slider-runnable-track {
+  background: linear-gradient(90deg, #3b82f6 0%, #272c38 50%, #f59e0b 100%) !important;
+}
+input[type=range].slider-gradient-tint::-webkit-slider-runnable-track {
+  background: linear-gradient(90deg, #10b981 0%, #272c38 50%, #ec4899 100%) !important;
+}
+input[type=range].slider-gradient-sat::-webkit-slider-runnable-track {
+  background: linear-gradient(90deg, #4b5563 0%, #ef4444 30%, #eab308 55%, #10b981 75%, #3b82f6 100%) !important;
+}
+input[type=range].slider-gradient-exp::-webkit-slider-runnable-track {
+  background: linear-gradient(90deg, #090a0d 0%, #272c38 50%, #f3f4f6 100%) !important;
+}
+
+/* Copy button in export modal */
+.btn-accent-copy {
+  background: linear-gradient(135deg, rgba(212, 163, 89, 0.2) 0%, rgba(168, 85, 247, 0.2) 100%);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+.btn-accent-copy:hover {
+  background: var(--accent);
+  color: #0b0c10;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(212, 163, 89, 0.3);
+}
 </style>
 </head>
 <body>
@@ -1800,6 +1999,20 @@ body.theme-light .btn-ghost:hover{background:rgba(0,0,0,0.06);color:#0f172a;}
       </div>
     </div>
 
+    <!-- Floating Contextual Action Pill (Figma / Canva style) -->
+    <div id="floating-context-pill" class="floating-context-pill" onpointerdown="event.stopPropagation()" onmousedown="event.stopPropagation()">
+      <button class="pill-btn" onclick="centerActiveLayer()" title="Center layer on canvas"><span class="pill-ico">⛶</span> Center</button>
+      <button class="pill-btn" onclick="fitActiveLayer()" title="Fit layer to canvas bounds"><span class="pill-ico">⊡</span> Fit</button>
+      <div class="pill-sep"></div>
+      <button class="pill-btn" onclick="flipActiveLayerH()" title="Flip horizontally"><span class="pill-ico">⇔</span> Flip H</button>
+      <button class="pill-btn" onclick="flipActiveLayerV()" title="Flip vertically"><span class="pill-ico">⇕</span> Flip V</button>
+      <div class="pill-sep"></div>
+      <button class="pill-btn" onclick="duplicateActiveLayer()" title="Duplicate layer"><span class="pill-ico">📋</span> Duplicate</button>
+      <button class="pill-btn" id="pill-lock-btn" onclick="toggleLockActiveLayer()" title="Lock / unlock layer"><span class="pill-ico" id="pill-lock-ico">🔓</span> Lock</button>
+      <div class="pill-sep"></div>
+      <button class="pill-btn pill-del" onclick="deleteActiveLayerOrReset()" title="Delete layer or reset"><span class="pill-ico">🗑</span></button>
+    </div>
+
     <!-- Before/After Split Line & Handle -->
     <div id="ba-divider"><div id="ba-handle"></div></div>
     <div id="ba-label-before">BEFORE</div>
@@ -1815,14 +2028,16 @@ body.theme-light .btn-ghost:hover{background:rgba(0,0,0,0.06);color:#0f172a;}
     </div>
 
     <div id="crop-bar" class="floating-bar">
-      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">
         <span style="font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase">Ratio:</span>
         <button class="crop-ratio-btn active" onclick="setCropRatio(this,'free')">Free</button>
-        <button class="crop-ratio-btn" onclick="setCropRatio(this,'1:1')">1:1</button>
-        <button class="crop-ratio-btn" onclick="setCropRatio(this,'4:3')">4:3</button>
-        <button class="crop-ratio-btn" onclick="setCropRatio(this,'3:2')">3:2</button>
-        <button class="crop-ratio-btn" onclick="setCropRatio(this,'16:9')">16:9</button>
-        <button class="crop-ratio-btn" onclick="setCropRatio(this,'9:16')">9:16</button>
+        <button class="crop-ratio-btn" onclick="setCropRatio(this,'1:1')" title="Instagram Square (1:1)">📸 1:1</button>
+        <button class="crop-ratio-btn" onclick="setCropRatio(this,'4:5')" title="Instagram Portrait (4:5)">📸 4:5</button>
+        <button class="crop-ratio-btn" onclick="setCropRatio(this,'9:16')" title="Stories / Reels / TikTok (9:16)">📱 9:16</button>
+        <button class="crop-ratio-btn" onclick="setCropRatio(this,'16:9')" title="YouTube / Landscape (16:9)">🎬 16:9</button>
+        <button class="crop-ratio-btn" onclick="setCropRatio(this,'3:1')" title="Twitter / X Header (3:1)">𝕏 3:1</button>
+        <button class="crop-ratio-btn" onclick="setCropRatio(this,'4:3')" title="Classic Photo (4:3)">4:3</button>
+        <button class="crop-ratio-btn" onclick="setCropRatio(this,'3:2')" title="35mm Film (3:2)">3:2</button>
       </div>
       <div class="sep" style="height:18px"></div>
       <div style="display:flex;align-items:center;gap:6px">
@@ -2057,8 +2272,17 @@ body.theme-light .btn-ghost:hover{background:rgba(0,0,0,0.06);color:#0f172a;}
           <div style="display:flex;justify-content:space-between;margin-top:4px"><span style="font-size:9.5px;color:var(--text-dim)">Shadows</span><span style="font-size:9.5px;color:var(--text-dim)">Midtones</span><span style="font-size:9.5px;color:var(--text-dim)">Highlights</span></div>
         </div>
 
-        <div class="psec" id="adjust-top-anchor">
-          <button class="qfbtn" onclick="quickFix()">⚡ Auto-Enhance Photo</button>
+        <div class="psec" id="adjust-top-anchor" style="padding-bottom:6px">
+          <div class="magic-enhance-card" onclick="quickFix()" title="1-Click Intelligent Dynamic Range & Color Calibration">
+            <div style="display:flex;align-items:center;gap:10px">
+              <span class="magic-enhance-sparkle">✨</span>
+              <div>
+                <div style="font-size:12.5px;font-weight:700;color:var(--text);letter-spacing:0.3px">Magic Enhance</div>
+                <div style="font-size:10px;color:var(--text-muted)">Intelligent auto-tone & dynamic balance</div>
+              </div>
+            </div>
+            <button class="btn btn-accent" style="height:26px;padding:0 10px;font-size:11px;pointer-events:none">Auto-Fix</button>
+          </div>
         </div>
 
         <div class="psec">
@@ -2079,28 +2303,55 @@ body.theme-light .btn-ghost:hover{background:rgba(0,0,0,0.06);color:#0f172a;}
           </div>
         </div>
 
-        <div class="psec">
-          <h4>Light & Tone</h4>
-          <div class="srow"><div class="shdr"><span class="slbl">Exposure</span><span class="sval" id="v-br">0</span></div><input type="range" min="-100" max="100" value="0" id="s-br" oninput="slide('br',this.value)"></div>
-          <div class="srow"><div class="shdr"><span class="slbl">Contrast</span><span class="sval" id="v-co">0</span></div><input type="range" min="-100" max="100" value="0" id="s-co" oninput="slide('co',this.value)"></div>
-          <div class="srow"><div class="shdr"><span class="slbl">Highlights</span><span class="sval" id="v-hi">0</span></div><input type="range" min="-100" max="100" value="0" id="s-hi" oninput="slide('hi',this.value)"></div>
-          <div class="srow"><div class="shdr"><span class="slbl">Shadows</span><span class="sval" id="v-sh">0</span></div><input type="range" min="-100" max="100" value="0" id="s-sh" oninput="slide('sh',this.value)"></div>
+        <!-- ☀️ Light & Tone Accordion -->
+        <div class="accordion-card open" id="acc-light">
+          <div class="accordion-header" onclick="toggleAccordion('acc-light')">
+            <div class="accordion-title"><span>☀️</span> Light & Tone</div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <button class="accordion-reset-btn" onclick="resetGroup('light', event)" title="Reset Light Sliders">↺ Reset</button>
+              <span class="accordion-chevron">▼</span>
+            </div>
+          </div>
+          <div class="accordion-body">
+            <div class="srow"><div class="shdr"><span class="slbl">Exposure</span><span class="sval" id="v-br">0</span></div><input type="range" class="slider-gradient-exp" min="-100" max="100" value="0" id="s-br" oninput="slide('br',this.value)"></div>
+            <div class="srow"><div class="shdr"><span class="slbl">Contrast</span><span class="sval" id="v-co">0</span></div><input type="range" min="-100" max="100" value="0" id="s-co" oninput="slide('co',this.value)"></div>
+            <div class="srow"><div class="shdr"><span class="slbl">Highlights</span><span class="sval" id="v-hi">0</span></div><input type="range" min="-100" max="100" value="0" id="s-hi" oninput="slide('hi',this.value)"></div>
+            <div class="srow"><div class="shdr"><span class="slbl">Shadows</span><span class="sval" id="v-sh">0</span></div><input type="range" min="-100" max="100" value="0" id="s-sh" oninput="slide('sh',this.value)"></div>
+          </div>
         </div>
 
-        <div class="psec">
-          <h4>Color & Balance</h4>
-          <div class="srow"><div class="shdr"><span class="slbl">Saturation</span><span class="sval" id="v-sa">0</span></div><input type="range" min="-100" max="100" value="0" id="s-sa" oninput="slide('sa',this.value)"></div>
-          <div class="srow"><div class="shdr"><span class="slbl">Temperature (Warmth)</span><span class="sval" id="v-wa">0</span></div><input type="range" min="-100" max="100" value="0" id="s-wa" oninput="slide('wa',this.value)"></div>
-          <div class="srow"><div class="shdr"><span class="slbl">Tint</span><span class="sval" id="v-ti">0</span></div><input type="range" min="-100" max="100" value="0" id="s-ti" oninput="slide('ti',this.value)"></div>
+        <!-- 🎨 Color & Balance Accordion -->
+        <div class="accordion-card open" id="acc-color">
+          <div class="accordion-header" onclick="toggleAccordion('acc-color')">
+            <div class="accordion-title"><span>🎨</span> Color & Balance</div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <button class="accordion-reset-btn" onclick="resetGroup('color', event)" title="Reset Color Sliders">↺ Reset</button>
+              <span class="accordion-chevron">▼</span>
+            </div>
+          </div>
+          <div class="accordion-body">
+            <div class="srow"><div class="shdr"><span class="slbl">Saturation</span><span class="sval" id="v-sa">0</span></div><input type="range" class="slider-gradient-sat" min="-100" max="100" value="0" id="s-sa" oninput="slide('sa',this.value)"></div>
+            <div class="srow"><div class="shdr"><span class="slbl">Temperature (Warmth)</span><span class="sval" id="v-wa">0</span></div><input type="range" class="slider-gradient-warmth" min="-100" max="100" value="0" id="s-wa" oninput="slide('wa',this.value)"></div>
+            <div class="srow"><div class="shdr"><span class="slbl">Tint</span><span class="sval" id="v-ti">0</span></div><input type="range" class="slider-gradient-tint" min="-100" max="100" value="0" id="s-ti" oninput="slide('ti',this.value)"></div>
+          </div>
         </div>
 
-        <div class="psec">
-          <h4>Clarity & Effects</h4>
-          <div class="srow"><div class="shdr"><span class="slbl">Clarity</span><span class="sval" id="v-cl">0</span></div><input type="range" min="-100" max="100" value="0" id="s-cl" oninput="slide('cl',this.value)"></div>
-          <div class="srow"><div class="shdr"><span class="slbl">Sharpness</span><span class="sval" id="v-sp">0</span></div><input type="range" min="0" max="100" value="0" id="s-sp" oninput="slide('sp',this.value)"></div>
-          <div class="srow"><div class="shdr"><span class="slbl">Gaussian Blur</span><span class="sval" id="v-bl">0</span></div><input type="range" min="0" max="100" value="0" id="s-bl" oninput="slide('bl',this.value)"></div>
-          <div class="srow"><div class="shdr"><span class="slbl">Vignette</span><span class="sval" id="v-vi">0</span></div><input type="range" min="-100" max="100" value="0" id="s-vi" oninput="slide('vi',this.value)"></div>
-          <div class="srow"><div class="shdr"><span class="slbl">Film Grain</span><span class="sval" id="v-gr">0</span></div><input type="range" min="0" max="100" value="0" id="s-gr" oninput="slide('gr',this.value)"></div>
+        <!-- 🔍 Detail & Texture Accordion -->
+        <div class="accordion-card open" id="acc-detail">
+          <div class="accordion-header" onclick="toggleAccordion('acc-detail')">
+            <div class="accordion-title"><span>🔍</span> Detail & Texture</div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <button class="accordion-reset-btn" onclick="resetGroup('detail', event)" title="Reset Detail Sliders">↺ Reset</button>
+              <span class="accordion-chevron">▼</span>
+            </div>
+          </div>
+          <div class="accordion-body">
+            <div class="srow"><div class="shdr"><span class="slbl">Clarity</span><span class="sval" id="v-cl">0</span></div><input type="range" min="-100" max="100" value="0" id="s-cl" oninput="slide('cl',this.value)"></div>
+            <div class="srow"><div class="shdr"><span class="slbl">Sharpness</span><span class="sval" id="v-sp">0</span></div><input type="range" min="0" max="100" value="0" id="s-sp" oninput="slide('sp',this.value)"></div>
+            <div class="srow"><div class="shdr"><span class="slbl">Gaussian Blur</span><span class="sval" id="v-bl">0</span></div><input type="range" min="0" max="100" value="0" id="s-bl" oninput="slide('bl',this.value)"></div>
+            <div class="srow"><div class="shdr"><span class="slbl">Vignette</span><span class="sval" id="v-vi">0</span></div><input type="range" min="-100" max="100" value="0" id="s-vi" oninput="slide('vi',this.value)"></div>
+            <div class="srow"><div class="shdr"><span class="slbl">Film Grain</span><span class="sval" id="v-gr">0</span></div><input type="range" min="0" max="100" value="0" id="s-gr" oninput="slide('gr',this.value)"></div>
+          </div>
         </div>
 
         <div class="psec">
@@ -2588,7 +2839,7 @@ body.theme-light .btn-ghost:hover{background:rgba(0,0,0,0.06);color:#0f172a;}
 
     <div class="macts">
       <button class="btn btn-ghost" onclick="closeEM()">Cancel</button>
-      <button class="btn btn-outline" onclick="doCopyImage()">📋 Copy to Clipboard</button>
+      <button class="btn btn-accent-copy" onclick="doCopyImage()" id="btn-copy-clipboard">📋 Copy to Clipboard</button>
       <button class="btn btn-accent" onclick="doExport()">⬇ Download Image</button>
     </div>
   </div>
@@ -3457,7 +3708,13 @@ function compositeClean(targetCtx, targetW, targetH) {
     if (layer.type === 'base') {
       const adjusted = getCachedAdjusted(layer);
       const lx = layer.x ?? 0, ly = layer.y ?? 0, lw = layer.w ?? targetW, lh = layer.h ?? targetH;
-      targetCtx.drawImage(adjusted, lx, ly, lw, lh);
+      if (layer.flipH || layer.flipV) {
+        targetCtx.translate(lx + lw / 2, ly + lh / 2);
+        targetCtx.scale(layer.flipH ? -1 : 1, layer.flipV ? -1 : 1);
+        targetCtx.drawImage(adjusted, -lw / 2, -lh / 2, lw, lh);
+      } else {
+        targetCtx.drawImage(adjusted, lx, ly, lw, lh);
+      }
     } else if (layer.type === 'image' && layer.img) {
       const lx = layer.x ?? 0, ly = layer.y ?? 0, lw = layer.w ?? targetW, lh = layer.h ?? targetH;
       const imgToDraw = getCachedAdjusted(layer);
@@ -3475,6 +3732,11 @@ function compositeClean(targetCtx, targetW, targetH) {
       targetCtx.font = `bold ${layer.size || 36}px Plus Jakarta Sans, sans-serif`;
       targetCtx.textBaseline = 'middle'; targetCtx.textAlign = 'center';
       targetCtx.shadowColor = 'rgba(0,0,0,0.45)'; targetCtx.shadowBlur = (layer.size || 36) * 0.15;
+      if (layer.flipH || layer.flipV) {
+        targetCtx.translate(lx, ly);
+        targetCtx.scale(layer.flipH ? -1 : 1, layer.flipV ? -1 : 1);
+        targetCtx.translate(-lx, -ly);
+      }
       if (layer.tile) {
         const spacingX = targetCtx.measureText(layer.text).width + (layer.size || 36) * 1.5;
         const spacingY = (layer.size || 36) * 2.2;
@@ -3493,6 +3755,14 @@ function compositeClean(targetCtx, targetW, targetH) {
       }
     } else if (layer.type === 'text') {
       const lx = layer.x ?? 0, ly = layer.y ?? 0;
+      if (layer.flipH || layer.flipV) {
+        const b = getTextBounds(layer);
+        const cx = b.x + b.w / 2;
+        const cy = b.y + b.h / 2;
+        targetCtx.translate(cx, cy);
+        targetCtx.scale(layer.flipH ? -1 : 1, layer.flipV ? -1 : 1);
+        targetCtx.translate(-cx, -cy);
+      }
       targetCtx.font = `${layer.weight || 'bold'} ${layer.size || 72}px ${layer.font || 'Plus Jakarta Sans'}`;
       targetCtx.textAlign = layer.align || 'center'; targetCtx.textBaseline = 'top';
       targetCtx.shadowColor = layer.shadowBlur ? 'rgba(0,0,0,0.7)' : 'transparent';
@@ -4083,19 +4353,26 @@ function toggleSnapEngine() {
   toast(SnapEngine.enabled ? '🧲 Magnetic alignment guides enabled' : '🧲 Alignment guides disabled');
 }
 
-// FLOATING LAYER QUICK-ACTION HUD
-function renderQuickHUD() {
-  const qhud = document.getElementById('layer-quick-hud');
-  if (!qhud) return;
+// FLOATING LAYER QUICK-ACTION HUD & CONTEXT PILL
+function updateContextPill() {
+  const pill = document.getElementById('floating-context-pill');
+  if (!pill) return;
 
-  if (!S.hasImg || !selLayerId || S.tool === 'crop' || S.tool === 'bgrbrush' || baActive) {
-    qhud.style.display = 'none';
+  const hiddenTools = ['crop', 'bgrbrush', 'blurbrush', 'heal', 'magic', 'lasso'];
+  if (!S.hasImg || hiddenTools.includes(S.tool) || baActive || isPanning || layerDrag || layerResizeMode) {
+    pill.style.display = 'none';
     return;
   }
 
-  const sel = layers.find(l => l.id === selLayerId);
+  const targetId = selLayerId || (layers[0] ? layers[0].id : null);
+  if (!targetId) {
+    pill.style.display = 'none';
+    return;
+  }
+
+  const sel = layers.find(l => l.id === targetId);
   if (!sel || !sel.visible) {
-    qhud.style.display = 'none';
+    pill.style.display = 'none';
     return;
   }
 
@@ -4106,34 +4383,87 @@ function renderQuickHUD() {
   const canvasTop = (aH - iH) / 2 + S.panY;
 
   const screenCenterX = canvasLeft + (b.x + b.w / 2) * S.zoom;
-  const screenTopY = canvasTop + b.y * S.zoom - 14;
+  let screenTopY = canvasTop + b.y * S.zoom - 46;
 
-  qhud.style.display = 'inline-flex';
-  qhud.style.left = `${Math.max(120, Math.min(aW - 120, screenCenterX))}px`;
-  qhud.style.top = `${Math.max(42, screenTopY)}px`;
-
-  const lBtn = document.getElementById('qhud-lock-btn');
-  if (lBtn) {
-    lBtn.textContent = sel.locked ? '🔒' : '🔓';
-    lBtn.classList.toggle('active', !!sel.locked);
-    lBtn.title = sel.locked ? 'Unlock Layer' : 'Lock Layer';
+  if (screenTopY < 16) {
+    const belowY = canvasTop + (b.y + b.h) * S.zoom + 12;
+    screenTopY = (belowY <= aH - 52) ? belowY : 16;
   }
+
+  const pillW = pill.offsetWidth || 480;
+  const pillHalfW = Math.ceil(pillW / 2) + 8;
+  const clampedX = aW > pillW + 16 ? Math.max(pillHalfW, Math.min(aW - pillHalfW, screenCenterX)) : (aW / 2);
+  const clampedY = Math.max(12, Math.min(aH - 52, screenTopY));
+
+  pill.style.display = 'flex';
+  pill.style.left = `${clampedX}px`;
+  pill.style.top = `${clampedY}px`;
+
+  const lockBtn = document.getElementById('pill-lock-btn');
+  if (lockBtn) {
+    lockBtn.classList.toggle('active', !!sel.locked);
+    lockBtn.title = sel.locked ? 'Unlock Layer' : 'Lock Layer';
+    lockBtn.innerHTML = `<span class="pill-ico" id="pill-lock-ico">${sel.locked ? '🔒' : '🔓'}</span> ${sel.locked ? 'Unlock' : 'Lock'}`;
+  }
+}
+
+function renderQuickHUD() {
+  updateContextPill();
+  const qhud = document.getElementById('layer-quick-hud');
+  if (qhud) qhud.style.display = 'none';
+}
+
+function toggleAccordion(id) {
+  const card = document.getElementById(id);
+  if (card) {
+    card.classList.toggle('open');
+  }
+}
+
+function resetGroup(group, e) {
+  if (e) e.stopPropagation();
+  const target = getAdjTarget();
+  if (!target) return;
+  if (!target.adjustments) target.adjustments = {...DSLIDERS};
+
+  const groupKeys = {
+    light: ['br', 'co', 'hi', 'sh'],
+    color: ['sa', 'wa', 'ti'],
+    detail: ['cl', 'sp', 'bl', 'vi', 'gr']
+  };
+
+  const keys = groupKeys[group] || [];
+  keys.forEach(k => {
+    target.adjustments[k] = 0;
+    const s = document.getElementById('s-' + k);
+    const v = document.getElementById('v-' + k);
+    if (s) s.value = 0;
+    if (v) v.textContent = '0';
+  });
+
+  invalidateAdjCache(target.id);
+  renderCanvas();
+  pushHist(`↺ Reset ${group.charAt(0).toUpperCase() + group.slice(1)}`);
+  toast(`↺ Reset ${group} adjustments to 0`);
 }
 
 // QUICK LAYER ACTIONS
 function duplicateActiveLayer() {
-  if (!selLayerId) return;
-  const sel = layers.find(l => l.id === selLayerId);
+  const targetId = selLayerId || (layers[0] ? layers[0].id : null);
+  if (!targetId) return;
+  const sel = layers.find(l => l.id === targetId);
   if (!sel) return;
 
+  const isBase = sel.type === 'base';
   const clone = {
     ...JSON.parse(JSON.stringify(sel)),
     id: nextLayerId++,
-    name: (sel.name || sel.type) + ' (Copy)',
+    name: (sel.name || (isBase ? 'Photo' : sel.type)) + ' (Copy)',
+    type: isBase ? 'image' : sel.type,
     x: (sel.x ?? 0) + 24,
     y: (sel.y ?? 0) + 24
   };
-  if (sel.img) clone.img = sel.img;
+  clone.img = sel.img || origImg;
 
   layers.push(clone);
   selLayerId = clone.id;
@@ -4145,14 +4475,15 @@ function duplicateActiveLayer() {
 }
 
 function centerActiveLayer() {
-  if (!selLayerId) return;
-  const sel = layers.find(l => l.id === selLayerId);
+  const targetId = selLayerId || (layers[0] ? layers[0].id : null);
+  if (!targetId) return;
+  const sel = layers.find(l => l.id === targetId);
   if (!sel || sel.locked) return;
 
   const b = getLayerBounds(sel);
   if (sel.type === 'text') {
     sel.x = canvas.width / 2;
-    sel.y = canvas.height / 2 - (b.h / 2);
+    sel.y = Math.round((canvas.height - b.h) / 2);
   } else if (sel.type === 'watermark') {
     sel.x = canvas.width / 2;
     sel.y = canvas.height / 2;
@@ -4167,55 +4498,135 @@ function centerActiveLayer() {
   toast('🎯 Layer aligned to canvas center');
 }
 
+function fitActiveLayer() {
+  const targetId = selLayerId || (layers[0] ? layers[0].id : null);
+  if (!targetId) return;
+  const sel = layers.find(l => l.id === targetId);
+  if (!sel || sel.locked) return;
+  const b = getLayerBounds(sel);
+  if (b.w <= 0 || b.h <= 0) return;
+
+  if (sel.type === 'base' || sel.type === 'overlay' || sel.type === 'sticker' || sel.type === 'image') {
+    if (sel.type === 'base' && sel.w === canvas.width && sel.h === canvas.height && sel.x === 0 && sel.y === 0) {
+      zFit();
+      toast('⊡ Viewport fitted to screen');
+      return;
+    }
+    const scale = Math.min(canvas.width / b.w, canvas.height / b.h);
+    sel.w = Math.round(b.w * scale);
+    sel.h = Math.round(b.h * scale);
+    sel.x = Math.round((canvas.width - sel.w) / 2);
+    sel.y = Math.round((canvas.height - sel.h) / 2);
+  } else if (sel.type === 'text') {
+    const scale = Math.min(canvas.width / b.w, canvas.height / b.h);
+    sel.size = Math.max(12, Math.round((sel.size || 72) * scale));
+    sel.x = canvas.width / 2;
+    sel.y = Math.round((canvas.height - b.h * scale) / 2);
+  } else if (sel.type === 'watermark') {
+    if (!sel.tile) {
+      const scale = Math.min(canvas.width / b.w, canvas.height / b.h);
+      sel.size = Math.max(12, Math.round((sel.size || 36) * scale));
+    }
+    sel.x = canvas.width / 2;
+    sel.y = canvas.height / 2;
+  }
+  updateAdjustHeader();
+  renderCanvas();
+  renderLayersPanel();
+  pushHist('⊡ Fit layer to canvas');
+  toast('⊡ Layer scaled to fit canvas bounds');
+}
+
+function flipActiveLayerH() {
+  const targetId = selLayerId || (layers[0] ? layers[0].id : null);
+  if (!targetId) return;
+  const sel = layers.find(l => l.id === targetId);
+  if (!sel) return;
+  if (sel.locked) { toast('🔒 Layer is locked'); return; }
+  sel.flipH = !sel.flipH;
+  renderCanvas();
+  pushHist(sel.flipH ? '⇔ Flipped Horizontal' : '⇔ Unflipped Horizontal');
+  toast(sel.flipH ? '⇔ Flipped horizontally' : '⇔ Horizontal flip removed');
+}
+
+function flipActiveLayerV() {
+  const targetId = selLayerId || (layers[0] ? layers[0].id : null);
+  if (!targetId) return;
+  const sel = layers.find(l => l.id === targetId);
+  if (!sel) return;
+  if (sel.locked) { toast('🔒 Layer is locked'); return; }
+  sel.flipV = !sel.flipV;
+  renderCanvas();
+  pushHist(sel.flipV ? '⇕ Flipped Vertical' : '⇕ Unflipped Vertical');
+  toast(sel.flipV ? '⇕ Flipped vertically' : '⇕ Vertical flip removed');
+}
+
 function toggleLockActiveLayer() {
-  if (!selLayerId) return;
-  const sel = layers.find(l => l.id === selLayerId);
+  const targetId = selLayerId || (layers[0] ? layers[0].id : null);
+  if (!targetId) return;
+  const sel = layers.find(l => l.id === targetId);
   if (!sel) return;
   sel.locked = !sel.locked;
-  renderQuickHUD();
+  updateContextPill();
   renderLayersPanel();
   toast(sel.locked ? '🔒 Layer locked' : '🔓 Layer unlocked');
 }
 
 function deleteActiveLayer() {
-  if (!selLayerId) return;
-  const sel = layers.find(l => l.id === selLayerId);
+  const targetId = selLayerId || (layers[0] ? layers[0].id : null);
+  if (!targetId) return;
+  const sel = layers.find(l => l.id === targetId);
   if (!sel) return;
   if (sel.type === 'base' && layers.length === 1) {
     toast('⚠️ Cannot delete main photo layer');
     return;
   }
-  deleteLayer(selLayerId);
+  deleteLayer(targetId);
+}
+
+function deleteActiveLayerOrReset() {
+  const targetId = selLayerId || (layers[0] ? layers[0].id : null);
+  if (!targetId) return;
+  const sel = layers.find(l => l.id === targetId);
+  if (!sel) return;
+  if (sel.locked) { toast('🔒 Layer is locked'); return; }
+  if (sel.type === 'base') {
+    sel.x = 0;
+    sel.y = 0;
+    sel.w = canvas.width;
+    sel.h = canvas.height;
+    sel.flipH = false;
+    sel.flipV = false;
+    sel.locked = false;
+    sel.adjustments = {...DSLIDERS};
+    resetSlidersUI();
+    invalidateAdjCache();
+    renderCanvas();
+    pushHist('↺ Reset Base Layer');
+    toast('↺ Base photo reset to defaults');
+    return;
+  }
+  deleteActiveLayer();
 }
 
 function moveActiveLayerUp() {
-  if (!selLayerId) return;
-  moveLayerUp(selLayerId);
+  const targetId = selLayerId || (layers[0] ? layers[0].id : null);
+  if (!targetId) return;
+  moveLayerUp(targetId);
 }
 
 function moveActiveLayerDown() {
-  if (!selLayerId) return;
-  moveLayerDown(selLayerId);
+  const targetId = selLayerId || (layers[0] ? layers[0].id : null);
+  if (!targetId) return;
+  moveLayerDown(targetId);
 }
 
 function flipLayerH() {
-  if (!selLayerId) return;
-  const sel = layers.find(l => l.id === selLayerId);
-  if (!sel) return;
-  sel.flipH = !sel.flipH;
-  renderCanvas();
-  pushHist('Flipped Horizontal');
-  toast('🔄 Flipped Horizontal');
+  flipActiveLayerH();
 }
 
 function flipLayerV() {
-  if (!selLayerId) return;
-  const sel = layers.find(l => l.id === selLayerId);
-  if (!sel) return;
-  sel.flipV = !sel.flipV;
-  renderCanvas();
-  pushHist('Flipped Vertical');
-  toast('🔃 Flipped Vertical');
+  flipActiveLayerV();
 }
 
 function resetActiveLayerAdj() {
@@ -4231,27 +4642,7 @@ function resetActiveLayerAdj() {
 }
 
 function runAutoEnhance() {
-  if (!S.hasImg) { toast('Open a photo first!'); return; }
-  const target = getAdjTarget();
-  if (!target.adjustments) target.adjustments = {...DSLIDERS};
-
-  target.adjustments.br = 6;
-  target.adjustments.co = 14;
-  target.adjustments.sa = 12;
-  target.adjustments.wa = 4;
-  target.adjustments.cl = 16;
-  target.adjustments.sh = 10;
-  target.adjustments.hi = -6;
-
-  Object.entries(target.adjustments).forEach(([k, v]) => {
-    const s = document.getElementById('s-' + k); if (s) s.value = v;
-    const vEl = document.getElementById('v-' + k); if (vEl) vEl.textContent = v > 0 ? `+${v}` : String(v);
-  });
-
-  invalidateAdjCache();
-  renderCanvas();
-  pushHist('🪄 Auto Enhanced Photo');
-  toast('✨ Photo auto-balanced with studio tone & clarity!');
+  quickFix();
 }
 
 // INTERACTIVE MINI-MAP RADAR NAVIGATOR
@@ -5039,33 +5430,125 @@ function toggleZenMode() {
 }
 
 function quickFix() {
-
   if (!S.hasImg) { toast('Open a photo first!'); return; }
   const target = getAdjTarget();
+  if (!target) return;
   if (!target.adjustments) target.adjustments = {...DSLIDERS};
 
+  // Sample proxy canvas for ultra-fast (5-10ms) analysis
   const sampleCanvas = document.createElement('canvas');
-  sampleCanvas.width = 100; sampleCanvas.height = 100;
-  sampleCanvas.getContext('2d').drawImage(origImg, 0, 0, 100, 100);
-  const d = sampleCanvas.getContext('2d').getImageData(0, 0, 100, 100).data;
+  const sampleW = 160, sampleH = 160;
+  sampleCanvas.width = sampleW;
+  sampleCanvas.height = sampleH;
+  const sCtx = sampleCanvas.getContext('2d', {willReadFrequently: true});
 
-  let lumaSum = 0;
-  for (let i = 0; i < d.length; i += 4) lumaSum += 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
-  const avgLuma = lumaSum / (d.length / 4);
+  if (target.type === 'base' && origImg) {
+    sCtx.drawImage(origImg, 0, 0, sampleW, sampleH);
+  } else if (target.img) {
+    sCtx.drawImage(target.img, 0, 0, sampleW, sampleH);
+  } else {
+    compositeClean(sCtx, sampleW, sampleH);
+  }
 
-  const t = {
-    br: Math.round(Math.max(-25, Math.min(25, (128 - avgLuma) * 0.35))),
-    co: 12, sa: 10, wa: 6, hi: -10, sh: 15, cl: 12
-  };
-  Object.entries(t).forEach(([k, v]) => {
+  const idata = sCtx.getImageData(0, 0, sampleW, sampleH);
+  const d = idata.data;
+
+  // Build luminance histogram and per-channel sums
+  const lumaHist = new Int32Array(256);
+  let rSum = 0, gSum = 0, bSum = 0, count = 0;
+
+  for (let i = 0; i < d.length; i += 4) {
+    if (d[i + 3] < 16) continue;
+    const r = d[i], g = d[i + 1], b = d[i + 2];
+    const lum = Math.min(255, Math.max(0, Math.round(0.299 * r + 0.587 * g + 0.114 * b)));
+    lumaHist[lum]++;
+    rSum += r;
+    gSum += g;
+    bSum += b;
+    count++;
+  }
+
+  if (count === 0) count = 1;
+  const avgR = rSum / count;
+  const avgG = gSum / count;
+  const avgB = bSum / count;
+
+  // Percentiles: P5 (shadows), P50 (median midtones), P95 (highlights)
+  let accum = 0, p5 = -1, p50 = -1, p95 = -1;
+  const t5 = count * 0.05, t50 = count * 0.50, t95 = count * 0.95;
+
+  for (let l = 0; l < 256; l++) {
+    accum += lumaHist[l];
+    if (p5 === -1 && accum >= t5) p5 = l;
+    if (p50 === -1 && accum >= t50) p50 = l;
+    if (p95 === -1 && accum >= t95) { p95 = l; break; }
+  }
+  if (p5 === -1) p5 = 10;
+  if (p50 === -1) p50 = 128;
+  if (p95 === -1) p95 = 240;
+
+  const dynamicRange = p95 - p5;
+
+  // Exposure: anchor median to balanced 128
+  let br = Math.round((128 - p50) * 0.38);
+  br = Math.max(-28, Math.min(28, br));
+
+  // Contrast: boost flat images, soften harsh dynamic range
+  let co = 0;
+  if (dynamicRange < 140) {
+    co = Math.round((140 - dynamicRange) * 0.22) + 12;
+  } else if (dynamicRange < 190) {
+    co = Math.round((190 - dynamicRange) * 0.14) + 6;
+  } else if (dynamicRange > 230) {
+    co = -4;
+  }
+  co = Math.max(-15, Math.min(30, co));
+
+  // Shadows: lift crushed darks
+  let sh = 0;
+  if (p5 < 32) {
+    sh = Math.round((32 - p5) * 0.75) + 8;
+  } else if (p5 < 55) {
+    sh = 10;
+  }
+  sh = Math.max(0, Math.min(35, sh));
+
+  // Highlights: roll off hot whites
+  let hi = 0;
+  if (p95 > 218) {
+    hi = -Math.round((p95 - 218) * 0.65) - 6;
+  } else {
+    hi = -6;
+  }
+  hi = Math.max(-35, Math.min(0, hi));
+
+  // White balance & cast calibration
+  const rbDiff = avgR - avgB;
+  let wa = Math.round(-rbDiff * 0.22) + 3;
+  wa = Math.max(-20, Math.min(20, wa));
+
+  const greenDiff = avgG - (avgR + avgB) / 2;
+  let ti = Math.round(-greenDiff * 0.20);
+  ti = Math.max(-18, Math.min(18, ti));
+
+  // Saturation & vibrance
+  const colorSpread = (Math.abs(avgR - avgG) + Math.abs(avgG - avgB) + Math.abs(avgB - avgR)) / 3;
+  let sa = colorSpread < 25 ? 14 : (colorSpread < 50 ? 10 : 6);
+
+  // Micro-contrast clarity
+  const cl = 12;
+
+  const enhancements = { br, co, hi, sh, wa, ti, sa, cl };
+  Object.entries(enhancements).forEach(([k, v]) => {
     target.adjustments[k] = v;
     const s = document.getElementById('s-' + k); if (s) s.value = v;
     const vEl = document.getElementById('v-' + k); if (vEl) vEl.textContent = v > 0 ? `+${v}` : String(v);
   });
-  invalidateAdjCache();
+
+  invalidateAdjCache(target.id);
   renderCanvas();
-  pushHist('⚡ Auto-Enhanced');
-  toast('⚡ Photo auto-enhanced with balanced lighting & contrast!');
+  pushHist('✨ Magic Enhance');
+  toast(`✨ Magic Enhance applied! Exp: ${br > 0 ? '+' + br : br}, Con: +${co}, Sat: +${sa}`);
 }
 
 const PRESETS = {
@@ -5249,6 +5732,7 @@ function positionCanvas() {
   const topVal = (aH - iH) / 2 + S.panY;
   cw.style.left = leftVal + 'px';
   cw.style.top = topVal + 'px';
+  if (typeof updateContextPill === 'function') updateContextPill();
 }
 
 function zIn() { S.zoom = Math.min(6, S.zoom * 1.25); applyZoom(); }
@@ -5592,6 +6076,10 @@ let isLassoBrushDrawing = false, currentLassoStroke = null;
 
 ca.addEventListener('pointerdown', e => {
   if (!S.hasImg) return;
+
+  if (e.target.closest('#floating-context-pill, .floating-context-pill, .floating-bar, #minimap-widget, #layer-quick-hud, #ctx-menu')) {
+    return;
+  }
 
   // Hand tool, middle-click, or spacebar panning
   if (e.button === 1 || spacePanHeld || S.tool === 'hand') {
@@ -7791,26 +8279,70 @@ function doExport() {
 function doCopyImage() {
   if (!S.hasImg) { toast('Open a photo first!'); return; }
   const scale = S.expScale || 1;
+  const sizes = {
+    instagram: [1080, 1080],
+    ig_story: [1080, 1920],
+    twitter: [1200, 675],
+    facebook: [1200, 630],
+    youtube: [1280, 720],
+    print: [3000, 2000],
+    uhd4k: [3840, 2160]
+  };
+
   const src = document.createElement('canvas');
-  src.width = Math.round(canvas.width * scale);
-  src.height = Math.round(canvas.height * scale);
-  const sCtx = src.getContext('2d');
-  sCtx.imageSmoothingEnabled = true;
-  sCtx.imageSmoothingQuality = 'high';
+  src.width = canvas.width;
+  src.height = canvas.height;
+  compositeClean(src.getContext('2d'), canvas.width, canvas.height);
 
-  const full = document.createElement('canvas');
-  full.width = canvas.width;
-  full.height = canvas.height;
-  compositeClean(full.getContext('2d'), canvas.width, canvas.height);
-  sCtx.drawImage(full, 0, 0, src.width, src.height);
+  let targetW, targetH;
+  if (S.expPreset === 'original' || !sizes[S.expPreset]) {
+    targetW = Math.round(canvas.width * scale);
+    targetH = Math.round(canvas.height * scale);
+  } else {
+    const [pw, ph] = sizes[S.expPreset];
+    targetW = Math.round(pw * scale);
+    targetH = Math.round(ph * scale);
+  }
 
-  src.toBlob(blob => {
-    if (!blob) return;
-    try {
+  const exp = document.createElement('canvas');
+  exp.width = targetW;
+  exp.height = targetH;
+  const expCtx = exp.getContext('2d');
+  expCtx.imageSmoothingEnabled = true;
+  expCtx.imageSmoothingQuality = 'high';
+
+  if (S.canvasBg && S.canvasBg !== 'transparent') {
+    expCtx.fillStyle = S.canvasBg;
+    expCtx.fillRect(0, 0, targetW, targetH);
+  }
+
+  if (S.expPreset === 'original' || !sizes[S.expPreset]) {
+    expCtx.drawImage(src, 0, 0, targetW, targetH);
+  } else {
+    const s = Math.max(targetW / canvas.width, targetH / canvas.height);
+    const dw = canvas.width * s;
+    const dh = canvas.height * s;
+    expCtx.drawImage(src, (targetW - dw) / 2, (targetH - dh) / 2, dw, dh);
+  }
+
+  exp.toBlob(blob => {
+    if (!blob) {
+      toast('Failed to render clipboard blob.');
+      return;
+    }
+    if (navigator.clipboard && window.ClipboardItem) {
       navigator.clipboard.write([new ClipboardItem({'image/png': blob})])
-        .then(() => { closeEM(); toast(`📋 Copied crisp ${src.width}×${src.height} PNG (${formatBytes(blob.size)}) to clipboard!`); })
-        .catch(() => toast('Clipboard export not permitted in this context.'));
-    } catch { toast('Clipboard copy not supported by browser.'); }
+        .then(() => {
+          closeEM();
+          toast(`📋 Copied crisp ${targetW}×${targetH} PNG (${formatBytes(blob.size)}) to clipboard!`);
+        })
+        .catch(err => {
+          console.warn('Clipboard write error:', err);
+          toast('Clipboard export not permitted in this context.');
+        });
+    } else {
+      toast('Clipboard copy not supported by your browser.');
+    }
   }, 'image/png');
 }
 
@@ -7856,36 +8388,10 @@ function rotateCCW() {
   newImg.src = tmp.toDataURL('image/png');
 }
 function flipH() {
-  if (!S.hasImg) return;
-  const sw = origImg.width, sh = origImg.height;
-  const tmp = document.createElement('canvas'); tmp.width = sw; tmp.height = sh;
-  const tCtx = tmp.getContext('2d');
-  tCtx.translate(sw, 0); tCtx.scale(-1, 1);
-  tCtx.drawImage(origImg, 0, 0);
-  const newImg = new Image();
-  newImg.onload = () => {
-    _origDirty = true; origImg = newImg;
-    resetSlidersUI(); renderCanvas();
-    pushHist('⇔ Flipped Horizontal');
-    toast('⇔ Flipped horizontally');
-  };
-  newImg.src = tmp.toDataURL('image/png');
+  flipActiveLayerH();
 }
 function flipV() {
-  if (!S.hasImg) return;
-  const sw = origImg.width, sh = origImg.height;
-  const tmp = document.createElement('canvas'); tmp.width = sw; tmp.height = sh;
-  const tCtx = tmp.getContext('2d');
-  tCtx.translate(0, sh); tCtx.scale(1, -1);
-  tCtx.drawImage(origImg, 0, 0);
-  const newImg = new Image();
-  newImg.onload = () => {
-    _origDirty = true; origImg = newImg;
-    resetSlidersUI(); renderCanvas();
-    pushHist('⇕ Flipped Vertical');
-    toast('⇕ Flipped vertically');
-  };
-  newImg.src = tmp.toDataURL('image/png');
+  flipActiveLayerV();
 }
 
 let freeRotateAngle = 0;
@@ -8270,7 +8776,7 @@ document.addEventListener('keydown', e => {
   }
   if (e.key === '\\' && S.hasImg && !baActive) {
     e.preventDefault();
-    ctx.drawImage(origImg, 0, 0);
+    ctx.drawImage(origImg, 0, 0, canvas.width, canvas.height);
     return;
   }
   if (e.ctrlKey || e.metaKey) {
@@ -8315,7 +8821,7 @@ document.addEventListener('keydown', e => {
     else if (selLayerId && selLayerId !== layers[0]?.id) deleteLayer(selLayerId);
     return;
   }
-  if (e.key === 'm') setTool('move');
+  if (e.key === 'm' || e.key === 'v') setTool('move');
   else if (e.key === 'h') setTool('hand');
   else if (e.key === 'c') setTool('crop');
   else if (e.key === 't') setTool('text');
