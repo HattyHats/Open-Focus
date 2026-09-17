@@ -599,8 +599,8 @@ input[type=range]::-moz-range-thumb{
   height:30px;background:var(--glass-bg);
   backdrop-filter:var(--backdrop-blur);-webkit-backdrop-filter:var(--backdrop-blur);
   border-top:1px solid var(--glass-border);box-shadow:var(--rim-light), 0 -2px 10px rgba(0,0,0,0.25);
-  display:flex;align-items:center;padding:0 14px;gap:14px;flex-shrink:0;z-index:20;
-  overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+  display:flex;align-items:center;padding:0 14px;gap:14px;flex-shrink:0;
+  position:relative;z-index:500;overflow:visible;
   white-space:nowrap;touch-action:pan-x;
 }
 #sb::-webkit-scrollbar{display:none;}
@@ -823,14 +823,14 @@ input[type=range]::-moz-range-thumb{
   position:absolute;bottom:calc(100% + 8px);right:0;
   background:rgba(14,16,22,0.96);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
   border:1px solid var(--border-light);border-radius:14px;
-  padding:10px;width:300px;max-width:92vw;z-index:400;
+  padding:10px;width:300px;max-width:92vw;z-index:502;
   max-height:calc(100vh - 48px);max-height:calc(100dvh - 48px);overflow-y:auto;
   box-shadow:0 -16px 48px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,255,255,0.06);
   display:none;
   animation:ctx-in 0.14s ease-out;
 }
 #theme-dropdown.open{display:block;}
-#theme-dropdown-wrap{position:relative;}
+#theme-dropdown-wrap{position:relative;z-index:501;}
 
 .sb-theme-btn{
   height:24px;padding:0 9px;border-radius:var(--rs);
@@ -1751,8 +1751,8 @@ body.theme-light .btn-ghost:hover{background:rgba(0,0,0,0.06);color:#0f172a;}
   /* Status Bar in Landscape */
   #sb{
     height:24px;padding:0 8px;gap:6px;font-size:10px;
-    overflow-x:auto;-webkit-overflow-scrolling:touch;
-    flex-wrap:nowrap;scrollbar-width:none;
+    overflow:visible;position:relative;z-index:500;
+    flex-wrap:nowrap;
   }
   #sb::-webkit-scrollbar{display:none;}
   #sb > *{flex-shrink:0;}
@@ -3043,7 +3043,7 @@ input[type=range].slider-gradient-exp::-webkit-slider-runnable-track {
 
   <!-- THEME SELECTOR IN STATUS BAR -->
   <div id="theme-dropdown-wrap">
-    <button class="sb-theme-btn" onclick="toggleThemeDropdown()" title="Studio Themes & Zen Mode (8 Themes)">
+    <button class="sb-theme-btn" onclick="event.stopPropagation(); toggleThemeDropdown()" title="Studio Themes & Zen Mode (8 Themes)">
       <span class="sb-theme-dot"></span>
       <span>🎨 Theme</span>
       <span id="sb-theme-name" style="color:var(--accent);font-size:10.5px;font-family:var(--font-m);font-weight:600">Obsidian</span>
@@ -9499,7 +9499,17 @@ const COMMANDS = [
   { id:'view-compare', title:'◑ Compare Before / After', desc:'Interactive split-screen comparison slider', cat:'View', icon:'◑', shortcut:'\\', keywords:'compare before after split difference slider original edit check', run: () => enterBA() },
   { id:'view-zen', title:'✦ Toggle Zen Mode', desc:'Hide all toolbars and inspectors for distraction-free view', cat:'View', icon:'✦', shortcut:'Tab', keywords:'zen mode fullscreen distraction free clean focus hide ui', run: () => toggleZenMode() },
   { id:'view-tour', title:'✨ Guided Studio Tour', desc:'Interactive walkthrough of all major studio features', cat:'View', icon:'✨', shortcut:'', keywords:'tour guided help onboarding tutorial walkthrough intro learn', run: () => startStudioTour() },
-  { id:'view-shortcuts', title:'⌨ Keyboard Shortcuts', desc:'Full reference table of keyboard accelerators', cat:'View', icon:'⌨', shortcut:'?', keywords:'shortcuts keys hotkeys cheat sheet bindings help reference', run: () => openKB() }
+  { id:'view-shortcuts', title:'⌨ Keyboard Shortcuts', desc:'Full reference table of keyboard accelerators', cat:'View', icon:'⌨', shortcut:'?', keywords:'shortcuts keys hotkeys cheat sheet bindings help reference', run: () => openKB() },
+
+  // 7. Themes
+  { id:'theme-menu', title:'🎨 Switch Studio Theme...', desc:'Open theme picker popup with 8 calibrated studio palettes', cat:'Themes', icon:'🎨', shortcut:'', keywords:'theme dark mode color oled cyberpunk palette style appearance', run: () => toggleThemeDropdown() },
+  { id:'theme-cyberpunk', title:'🎨 Theme: Cyberpunk Neon', desc:'High-tech dark theme with electric cyan and magenta accents', cat:'Themes', icon:'🌆', shortcut:'', keywords:'theme cyberpunk neon cyan tokyo dark aesthetic', run: () => setTheme('cyberpunk') },
+  { id:'theme-oled', title:'🎨 Theme: Midnight OLED', desc:'Pitch black true #000000 background for infinite contrast', cat:'Themes', icon:'🌑', shortcut:'', keywords:'theme oled midnight black dark battery contrast', run: () => setTheme('oled') },
+  { id:'theme-nordic', title:'🎨 Theme: Arctic Frost', desc:'Glacial slate deep blue background with ice blue glow', cat:'Themes', icon:'❄️', shortcut:'', keywords:'theme nordic arctic frost cold slate blue', run: () => setTheme('nordic') },
+  { id:'theme-emerald', title:'🎨 Theme: Emerald Forest', desc:'Phosphor CRT dark aesthetic with rich mint emerald green', cat:'Themes', icon:'🌲', shortcut:'', keywords:'theme emerald forest green matrix phosphor crt', run: () => setTheme('emerald') },
+  { id:'theme-warm', title:'🎨 Theme: Darkroom Sepia', desc:'Vintage sepia photography darkroom with amber glow', cat:'Themes', icon:'☕', shortcut:'', keywords:'theme sepia warm amber darkroom vintage analog', run: () => setTheme('warm') },
+  { id:'theme-light', title:'🎨 Theme: Daylight Studio', desc:'Crisp daylight clean white paper studio theme', cat:'Themes', icon:'☀️', shortcut:'', keywords:'theme light daylight white bright paper clean', run: () => setTheme('light') },
+  { id:'theme-default', title:'🎨 Theme: Obsidian Dark', desc:'Charcoal and refined warm gold standard theme', cat:'Themes', icon:'✨', shortcut:'', keywords:'theme obsidian default charcoal gold dark reset', run: () => setTheme('default') }
 ];
 
 let cmdFilteredList = [...COMMANDS];
