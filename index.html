@@ -74,12 +74,12 @@ input,textarea,select{user-select:text;}
 .topbar-zone{
   display:flex;align-items:center;gap:5px;flex-shrink:0;min-width:0;
 }
-.topbar-left{flex:0 1 auto;}
+.topbar-left{flex:0 0 auto;display:flex;align-items:center;gap:5px;}
 .topbar-center{
-  flex:0 1 260px;max-width:280px;min-width:36px;
-  display:flex;justify-content:center;
+  flex:1 1 auto;display:flex;align-items:center;justify-content:center;
+  max-width:380px;min-width:32px;margin:0 auto;padding:0 4px;
 }
-.topbar-right{flex:0 1 auto;margin-left:auto;}
+.topbar-right{flex:0 0 auto;display:flex;align-items:center;gap:5px;margin-left:0;}
 
 .logo{display:flex;align-items:center;gap:9px;text-decoration:none;cursor:pointer;padding-right:6px;}
 .logo-text{
@@ -1408,41 +1408,59 @@ body.theme-light .btn-ghost:hover{background:rgba(0,0,0,0.06);color:#0f172a;}
 /* ══════════════════════════════════════════════════════════════════
    REAL-TIME MULTIPLAYER CO-EDITING & LIVE SHARE SUITE
    ══════════════════════════════════════════════════════════════════ */
-.btn-collab{
-  position:relative;
-  transition:all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+.collab-topbar-wrap{
+  display:inline-flex;align-items:center;flex-shrink:0;
 }
-.btn-collab.active-collab{
-  background:rgba(16,185,129,0.12) !important;
-  border-color:rgba(16,185,129,0.45) !important;
-  color:#10b981 !important;
-  box-shadow:0 0 14px rgba(16,185,129,0.2) !important;
-  padding:0 8px !important;
-  min-width:auto !important;
-  width:auto !important;
+.btn-collab-idle{
+  transition:all 0.2s ease;
 }
-.collab-idle-wrap{
-  display:inline-flex;align-items:center;gap:5px;
+.collab-active-capsule{
+  display:inline-flex;align-items:center;
+  background:rgba(16,185,129,0.12);
+  border:1px solid rgba(16,185,129,0.4);
+  border-radius:100px;
+  height:26px;padding:1px 4px;gap:3px;
+  box-shadow:0 0 10px rgba(16,185,129,0.18);
+  flex-shrink:0;
 }
-.collab-active-wrap{
-  display:inline-flex;align-items:center;gap:6px;
-  font-size:11px;font-weight:600;
+.collab-capsule-main{
+  background:none;border:none;color:#10b981;
+  font-size:11px;font-weight:700;
+  display:inline-flex;align-items:center;gap:4px;
+  padding:0 4px;cursor:pointer;height:100%;
+}
+.collab-capsule-main:hover{
+  color:#34d399;
 }
 .collab-pill-room{
-  font-family:var(--font-m);font-weight:700;letter-spacing:0.5px;color:#10b981;
+  font-family:var(--font-m);font-weight:700;letter-spacing:0.3px;color:#10b981;font-size:10.5px;
 }
 .collab-pill-count{
   background:rgba(16,185,129,0.25);border-radius:100px;
-  padding:0 5px;font-size:10px;font-weight:700;color:#10b981;
+  padding:0 5px;font-size:10px;font-weight:800;color:#10b981;
+  height:17px;display:inline-flex;align-items:center;justify-content:center;
 }
-.collab-pill-close{
+.collab-active-capsule .collab-mic-btn{
+  background:rgba(255,255,255,0.06);border:1px solid var(--border-subtle);
+  color:var(--text-muted);border-radius:100px;cursor:pointer;
+  font-size:10px;padding:1px 5px;height:20px;display:inline-flex;align-items:center;
+  transition:all 0.2s;margin:0;
+}
+.collab-active-capsule .collab-mic-btn:hover{
+  background:rgba(255,255,255,0.14);color:var(--text-main);
+}
+.collab-active-capsule .collab-mic-btn.mic-live{
+  background:rgba(16,185,129,0.3);border-color:#10b981;color:#10b981;
+  box-shadow:0 0 8px rgba(16,185,129,0.4);
+}
+.collab-active-capsule .collab-pill-close{
+  background:none;border:none;cursor:pointer;
+  font-size:10.5px;padding:0 3px;color:var(--text-dim);border-radius:50%;
   display:inline-flex;align-items:center;justify-content:center;
-  width:16px;height:16px;border-radius:50%;
-  background:rgba(255,255,255,0.08);color:var(--text-muted);
-  font-size:9.5px;cursor:pointer;transition:all 0.15s;margin-left:1px;
+  height:18px;width:18px;transition:color 0.15s, background 0.15s;
 }
-.collab-pill-close:hover{
-  background:#ef4444;color:#ffffff;
+.collab-active-capsule .collab-pill-close:hover{
+  color:#ef4444;background:rgba(239,68,68,0.15);
 }
 .collab-dot-pulse{
   animation:collab-pulse 1.8s infinite ease-in-out;
@@ -1549,6 +1567,244 @@ body.theme-light .btn-ghost:hover{background:rgba(0,0,0,0.06);color:#0f172a;}
 .collab-color-dot.active{border-color:#ffffff;box-shadow:0 0 6px rgba(255,255,255,0.6);}
 
 /* ══════════════════════════════════════════════════════════════════
+   MULTIPLAYER SUPERPOWERS: LASER, PINS, VOICE INTERCOM & PROOFING
+   ══════════════════════════════════════════════════════════════════ */
+/* 1. Laser Canvas */
+#laser-canvas{
+  position:absolute;inset:0;pointer-events:none;z-index:36;
+  width:100%;height:100%;
+}
+.collab-laser-tip{
+  position:absolute;pointer-events:none;z-index:45;
+  transform:translate(6px, -20px);
+  padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;
+  color:#fff;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,0.6);
+  pointer-events:none;transition:opacity 0.2s ease;
+}
+
+/* 2. Pinpoint Comments & Proofing Layer */
+#collab-pins-layer{
+  position:absolute;inset:0;pointer-events:none;z-index:38;
+  overflow:visible;
+}
+.collab-pin-marker{
+  position:absolute;pointer-events:auto;z-index:39;
+  transform:translate(-50%, -100%);
+  cursor:pointer;user-select:none;
+  transition:transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display:flex;flex-direction:column;align-items:center;
+}
+.collab-pin-marker:hover{
+  transform:translate(-50%, -108%) scale(1.1);
+  z-index:42;
+}
+.collab-pin-marker.active-open{
+  transform:translate(-50%, -110%) scale(1.12);
+  z-index:43;
+}
+.collab-pin-head{
+  width:24px;height:24px;border-radius:50% 50% 50% 0;
+  transform:rotate(-45deg);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 12px rgba(0,0,0,0.5);
+  border:2px solid #ffffff;
+  transition:background 0.2s, box-shadow 0.2s;
+}
+.collab-pin-head span{
+  transform:rotate(45deg);
+  font-size:10.5px;font-weight:800;color:#ffffff;
+  line-height:1;
+}
+.collab-pin-marker.resolved .collab-pin-head{
+  opacity:0.65;
+  filter:grayscale(0.5);
+}
+.collab-pin-pulse{
+  position:absolute;width:14px;height:6px;
+  background:rgba(0,0,0,0.3);border-radius:50%;
+  bottom:-4px;filter:blur(1px);
+}
+
+/* Floating Popover on Pin */
+.collab-pin-popover{
+  position:absolute;bottom:32px;left:50%;
+  transform:translateX(-50%);
+  width:260px;background:rgba(18,22,30,0.96);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border:1px solid var(--border-light);border-radius:10px;
+  padding:10px 12px;box-shadow:0 10px 30px rgba(0,0,0,0.7);
+  pointer-events:auto;z-index:50;
+  display:none;animation:popover-appear 0.18s ease-out;
+}
+.collab-pin-popover.open{display:block;}
+@keyframes popover-appear{
+  from{opacity:0;transform:translate(-50%, 6px) scale(0.96);}
+  to{opacity:1;transform:translate(-50%, 0) scale(1);}
+}
+.collab-pin-popover-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:6px;font-size:11px;
+}
+.collab-pin-author-badge{
+  display:flex;align-items:center;gap:5px;font-weight:700;
+}
+.collab-pin-time{color:var(--text-dim);font-size:10px;}
+.collab-pin-body{
+  font-size:12px;line-height:1.45;color:var(--text);
+  margin-bottom:8px;word-break:break-word;
+}
+.collab-pin-actions{
+  display:flex;align-items:center;justify-content:space-between;
+  border-top:1px solid var(--border-subtle);padding-top:6px;
+  font-size:10.5px;
+}
+.collab-pin-act-btn{
+  background:none;border:none;cursor:pointer;color:var(--text-muted);
+  display:inline-flex;align-items:center;gap:4px;padding:2px 5px;
+  border-radius:4px;transition:color 0.15s, background 0.15s;font-size:10.5px;
+}
+.collab-pin-act-btn:hover{color:var(--text-main);background:rgba(255,255,255,0.06);}
+.collab-pin-act-resolve{color:#10b981;}
+.collab-pin-act-resolve:hover{color:#34d399;background:rgba(16,185,129,0.12);}
+.collab-pin-act-del{color:#ef4444;}
+.collab-pin-act-del:hover{background:rgba(239,68,68,0.12);}
+
+/* Floating Pin Prompt Card */
+#collab-pin-prompt{
+  position:absolute;z-index:55;
+  width:270px;background:rgba(18,22,30,0.96);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border:1px solid var(--accent);border-radius:10px;
+  padding:10px 12px;box-shadow:0 10px 30px rgba(0,0,0,0.8);
+  display:none;transform:translate(-50%, -100%);
+  margin-top:-12px;pointer-events:auto;
+}
+#collab-pin-prompt textarea{
+  width:100%;height:60px;background:rgba(0,0,0,0.3);
+  border:1px solid var(--border);border-radius:6px;
+  padding:6px 8px;color:var(--text);font-size:12px;
+  resize:none;outline:none;font-family:inherit;margin-bottom:8px;
+}
+#collab-pin-prompt textarea:focus{border-color:var(--accent);}
+.collab-pin-prompt-acts{
+  display:flex;justify-content:flex-end;gap:6px;
+}
+
+/* Collapsible Comments Drawer */
+#collab-comments-drawer{
+  position:absolute;right:14px;top:14px;bottom:14px;
+  width:290px;background:rgba(15,18,25,0.94);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border:1px solid var(--border);border-radius:12px;
+  box-shadow:0 12px 40px rgba(0,0,0,0.65);
+  display:flex;flex-direction:column;z-index:48;
+  transform:translateX(320px);transition:transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow:hidden;pointer-events:auto;
+}
+#collab-comments-drawer.open{transform:translateX(0);}
+.collab-drawer-header{
+  padding:10px 12px;border-bottom:1px solid var(--border-subtle);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.collab-drawer-title{
+  font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px;
+}
+.collab-drawer-list{
+  flex:1;overflow-y:auto;padding:8px 10px;display:flex;flex-direction:column;gap:8px;
+}
+.collab-drawer-item{
+  background:rgba(255,255,255,0.03);border:1px solid var(--border-subtle);
+  border-radius:8px;padding:8px 10px;cursor:pointer;transition:background 0.15s, border-color 0.15s;
+}
+.collab-drawer-item:hover{
+  background:rgba(255,255,255,0.06);border-color:var(--border-light);
+}
+.collab-drawer-item.active-pin{
+  border-color:var(--accent);background:rgba(212,163,89,0.08);
+}
+.collab-drawer-item.resolved{opacity:0.6;}
+
+/* 3. Voice Intercom UI & Microphone button */
+.collab-mic-btn{
+  background:rgba(255,255,255,0.06);border:1px solid var(--border-subtle);
+  color:var(--text-muted);border-radius:100px;padding:2px 7px;
+  font-size:10.5px;font-weight:700;display:inline-flex;align-items:center;gap:4px;
+  cursor:pointer;transition:all 0.2s;margin-left:2px;height:20px;
+}
+.collab-mic-btn:hover{
+  background:rgba(255,255,255,0.12);color:var(--text-main);
+}
+.collab-mic-btn.mic-live{
+  background:rgba(16,185,129,0.22);border-color:#10b981;color:#10b981;
+  box-shadow:0 0 10px rgba(16,185,129,0.4);
+  animation:mic-glow-pulse 1.8s infinite;
+}
+@keyframes mic-glow-pulse{
+  0%,100%{box-shadow:0 0 8px rgba(16,185,129,0.3);}
+  50%{box-shadow:0 0 16px rgba(16,185,129,0.7);}
+}
+.collab-cursor.speaking-pulse{
+  animation:speaking-ripple 1s infinite alternate;
+}
+@keyframes speaking-ripple{
+  0%{transform:scale(1);filter:drop-shadow(0 0 2px #10b981);}
+  100%{transform:scale(1.18);filter:drop-shadow(0 0 8px #10b981);}
+}
+
+/* 4. Client Proofing & Star Rating Bar */
+.collab-proofing-topbar-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:2px 7px;border-radius:100px;font-size:10.5px;font-weight:700;
+  cursor:pointer;user-select:none;transition:background 0.15s, border-color 0.15s;
+  border:1px solid var(--border);background:rgba(255,255,255,0.03);
+  height:26px;white-space:nowrap;flex-shrink:0;
+}
+.collab-proofing-topbar-badge .proof-star-val{
+  color:#f59e0b;font-weight:800;font-size:11px;
+}
+.collab-proofing-topbar-badge:hover{
+  background:rgba(255,255,255,0.07);border-color:var(--border-light);
+}
+.collab-proofing-topbar-badge.status-approved{
+  background:rgba(16,185,129,0.14);border-color:rgba(16,185,129,0.4);color:#10b981;
+}
+.collab-proofing-topbar-badge.status-revisions{
+  background:rgba(239,68,68,0.14);border-color:rgba(239,68,68,0.4);color:#f87171;
+}
+.collab-proofing-topbar-badge.status-review{
+  background:rgba(245,158,11,0.14);border-color:rgba(245,158,11,0.4);color:#fbbf24;
+}
+.collab-stars-wrap{
+  display:inline-flex;align-items:center;gap:2px;
+}
+.collab-star-btn{
+  background:none;border:none;font-size:15px;cursor:pointer;
+  color:var(--text-dim);transition:transform 0.12s, color 0.12s;padding:0 1px;
+}
+.collab-star-btn:hover, .collab-star-btn.active{
+  color:#f59e0b;transform:scale(1.15);text-shadow:0 0 8px rgba(245,158,11,0.5);
+}
+.collab-status-chip{
+  padding:4px 9px;border-radius:100px;font-size:11px;font-weight:700;
+  border:1px solid var(--border);background:rgba(255,255,255,0.03);
+  cursor:pointer;transition:all 0.15s;color:var(--text-muted);
+}
+.collab-status-chip:hover{
+  color:var(--text-main);border-color:var(--border-light);
+}
+.collab-status-chip.active-approved{
+  background:rgba(16,185,129,0.2);border-color:#10b981;color:#10b981;
+}
+.collab-status-chip.active-revisions{
+  background:rgba(239,68,68,0.2);border-color:#ef4444;color:#f87171;
+}
+.collab-status-chip.active-review{
+  background:rgba(245,158,11,0.2);border-color:#f59e0b;color:#fbbf24;
+}
+
+
+
+/* ══════════════════════════════════════════════════════════════════
    RESPONSIVE MULTI-DEVICE SUITE: TABLETS, PHONES (PORTRAIT & LANDSCAPE)
    ══════════════════════════════════════════════════════════════════ */
 
@@ -1564,57 +1820,98 @@ body.theme-light .btn-ghost:hover{background:rgba(0,0,0,0.06);color:#0f172a;}
 }
 #rp-backdrop.on{display:block;opacity:1;}
 
-/* ── SMART RESPONSIVE TOPBAR COLLAPSING (NO OVERFLOW AT ANY RESOLUTION) ── */
+/* ── SMART RESPONSIVE TOPBAR (0px OVERFLOW & BALANCED AT ANY RESOLUTION) ── */
 .tb-btn-icon{font-size:13px;line-height:1;display:inline-flex;align-items:center;justify-content:center;}
-@media (max-width: 1480px) {
-  .tb-action-btn .tb-btn-text{display:none;}
-  .tb-action-btn{
-    width:30px !important;height:30px !important;padding:0 !important;
-    min-width:30px !important;justify-content:center;
-    border:1px solid var(--border-light) !important;
-    background:rgba(255,255,255,0.03) !important;border-radius:var(--rs) !important;
+.tb-action-btn{
+  width:30px !important;height:30px !important;padding:0 !important;
+  display:inline-flex !important;align-items:center !important;justify-content:center !important;
+  border:1px solid var(--border-light) !important;
+  background:rgba(255,255,255,0.03) !important;border-radius:var(--rs) !important;
+}
+.tb-action-btn .tb-btn-text{display:none !important;}
+.tb-action-btn:hover{
+  background:rgba(255,255,255,0.08) !important;border-color:var(--accent) !important;color:var(--accent) !important;
+}
+
+/* Desktop wide (>= 1520px) */
+@media (min-width: 1520px) {
+  .btn-autofix .tb-btn-text, .snap-btn .tb-btn-text, .btn-tour .tb-btn-text, .btn-collab-idle .tb-btn-text {
+    display:inline !important;
   }
-  .tb-action-btn:hover{
-    background:rgba(255,255,255,0.08) !important;border-color:var(--accent) !important;color:var(--accent) !important;
+  .collab-proofing-topbar-badge .proof-text { display:inline !important; }
+  .btn-autofix, .snap-btn, .btn-tour { padding:0 8px !important; width:auto !important; }
+  .btn-export-glow .tb-btn-text { display:inline !important; }
+  .btn-export-glow { padding:0 10px !important; }
+  .btn-collab-idle { width:auto !important; padding:0 8px !important; }
+  .btn-cmd-search { max-width:320px !important; }
+}
+
+/* Desktop standard (1360px - 1519px) */
+@media (max-width: 1519px) and (min-width: 1360px) {
+  .btn-autofix .tb-btn-text, .snap-btn .tb-btn-text, .btn-tour .tb-btn-text {
+    display:inline !important;
   }
-  .topbar-center{flex:0 1 180px !important;}
-  .btn-cmd-search{max-width:180px !important;padding:0 8px !important;}
-  .doc-name{max-width:105px;}
+  .btn-autofix, .snap-btn, .btn-tour { padding:0 8px !important; width:auto !important; }
+  .btn-export-glow .tb-btn-text { display:inline !important; }
+  .btn-export-glow { padding:0 10px !important; }
+  .btn-collab-idle .tb-btn-text { display:none !important; }
+  .btn-collab-idle { width:30px !important; padding:0 !important; }
+  .collab-proofing-topbar-badge .proof-text { display:none !important; }
+  .collab-pill-room { display:none !important; }
+  .btn-cmd-search { max-width:260px !important; }
 }
-@media (max-width: 1320px) {
-  .btn-autofix .tb-btn-text{display:none;}
-  .btn-autofix{padding:0 8px !important;min-width:30px;justify-content:center;}
-  .btn-tour .tb-btn-text{display:none;}
-  .btn-tour{padding:0 8px !important;min-width:30px;justify-content:center;}
-  .topbar-center{flex:0 1 140px !important;}
-  .btn-cmd-search{max-width:140px !important;}
+
+/* Laptop compact (1220px - 1359px) */
+@media (max-width: 1359px) and (min-width: 1220px) {
+  .btn-autofix .tb-btn-text, .snap-btn .tb-btn-text { display:inline !important; }
+  .btn-autofix, .snap-btn { padding:0 8px !important; width:auto !important; }
+  .btn-tour .tb-btn-text { display:none !important; }
+  .btn-tour { width:30px !important; padding:0 !important; justify-content:center !important; }
+  .btn-export-glow .tb-btn-text { display:inline !important; }
+  .btn-collab-idle .tb-btn-text { display:none !important; }
+  .btn-collab-idle { width:30px !important; padding:0 !important; }
+  .collab-proofing-topbar-badge .proof-text { display:none !important; }
+  .collab-pill-room { display:none !important; }
+  .btn-cmd-search { max-width:200px !important; }
 }
-@media (max-width: 1240px) {
-  .collab-pill-room{display:none;}
-  .snap-btn .tb-btn-text{display:none;}
-  .snap-btn{padding:0 7px !important;}
-  .topbar-center{flex:0 1 70px !important;}
-  .btn-cmd-search{max-width:70px !important;padding:0 6px !important;}
-  .cmd-search-text{display:none !important;}
-  .topbar-zone{gap:4px;}
-  #topbar{padding:0 8px;gap:5px;}
+
+/* Tablet landscape (1100px - 1219px) */
+@media (max-width: 1219px) and (min-width: 1100px) {
+  .btn-autofix .tb-btn-text, .snap-btn .tb-btn-text, .btn-tour .tb-btn-text { display:none !important; }
+  .btn-autofix, .snap-btn, .btn-tour { width:30px !important; padding:0 !important; justify-content:center !important; }
+  .btn-export-glow .tb-btn-text { display:inline !important; }
+  .collab-proofing-topbar-badge { display:none !important; }
+  .btn-collab-idle .tb-btn-text { display:none !important; }
+  .btn-collab-idle { width:30px !important; padding:0 !important; }
+  .collab-pill-room { display:none !important; }
+  .btn-cmd-search { max-width:160px !important; }
 }
-@media (max-width: 1080px) {
-  .topbar-left .btn .tb-btn-text{display:none;}
-  .topbar-left .btn{padding:0 7px !important;min-width:28px;justify-content:center;}
-  .doc-name{max-width:85px;}
-  .topbar-center{flex:0 0 auto !important;min-width:34px !important;}
-  .btn-cmd-search{width:34px !important;max-width:34px !important;padding:0 !important;justify-content:center;}
-  .cmd-kbd{display:none !important;}
-  .zoom-ctrl{padding:1px 2px;}
-  .zoom-ctrl .btn{padding:0 4px !important;}
-  .zoom-val{min-width:32px;font-size:10.5px;}
+
+/* Small screens (<= 1099px) */
+@media (max-width: 1099px) {
+  .btn-autofix .tb-btn-text, .snap-btn .tb-btn-text, .btn-tour .tb-btn-text, .btn-export-glow .tb-btn-text {
+    display:none !important;
+  }
+  .btn-autofix, .snap-btn, .btn-tour, .btn-export-glow {
+    width:30px !important; padding:0 !important; justify-content:center !important;
+  }
+  .btn-cmd-search { width:32px !important; max-width:32px !important; min-width:32px !important; padding:0 !important; justify-content:center !important; }
+  .cmd-kbd, .cmd-search-text { display:none !important; }
+  .collab-proofing-topbar-badge { display:none !important; }
+  .collab-pill-room { display:none !important; }
+  .btn-shortcuts .sc-kbd { display:none !important; }
+  .topbar-left .btn .tb-btn-text { display:none !important; }
+  .topbar-left .btn { width:30px !important; padding:0 !important; justify-content:center !important; }
+  .doc-name { max-width:85px; }
+  .zoom-ctrl { padding:1px 2px; }
+  .zoom-ctrl .btn { padding:0 3px !important; }
+  .zoom-val { min-width:30px; font-size:10px; }
 }
 @media (max-width: 980px) {
   .logo-text span{display:none;}
-  .topbar-zone{gap:3px;}
-  #topbar{padding:0 6px;gap:4px;}
-  .doc-name-wrap{max-width:80px;}
+  .topbar-zone{gap:2px;}
+  #topbar{padding:0 4px;gap:3px;}
+  .doc-name-wrap{max-width:70px;}
 }
 
 /* ── TABLET BREAKPOINT (<= 1200px OR TOUCH SCREENS <= 1400px) ── */
@@ -2524,15 +2821,24 @@ input[type=range].slider-gradient-exp::-webkit-slider-runnable-track {
     <button class="btn btn-ghost tb-action-btn" onclick="openResize()" title="Resize Canvas Dimensions (⤡)"><span class="tb-btn-icon">⤡</span> <span class="tb-btn-text">Resize</span></button>
     <button class="btn btn-ghost tb-action-btn" onclick="openBorderModal()" title="Add Studio Frame / Border (🖼)"><span class="tb-btn-icon">🖼</span> <span class="tb-btn-text">Frame</span></button>
     <button class="btn btn-accent btn-export-glow" onclick="openEM()" title="Export & Share Photo (Ctrl+E)"><span class="tb-btn-icon">⬇</span> <span class="tb-btn-text">Export</span></button>
-    <button class="btn btn-ghost tb-action-btn btn-collab" id="btn-collab" onclick="openCollabModal()" title="Live Multiplayer Co-Edit & Share Room (Live QR / Link)">
-      <span class="collab-idle-wrap" id="collab-idle-wrap"><span class="tb-btn-icon">👥</span> <span class="tb-btn-text">Share</span></span>
-      <span class="collab-active-wrap" id="collab-active-wrap" style="display:none">
-        <span class="collab-dot-pulse">●</span>
-        <span class="collab-pill-room" id="collab-pill-room">OF-2997</span>
-        <span class="collab-pill-count" id="collab-pill-count" title="Connected Collaborators">0</span>
+    <div class="collab-topbar-wrap" id="btn-collab">
+      <button class="btn btn-ghost tb-action-btn btn-collab-idle" id="collab-idle-wrap" onclick="openCollabModal()" title="Live Multiplayer Co-Edit & Share Room (Live QR / Link)">
+        <span class="tb-btn-icon">👥</span> <span class="tb-btn-text">Share</span>
+      </button>
+      <div class="collab-active-capsule" id="collab-active-wrap" style="display:none">
+        <button class="collab-capsule-main" onclick="openCollabModal()" title="Studio Session Active — Click to manage room & QR code">
+          <span class="collab-dot-pulse">●</span>
+          <span class="collab-pill-room" id="collab-pill-room">OF-2997</span>
+          <span class="collab-pill-count" id="collab-pill-count" title="Connected Collaborators">0</span>
+        </button>
+        <button class="collab-mic-btn" id="collab-mic-btn" onclick="event.stopPropagation(); VoiceIntercomEngine.toggleMic()" title="Toggle Live P2P Voice Mic">🎙️ <span id="collab-mic-txt">Mic</span></button>
         <span class="collab-pill-close" onclick="event.stopPropagation(); CollabEngine.stopSession()" title="Stop Session">✕</span>
-      </span>
-    </button>
+      </div>
+    </div>
+    <div class="collab-proofing-topbar-badge" id="collab-proofing-topbar-badge" style="display:none" onclick="openCollabModal('proofing')" title="Client Proofing &amp; Rating Status">
+      <span class="proof-star-val" id="collab-proof-stars">★ 5</span>
+      <span class="proof-text" id="collab-proof-status-label">In Review</span>
+    </div>
     <button class="btn btn-outline" id="btn-toggle-panel" onclick="toggleMobilePanel()" title="Toggle Adjustments & Layers Inspector"><span id="toggle-panel-icon">🎚</span> <span class="btn-lbl">Panel</span></button>
 
     <div class="sep"></div>
@@ -2580,6 +2886,9 @@ input[type=range].slider-gradient-exp::-webkit-slider-runnable-track {
     <button class="tbtn" id="t-blurbrush" onclick="setTool('blurbrush')" data-tip="Selective Blur Brush (B)"><div class="ticon">🖌</div><div class="tlabel">Blur</div></button>
     <button class="tbtn" id="t-heal" onclick="setTool('heal')" data-tip="Smart Healing Brush — Remove Objects (G)"><div class="ticon">🩹</div><div class="tlabel">Heal</div></button>
     <div class="tsep"></div>
+    <button class="tbtn" id="t-laser" onclick="setTool('laser')" data-tip="Collaborative Vanishing Laser Pointer (L)"><div class="ticon">⚡</div><div class="tlabel">Laser</div></button>
+    <button class="tbtn" id="t-comment" onclick="setTool('comment')" data-tip="Pinpoint Comments &amp; Proofing Pins (P)"><div class="ticon">💬</div><div class="tlabel">Pins</div></button>
+    <div class="tsep"></div>
     <button class="tbtn" id="t-overlays-btn" onclick="openOverlaysModal()" data-tip="Vintage Light Leaks &amp; Film Overlays"><div class="ticon">🌈</div><div class="tlabel">Overlays</div></button>
   </div>
 
@@ -2614,6 +2923,16 @@ input[type=range].slider-gradient-exp::-webkit-slider-runnable-track {
         <canvas id="mc"></canvas>
         <canvas id="hud-canvas"></canvas>
         <canvas id="lasso-overlay"></canvas>
+        <canvas id="laser-canvas"></canvas>
+        <div id="collab-pins-layer"></div>
+        <div id="collab-pin-prompt" onpointerdown="event.stopPropagation()" onmousedown="event.stopPropagation()">
+          <div style="font-size:11px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">📌 Add Proofing Note</div>
+          <textarea id="collab-pin-text" placeholder="Note or revision request..."></textarea>
+          <div class="collab-pin-prompt-acts">
+            <button class="btn btn-ghost" style="font-size:10.5px;padding:0 8px;height:24px" onclick="CommentsEngine.cancelPrompt()">Cancel</button>
+            <button class="btn btn-accent" style="font-size:10.5px;padding:0 10px;height:24px" onclick="CommentsEngine.submitPrompt()">Post Pin</button>
+          </div>
+        </div>
         <div id="collab-cursors-layer"></div>
         <div id="cro">
           <div class="cshade" id="ct"></div><div class="cshade" id="cbot"></div>
@@ -2624,6 +2943,25 @@ input[type=range].slider-gradient-exp::-webkit-slider-runnable-track {
             <div class="ch tc" data-h="tc"></div><div class="ch bc" data-h="bc"></div>
             <div class="ch lc" data-h="lc"></div><div class="ch rc" data-h="rc"></div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Collapsible Comments & Proofing Drawer -->
+    <div id="collab-comments-drawer" onpointerdown="event.stopPropagation()" onmousedown="event.stopPropagation()">
+      <div class="collab-drawer-header">
+        <div class="collab-drawer-title">
+          <span>💬 Proofing Pins</span>
+          <span class="badge" id="collab-pins-count-badge" style="font-size:9.5px;padding:1px 6px">0</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:4px">
+          <button class="btn btn-ghost" style="font-size:10px;height:22px;padding:0 6px" onclick="CommentsEngine.toggleFilterResolved()" id="collab-pins-filter-btn">Hide Resolved</button>
+          <button class="btn btn-ghost" style="width:22px;height:22px;padding:0" onclick="CommentsEngine.toggleDrawer(false)">✕</button>
+        </div>
+      </div>
+      <div class="collab-drawer-list" id="collab-drawer-list">
+        <div style="font-size:11px;color:var(--text-dim);text-align:center;padding:24px 10px">
+          No pins yet.<br>Select the <strong>Pins (P)</strong> tool and click anywhere on the photo to drop a revision note.
         </div>
       </div>
     </div>
@@ -3149,7 +3487,7 @@ input[type=range].slider-gradient-exp::-webkit-slider-runnable-track {
           </div>
           <div class="srow" style="margin-bottom:2px">
             <div class="shdr"><span class="slbl" id="lp-name" style="font-weight:600">Opacity</span><span class="sval" id="lp-opacity-val">100%</span></div>
-            <input type="range" min="0" max="100" value="100" id="lp-opacity" oninput="setLayerOpacity(parseInt(this.value))">
+            <input type="range" min="0" max="100" value="100" id="lp-opacity" oninput="setLayerOpacity(parseInt(this.value))" onchange="pushHist('Changed layer opacity')">
           </div>
           <div style="display:flex;align-items:center;gap:8px" id="lp-blend-row">
             <span style="font-size:11px;color:var(--text-muted);min-width:44px">Blend:</span>
@@ -3689,6 +4027,45 @@ input[type=range].slider-gradient-exp::-webkit-slider-runnable-track {
           </div>
         </div>
 
+        <!-- Voice Intercom & Client Proofing Cards -->
+        <div style="background:rgba(255,255,255,0.025);border:1px solid var(--border-subtle);border-radius:var(--rs);padding:10px;display:flex;flex-direction:column;gap:10px">
+          <!-- Voice Intercom Row -->
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="font-size:14px">🎙️</span>
+              <div>
+                <div style="font-size:11px;font-weight:700;color:var(--text-main)">P2P Voice Intercom</div>
+                <div style="font-size:10px;color:var(--text-dim)">Encrypted 1-click WebRTC voice chat</div>
+              </div>
+            </div>
+            <button class="collab-status-chip" id="collab-modal-mic-btn" onclick="VoiceIntercomEngine.toggleMic()" style="font-size:10.5px">
+              <span id="collab-modal-mic-txt">🎙️ Mic: Muted</span>
+            </button>
+          </div>
+
+          <div style="height:1px;background:var(--border-subtle)"></div>
+
+          <!-- Client Proofing & Star Rating Row -->
+          <div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+              <div style="font-size:11px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.5px">Client Proofing &amp; Rating</div>
+              <div class="collab-stars-wrap">
+                <button class="collab-star-btn active" data-val="1" onclick="ProofingEngine.setRating(1)">★</button>
+                <button class="collab-star-btn active" data-val="2" onclick="ProofingEngine.setRating(2)">★</button>
+                <button class="collab-star-btn active" data-val="3" onclick="ProofingEngine.setRating(3)">★</button>
+                <button class="collab-star-btn active" data-val="4" onclick="ProofingEngine.setRating(4)">★</button>
+                <button class="collab-star-btn active" data-val="5" onclick="ProofingEngine.setRating(5)">★</button>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
+              <button class="collab-status-chip active-review" id="chip-proof-review" onclick="ProofingEngine.setStatus('review')">🕒 In Review</button>
+              <button class="collab-status-chip" id="chip-proof-approved" onclick="ProofingEngine.setStatus('approved')">✓ Approved</button>
+              <button class="collab-status-chip" id="chip-proof-revisions" onclick="ProofingEngine.setStatus('revisions')">⚠️ Revisions</button>
+            </div>
+            <div style="font-size:9.5px;color:var(--text-dim);margin-top:6px" id="collab-proof-meta-txt">Proofing status syncs instantly to all collaborators</div>
+          </div>
+        </div>
+
         <!-- Active Peers List -->
         <div>
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
@@ -3811,6 +4188,8 @@ input[type=range].slider-gradient-exp::-webkit-slider-runnable-track {
       <div><kbd style="background:var(--surface-raised);border:1px solid var(--border-light);border-radius:3px;padding:2px 6px;color:var(--text);font-family:var(--font-m)">T</kbd> Text Layer</div>
       <div><kbd style="background:var(--surface-raised);border:1px solid var(--border-light);border-radius:3px;padding:2px 6px;color:var(--text);font-family:var(--font-m)">I</kbd> Eyedropper Loupe</div>
       <div><kbd style="background:var(--surface-raised);border:1px solid var(--border-light);border-radius:3px;padding:2px 6px;color:var(--text);font-family:var(--font-m)">B</kbd> Selective Blur Brush</div>
+      <div><kbd style="background:var(--surface-raised);border:1px solid var(--border-light);border-radius:3px;padding:2px 6px;color:var(--text);font-family:var(--font-m)">L</kbd> Vanishing Laser Pointer</div>
+      <div><kbd style="background:var(--surface-raised);border:1px solid var(--border-light);border-radius:3px;padding:2px 6px;color:var(--text);font-family:var(--font-m)">P</kbd> Comments &amp; Proofing Pins</div>
       <div><kbd style="background:var(--surface-raised);border:1px solid var(--border-light);border-radius:3px;padding:2px 6px;color:var(--text);font-family:var(--font-m)">Del</kbd> Delete Layer / Cut Selection</div>
     </div>
     <div class="macts">
@@ -4145,6 +4524,9 @@ function confirmResetAll() {
     wel.style.opacity = '1';
     wel.style.pointerEvents = 'all';
   }
+  if (typeof LaserEngine !== 'undefined' && LaserEngine.clear) LaserEngine.clear();
+  if (typeof CommentsEngine !== 'undefined') { CommentsEngine.pins = []; CommentsEngine.render(); }
+  if (typeof ProofingEngine !== 'undefined') { ProofingEngine.rating = 5; ProofingEngine.status = 'review'; ProofingEngine.render(); }
   toast('↺ Workspace reset! Ready for a new edit.');
 }
 
@@ -4155,6 +4537,8 @@ function initCanvas(img, name) {
   S.imgName = (name || 'Photo').replace(/\.[^/.]+$/, "");
   canvas.width = hudCanvas.width = lassoOverlay.width = img.width;
   canvas.height = hudCanvas.height = lassoOverlay.height = img.height;
+  if (typeof LaserEngine !== 'undefined' && LaserEngine.resize) LaserEngine.resize();
+  if (typeof ProofingEngine !== 'undefined' && ProofingEngine.render) ProofingEngine.render();
   
   // Clean all previous tool and edit states so NO prior edits carry over
   invalidateAdjCache();
@@ -5508,6 +5892,7 @@ function toggleLockActiveLayer() {
   sel.locked = !sel.locked;
   updateContextPill();
   renderLayersPanel();
+  pushHist(sel.locked ? '🔒 Locked layer' : '🔓 Unlocked layer');
   toast(sel.locked ? '🔒 Layer locked' : '🔓 Layer unlocked');
 }
 
@@ -5958,6 +6343,11 @@ const HealBrush = {
       renderCanvas();
       pushHist('🩹 Content-Aware Heal');
       toast('🩹 Object removed cleanly!');
+      if (typeof CollabEngine !== 'undefined' && CollabEngine.isActive && CollabEngine.isActive() && !CollabEngine._isRemoteUpdate) {
+        if (!targetLayer || targetLayer.type === 'base') {
+          CollabEngine.sendMasterImage();
+        }
+      }
     };
     newImg.src = rawCanvas.toDataURL('image/png');
   }
@@ -6645,6 +7035,14 @@ function setTool(tool) {
   else if (tool === 'eye') { if (!S.hasImg) { toast('Open a photo first!'); S.tool = 'move'; updateToolstripUI('move'); return; } startEyedropper(); }
   else if (tool === 'blurbrush') { if (!S.hasImg) { toast('Open a photo first!'); S.tool = 'move'; updateToolstripUI('move'); return; } startBlurBrush(); }
   else if (tool === 'heal') { if (!S.hasImg) { toast('Open a photo first!'); S.tool = 'move'; updateToolstripUI('move'); return; } toast('🩹 Paint over areas to heal. Click Apply when done.'); }
+  else if (tool === 'laser') {
+    if (!S.hasImg) { toast('Open a photo first!'); S.tool = 'move'; updateToolstripUI('move'); return; }
+    toast('⚡ Laser Pointer: Click and drag on canvas to stream vanishing laser trails');
+  } else if (tool === 'comment') {
+    if (!S.hasImg) { toast('Open a photo first!'); S.tool = 'move'; updateToolstripUI('move'); return; }
+    toast('💬 Proofing Pins: Click anywhere on the photo to drop a pin');
+    if (typeof CommentsEngine !== 'undefined') CommentsEngine.toggleDrawer(true);
+  }
   else if (tool === 'adjust') {
     const tab = document.querySelector('#rp .ptab[data-p="adjust"]');
     if (tab) switchPane(tab);
@@ -6659,7 +7057,7 @@ function setTool(tool) {
     if (tab) switchPane(tab);
     if (isTabletOrMobile()) openMobilePanel();
   } else {
-    if (isTabletOrMobile() && ['crop','move','hand','eye','magic','lasso','heal','blurbrush','ba'].includes(tool)) {
+    if (isTabletOrMobile() && ['crop','move','hand','eye','magic','lasso','heal','blurbrush','ba','laser','comment'].includes(tool)) {
       closeMobilePanel();
     }
   }
@@ -6727,6 +7125,7 @@ function positionCanvas() {
   cw.style.left = leftVal + 'px';
   cw.style.top = topVal + 'px';
   if (typeof updateContextPill === 'function') updateContextPill();
+  if (typeof LaserEngine !== 'undefined' && LaserEngine.resize) LaserEngine.resize();
 }
 
 function zIn() { S.zoom = Math.min(6, S.zoom * 1.25); applyZoom(); }
@@ -7130,6 +7529,22 @@ ca.addEventListener('pointerdown', e => {
     return;
   }
 
+  if (S.tool === 'laser' || (e.altKey && S.tool === 'move')) {
+    if (typeof LaserEngine !== 'undefined') {
+      LaserEngine.startStroke(cx, cy);
+      e.preventDefault();
+      return;
+    }
+  }
+
+  if (S.tool === 'comment') {
+    if (typeof CommentsEngine !== 'undefined') {
+      CommentsEngine.promptNewPin(cx, cy, e);
+      e.preventDefault();
+      return;
+    }
+  }
+
   if (S.tool === 'bgrbrush') {
     isLassoBrushDrawing = true;
     const sz = parseInt(document.getElementById('bb-size')?.value) || 32;
@@ -7344,6 +7759,11 @@ window.addEventListener('pointermove', e => {
     }
   }
 
+  if (typeof LaserEngine !== 'undefined' && LaserEngine.isDrawing) {
+    const {cx, cy} = canvasCoords(e);
+    LaserEngine.addPoint(cx, cy);
+  }
+
   if (isLassoDrawing && S.tool === 'lasso') {
     const {cx, cy} = canvasCoords(e);
     const last = lassoPoints[lassoPoints.length - 1];
@@ -7443,6 +7863,10 @@ window.addEventListener('pointerup', () => {
   if (isBlurDrawing && S.tool === 'blurbrush') {
     isBlurDrawing = false;
     currentBlurStroke = null;
+  }
+
+  if (typeof LaserEngine !== 'undefined' && LaserEngine.isDrawing) {
+    LaserEngine.endStroke();
   }
 
   if (S.tool === 'heal' && HealBrush.painting) {
@@ -7618,6 +8042,11 @@ function deleteSelectedPixels() {
     renderCanvas();
     pushHist('Cut selected pixels');
     toast('🗑 Cut pixels from layer');
+    if (typeof CollabEngine !== 'undefined' && CollabEngine.isActive && CollabEngine.isActive() && !CollabEngine._isRemoteUpdate) {
+      if (target.type === 'base') {
+        CollabEngine.sendMasterImage();
+      }
+    }
   };
   newImg.src = tc.toDataURL('image/png');
 }
@@ -7731,6 +8160,9 @@ function applyBlurBrush() {
       origImg = newImg;
       const bl = layers.find(l => l.type === 'base');
       if (bl) bl.img = newImg;
+      if (typeof CollabEngine !== 'undefined' && CollabEngine.isActive && CollabEngine.isActive() && !CollabEngine._isRemoteUpdate) {
+        CollabEngine.sendMasterImage();
+      }
     } else if (target.img === result) {
       target.img = newImg;
     }
@@ -8735,6 +9167,10 @@ function applyBorder() {
     closeBorderModal(); zFit(); renderCanvas();
     pushHist(`🖼 Added ${borderStyle} frame`);
     toast(`🖼 ${borderStyle} frame added!`);
+    if (typeof CollabEngine !== 'undefined' && CollabEngine.isActive && CollabEngine.isActive() && !CollabEngine._isRemoteUpdate) {
+      CollabEngine.sendMasterImage();
+      CollabEngine.broadcast({ type: 'sync_canvas_meta', width: nw, height: nh, canvasW: nw, canvasH: nh, name: S.imgName });
+    }
   };
   newImg.src = tc.toDataURL('image/png');
 }
@@ -8959,6 +9395,7 @@ function toggleLockLayer(id) {
     l.locked = !l.locked;
     renderQuickHUD();
     renderLayersPanel();
+    pushHist(l.locked ? `🔒 Locked "${l.name || l.type}"` : `🔓 Unlocked "${l.name || l.type}"`);
     toast(l.locked ? `🔒 Locked "${l.name || l.type}"` : `🔓 Unlocked "${l.name || l.type}"`);
   }
 }
@@ -9026,7 +9463,12 @@ function renderLayersPanel() {
 
 function toggleLayerVis(id) {
   const l = layers.find(x => x.id === id);
-  if (l) { l.visible = !l.visible; renderCanvas(); renderLayersPanel(); }
+  if (l) {
+    l.visible = !l.visible;
+    renderCanvas();
+    renderLayersPanel();
+    pushHist(l.visible ? `Show "${l.name || l.type}"` : `Hide "${l.name || l.type}"`);
+  }
 }
 function deleteLayer(id) {
   layers = layers.filter(l => l.id !== id);
@@ -9037,11 +9479,22 @@ function deleteLayer(id) {
 }
 function setLayerOpacity(val) {
   const sel = layers.find(l => l.id === selLayerId);
-  if (sel) { sel.opacity = val; document.getElementById('lp-opacity-val').textContent = val + '%'; renderCanvas(); renderLayersPanel(); }
+  if (sel) {
+    sel.opacity = parseInt(val);
+    document.getElementById('lp-opacity-val').textContent = val + '%';
+    renderCanvas();
+    renderLayersPanel();
+  }
 }
 function setLayerBlend(val) {
   const sel = layers.find(l => l.id === selLayerId);
-  if (sel) { sel.blendMode = val; renderCanvas(); renderLayersPanel(); }
+  if (sel) {
+    sel.blend = val;
+    sel.blendMode = val;
+    renderCanvas();
+    renderLayersPanel();
+    pushHist('Changed blend mode');
+  }
 }
 function updateLayerPropsUI() {
   const sel = layers.find(l => l.id === selLayerId);
@@ -9805,6 +10258,10 @@ const COMMANDS = [
   { id:'tool-bgrbrush', title:'Background Eraser Brush', desc:'Smart stroke brush for background refinement', cat:'Tools', icon:'🖌', shortcut:'', keywords:'brush background eraser refine mask paint alpha', run: () => setTool('bgrbrush') },
   { id:'tool-blur', title:'Selective Blur Brush', desc:'Paint Gaussian blur over backgrounds or privacy zones', cat:'Tools', icon:'💧', shortcut:'B', keywords:'blur soft gaussian privacy conceal defocous bokeh', run: () => setTool('blurbrush') },
   { id:'tool-heal', title:'AI Healing Patch Brush', desc:'Remove blemishes, objects, and imperfections', cat:'Tools', icon:'🩹', shortcut:'G', keywords:'heal patch blemish spot retouch skin clone fix defect remove object', run: () => setTool('heal') },
+  { id:'tool-laser', title:'⚡ Vanishing Laser Pointer', desc:'Draw live glowing neon trails that vanish across peers', cat:'Multiplayer', icon:'⚡', shortcut:'L', keywords:'laser pointer presentation neon draw live stream collab multiplayer', run: () => setTool('laser') },
+  { id:'tool-pins', title:'💬 Proofing Pins & Notes', desc:'Drop pinpoint comments and client revision requests on photo', cat:'Multiplayer', icon:'💬', shortcut:'P', keywords:'pins comments notes proofing review client annotation feedback', run: () => setTool('comment') },
+  { id:'collab-voice-mic', title:'🎙️ Toggle P2P Voice Intercom', desc:'1-Click encrypted peer-to-peer microphone voice intercom', cat:'Multiplayer', icon:'🎙️', shortcut:'', keywords:'voice mic intercom audio talk speak chat peer call webrtc', run: () => VoiceIntercomEngine.toggleMic() },
+  { id:'collab-proofing', title:'⭐ Client Proofing & Star Rating', desc:'Rate photo 1-5 stars and toggle In Review / Approved status', cat:'Multiplayer', icon:'⭐', shortcut:'', keywords:'proofing rating stars review approved revisions client status', run: () => openCollabModal('proofing') },
   { id:'tool-wand', title:'Magic Wand Selection', desc:'Select contiguous color areas with tolerance', cat:'Tools', icon:'🪄', shortcut:'W', keywords:'wand magic select flood color tolerance chroma marching ants', run: () => setTool('magic') },
   { id:'tool-lasso', title:'Polygonal Lasso Tool', desc:'Draw freehand custom polygonal pixel selections', cat:'Tools', icon:'➰', shortcut:'L', keywords:'lasso polygon freehand select outline lasso cut', run: () => setTool('lasso') },
   { id:'tool-wm', title:'Brand Stamp & Watermark', desc:'Position tiled copyright or signature mark', cat:'Tools', icon:'💧', shortcut:'', keywords:'watermark stamp brand copyright signature logo protect text', run: () => openWM() },
@@ -10099,6 +10556,8 @@ document.addEventListener('keydown', e => {
   else if (e.key === 'i') setTool('eye');
   else if (e.key === 'b') setTool('blurbrush');
   else if (e.key === 'g') setTool('heal');
+  else if (e.key === 'l' || e.key === 'L') setTool('laser');
+  else if (e.key === 'p' || e.key === 'P') setTool('comment');
   else if (e.key === 'Tab') { e.preventDefault(); toggleZenMode(); }
   else if (e.key === 's') toggleSnapEngine();
   else if (e.key === '0') { e.preventDefault(); zFit(); }
@@ -10350,6 +10809,795 @@ function loadPeerJs() {
   });
   return _peerJsScriptPromise;
 }
+
+// ══════════════════════════════════════════════════════════════════
+// 1. LASER ENGINE (Collaborative Vanishing Laser Pointer)
+// ══════════════════════════════════════════════════════════════════
+var LaserEngine = {
+  canvas: null,
+  ctx: null,
+  isDrawing: false,
+  points: [],
+  decayMs: 1100,
+  animRaf: null,
+  activeRemoteTips: new Map(),
+
+  init() {
+    this.canvas = document.getElementById('laser-canvas');
+    if (!this.canvas) return;
+    this.ctx = this.canvas.getContext('2d');
+    this.resize();
+  },
+
+  resize() {
+    if (!this.canvas) this.canvas = document.getElementById('laser-canvas');
+    if (!this.canvas) return;
+    if (canvas && canvas.width > 0) {
+      if (this.canvas.width !== canvas.width || this.canvas.height !== canvas.height) {
+        this.canvas.width = canvas.width;
+        this.canvas.height = canvas.height;
+      }
+    }
+  },
+
+  startStroke(cx, cy) {
+    if (!S.hasImg) return;
+    this.isDrawing = true;
+    this.addPoint(cx, cy);
+  },
+
+  addPoint(cx, cy) {
+    this.resize();
+    if (!this.canvas || this.canvas.width === 0) return;
+    const now = performance.now();
+    const nx = cx / this.canvas.width;
+    const ny = cy / this.canvas.height;
+    const myColor = (typeof CollabEngine !== 'undefined' && CollabEngine.myColor) ? CollabEngine.myColor : '#10b981';
+    const myName = (typeof CollabEngine !== 'undefined' && CollabEngine.myName) ? CollabEngine.myName : 'You';
+    const myId = (typeof CollabEngine !== 'undefined' && CollabEngine.myId) ? CollabEngine.myId : 'local';
+
+    const pt = { x: cx, y: cy, nx, ny, t: now, color: myColor, senderId: myId, name: myName };
+    this.points.push(pt);
+
+    if (typeof CollabEngine !== 'undefined' && CollabEngine.isActive && CollabEngine.isActive()) {
+      CollabEngine.broadcast({
+        type: 'collab_laser',
+        point: { nx, ny, t: Date.now() },
+        color: myColor,
+        name: myName
+      });
+    }
+
+    this.startAnimation();
+  },
+
+  endStroke() {
+    this.isDrawing = false;
+  },
+
+  receiveRemotePoints(pkt) {
+    this.resize();
+    if (!pkt || !pkt.point || !this.canvas || this.canvas.width === 0) return;
+    const cx = pkt.point.nx * this.canvas.width;
+    const cy = pkt.point.ny * this.canvas.height;
+    const now = performance.now();
+
+    const pt = {
+      x: cx, y: cy,
+      nx: pkt.point.nx, ny: pkt.point.ny,
+      t: now,
+      color: pkt.color || '#3b82f6',
+      senderId: pkt.senderId,
+      name: pkt.name || 'Artist'
+    };
+    this.points.push(pt);
+    this.updateRemoteTip(pkt.senderId, cx, cy, pkt.name, pkt.color);
+    this.startAnimation();
+  },
+
+  updateRemoteTip(peerId, cx, cy, name, color) {
+    if (!peerId || !this.canvas || this.canvas.width === 0) return;
+    let tip = this.activeRemoteTips.get(peerId);
+    if (!tip) {
+      tip = document.createElement('div');
+      tip.className = 'collab-laser-tip';
+      const cw = document.getElementById('cw');
+      if (cw) cw.appendChild(tip);
+      this.activeRemoteTips.set(peerId, tip);
+    }
+    const nx = (cx / this.canvas.width) * 100;
+    const ny = (cy / this.canvas.height) * 100;
+    tip.style.left = nx + '%';
+    tip.style.top = ny + '%';
+    tip.style.background = color || '#3b82f6';
+    tip.innerHTML = `⚡ ${name || 'Artist'}`;
+    tip.style.opacity = '1';
+
+    clearTimeout(tip._fadeTimer);
+    tip._fadeTimer = setTimeout(() => {
+      tip.style.opacity = '0';
+    }, 1000);
+  },
+
+  startAnimation() {
+    if (!this.animRaf) {
+      this.animRaf = requestAnimationFrame(this.tick.bind(this));
+    }
+  },
+
+  tick() {
+    if (!this.canvas) this.canvas = document.getElementById('laser-canvas');
+    if (!this.canvas) {
+      this.animRaf = null;
+      return;
+    }
+    if (!this.ctx) this.ctx = this.canvas.getContext('2d');
+    const now = performance.now();
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+    this.points = this.points.filter(pt => (now - pt.t) < this.decayMs);
+
+    if (this.points.length === 0) {
+      this.animRaf = null;
+      return;
+    }
+
+    const groups = new Map();
+    for (const pt of this.points) {
+      const id = pt.senderId || 'local';
+      if (!groups.has(id)) groups.set(id, []);
+      groups.get(id).push(pt);
+    }
+
+    groups.forEach((pts) => {
+      if (pts.length < 1) return;
+      const color = pts[0].color || '#10b981';
+
+      for (let i = 0; i < pts.length; i++) {
+        const pt = pts[i];
+        const age = now - pt.t;
+        const progress = Math.max(0, 1 - (age / this.decayMs));
+        if (progress <= 0) continue;
+
+        const p1 = pts[i - 1] || pt;
+        const p2 = pt;
+
+        // Outer neon glow
+        this.ctx.beginPath();
+        this.ctx.strokeStyle = color;
+        this.ctx.globalAlpha = Math.pow(progress, 1.4) * 0.85;
+        this.ctx.lineWidth = Math.max(3, 8 * progress);
+        this.ctx.lineCap = 'round';
+        this.ctx.lineJoin = 'round';
+        this.ctx.shadowBlur = 14;
+        this.ctx.shadowColor = color;
+        this.ctx.moveTo(p1.x, p1.y);
+        this.ctx.lineTo(p2.x, p2.y);
+        this.ctx.stroke();
+
+        // Inner white-hot laser core
+        this.ctx.beginPath();
+        this.ctx.strokeStyle = '#ffffff';
+        this.ctx.globalAlpha = Math.pow(progress, 2.2);
+        this.ctx.lineWidth = Math.max(1.5, 3.2 * progress);
+        this.ctx.shadowBlur = 4;
+        this.ctx.shadowColor = '#ffffff';
+        this.ctx.moveTo(p1.x, p1.y);
+        this.ctx.lineTo(p2.x, p2.y);
+        this.ctx.stroke();
+      }
+
+      const lastPt = pts[pts.length - 1];
+      const lastAge = now - lastPt.t;
+      const lastProgress = Math.max(0, 1 - (lastAge / this.decayMs));
+      if (lastProgress > 0) {
+        this.ctx.beginPath();
+        this.ctx.arc(lastPt.x, lastPt.y, Math.max(3.5, 7.5 * lastProgress), 0, Math.PI * 2);
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.globalAlpha = lastProgress;
+        this.ctx.shadowBlur = 18;
+        this.ctx.shadowColor = color;
+        this.ctx.fill();
+      }
+    });
+
+    this.ctx.globalAlpha = 1;
+    this.ctx.shadowBlur = 0;
+
+    if (this.points.length > 0 || this.isDrawing) {
+      this.animRaf = requestAnimationFrame(this.tick.bind(this));
+    } else {
+      this.animRaf = null;
+    }
+  },
+
+  clear() {
+    this.points = [];
+    if (this.canvas && this.ctx) {
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+    this.activeRemoteTips.forEach(tip => tip.remove());
+    this.activeRemoteTips.clear();
+    if (this.animRaf) {
+      cancelAnimationFrame(this.animRaf);
+      this.animRaf = null;
+    }
+  }
+};
+
+// ══════════════════════════════════════════════════════════════════
+// 2. COMMENTS & PROOFING PINS ENGINE
+// ══════════════════════════════════════════════════════════════════
+var CommentsEngine = {
+  pins: [],
+  nextPinNumber: 1,
+  activePrompt: null,
+  selectedPinId: null,
+  hideResolved: false,
+
+  init() {
+    this.render();
+  },
+
+  promptNewPin(cx, cy, e) {
+    if (!S.hasImg) return;
+    const cw = document.getElementById('cw');
+    if (!cw || !canvas || canvas.width === 0) return;
+
+    const nx = cx / canvas.width;
+    const ny = cy / canvas.height;
+    this.activePrompt = { cx, cy, nx, ny };
+
+    const promptCard = document.getElementById('collab-pin-prompt');
+    const textarea = document.getElementById('collab-pin-text');
+    if (!promptCard || !textarea) return;
+
+    promptCard.style.left = (nx * 100) + '%';
+    promptCard.style.top = (ny * 100) + '%';
+    promptCard.style.display = 'block';
+    textarea.value = '';
+    setTimeout(() => textarea.focus(), 60);
+
+    this.closeAllPopovers();
+  },
+
+  cancelPrompt() {
+    const promptCard = document.getElementById('collab-pin-prompt');
+    if (promptCard) promptCard.style.display = 'none';
+    this.activePrompt = null;
+  },
+
+  submitPrompt() {
+    const textarea = document.getElementById('collab-pin-text');
+    if (!textarea || !this.activePrompt) return;
+    const text = textarea.value.trim();
+    if (!text) {
+      this.cancelPrompt();
+      return;
+    }
+
+    const myName = (typeof CollabEngine !== 'undefined' && CollabEngine.myName) ? CollabEngine.myName : 'Creative Editor';
+    const myColor = (typeof CollabEngine !== 'undefined' && CollabEngine.myColor) ? CollabEngine.myColor : '#10b981';
+
+    const pin = {
+      id: 'pin_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+      number: this.nextPinNumber++,
+      nx: this.activePrompt.nx,
+      ny: this.activePrompt.ny,
+      text,
+      author: myName,
+      authorColor: myColor,
+      resolved: false,
+      createdAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+
+    this.pins.push(pin);
+    this.cancelPrompt();
+    this.render();
+    this.toggleDrawer(true);
+    toast(`📌 Added Pin #${pin.number}: "${text.substring(0, 24)}..."`);
+
+    if (typeof CollabEngine !== 'undefined' && CollabEngine.isActive && CollabEngine.isActive()) {
+      CollabEngine.broadcast({
+        type: 'collab_pin_add',
+        pin
+      });
+    }
+  },
+
+  addRemotePin(pin) {
+    if (!pin || !pin.id) return;
+    const exists = this.pins.some(p => p.id === pin.id);
+    if (!exists) {
+      this.pins.push(pin);
+      if (pin.number >= this.nextPinNumber) {
+        this.nextPinNumber = pin.number + 1;
+      }
+      this.render();
+      toast(`💬 ${pin.author || 'Collaborator'} placed Pin #${pin.number}`);
+    }
+  },
+
+  toggleResolve(pinId) {
+    const pin = this.pins.find(p => p.id === pinId);
+    if (!pin) return;
+    pin.resolved = !pin.resolved;
+    this.render();
+    toast(pin.resolved ? `✓ Resolved Pin #${pin.number}` : `Reopened Pin #${pin.number}`);
+
+    if (typeof CollabEngine !== 'undefined' && CollabEngine.isActive && CollabEngine.isActive()) {
+      CollabEngine.broadcast({
+        type: 'collab_pin_resolve',
+        pinId,
+        resolved: pin.resolved,
+        by: CollabEngine.myName
+      });
+    }
+  },
+
+  deletePin(pinId) {
+    const pin = this.pins.find(p => p.id === pinId);
+    const num = pin ? pin.number : '';
+    this.pins = this.pins.filter(p => p.id !== pinId);
+    this.render();
+    toast(`🗑 Deleted Pin #${num}`);
+
+    if (typeof CollabEngine !== 'undefined' && CollabEngine.isActive && CollabEngine.isActive()) {
+      CollabEngine.broadcast({
+        type: 'collab_pin_delete',
+        pinId
+      });
+    }
+  },
+
+  toggleFilterResolved() {
+    this.hideResolved = !this.hideResolved;
+    const btn = document.getElementById('collab-pins-filter-btn');
+    if (btn) btn.textContent = this.hideResolved ? 'Show Resolved' : 'Hide Resolved';
+    this.render();
+  },
+
+  toggleDrawer(forceState) {
+    const drawer = document.getElementById('collab-comments-drawer');
+    if (!drawer) return;
+    const isOpen = forceState !== undefined ? forceState : !drawer.classList.contains('open');
+    drawer.classList.toggle('open', isOpen);
+  },
+
+  closeAllPopovers() {
+    document.querySelectorAll('.collab-pin-popover').forEach(p => p.classList.remove('open'));
+    document.querySelectorAll('.collab-pin-marker').forEach(m => m.classList.remove('active-open'));
+    this.selectedPinId = null;
+  },
+
+  selectPin(pinId) {
+    this.closeAllPopovers();
+    this.selectedPinId = pinId;
+    const marker = document.querySelector(`.collab-pin-marker[data-id="${pinId}"]`);
+    if (marker) {
+      marker.classList.add('active-open');
+      const popover = marker.querySelector('.collab-pin-popover');
+      if (popover) popover.classList.add('open');
+    }
+
+    document.querySelectorAll('.collab-drawer-item').forEach(item => {
+      item.classList.toggle('active-pin', item.getAttribute('data-id') === pinId);
+    });
+  },
+
+  render() {
+    const layer = document.getElementById('collab-pins-layer');
+    const drawerList = document.getElementById('collab-drawer-list');
+    const countBadge = document.getElementById('collab-pins-count-badge');
+    if (!layer) return;
+
+    layer.innerHTML = '';
+    const visiblePins = this.hideResolved ? this.pins.filter(p => !p.resolved) : this.pins;
+
+    visiblePins.forEach(pin => {
+      const marker = document.createElement('div');
+      marker.className = 'collab-pin-marker' + (pin.resolved ? ' resolved' : '') + (this.selectedPinId === pin.id ? ' active-open' : '');
+      marker.setAttribute('data-id', pin.id);
+      marker.style.left = (pin.nx * 100) + '%';
+      marker.style.top = (pin.ny * 100) + '%';
+
+      marker.innerHTML = `
+        <div class="collab-pin-head" style="background:${pin.authorColor || '#10b981'};">
+          <span>${pin.resolved ? '✓' : pin.number}</span>
+        </div>
+        <div class="collab-pin-pulse"></div>
+        <div class="collab-pin-popover ${this.selectedPinId === pin.id ? 'open' : ''}" onclick="event.stopPropagation()">
+          <div class="collab-pin-popover-header">
+            <div class="collab-pin-author-badge">
+              <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${pin.authorColor || '#10b981'}"></span>
+              <strong style="color:var(--text-main)">${pin.author || 'Collaborator'}</strong>
+            </div>
+            <span class="collab-pin-time">${pin.createdAt || ''}</span>
+          </div>
+          <div class="collab-pin-body">${pin.text}</div>
+          <div class="collab-pin-actions">
+            <button class="collab-pin-act-btn collab-pin-act-resolve" onclick="CommentsEngine.toggleResolve('${pin.id}')">
+              ${pin.resolved ? '↺ Reopen' : '✓ Resolve'}
+            </button>
+            <button class="collab-pin-act-btn collab-pin-act-del" onclick="CommentsEngine.deletePin('${pin.id}')" title="Delete pin">
+              🗑 Delete
+            </button>
+          </div>
+        </div>
+      `;
+
+      marker.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (this.selectedPinId === pin.id) {
+          this.closeAllPopovers();
+        } else {
+          this.selectPin(pin.id);
+        }
+      });
+
+      layer.appendChild(marker);
+    });
+
+    if (countBadge) countBadge.textContent = String(this.pins.length);
+    if (drawerList) {
+      if (this.pins.length === 0) {
+        drawerList.innerHTML = `
+          <div style="font-size:11px;color:var(--text-dim);text-align:center;padding:28px 10px;line-height:1.5">
+            No pins yet.<br>Choose the <strong>Pins (P)</strong> tool and click any point on your photo to add client annotations or revision requests.
+          </div>
+        `;
+      } else {
+        drawerList.innerHTML = this.pins.map(pin => `
+          <div class="collab-drawer-item ${pin.resolved ? 'resolved' : ''} ${this.selectedPinId === pin.id ? 'active-pin' : ''}" data-id="${pin.id}" onclick="CommentsEngine.selectPin('${pin.id}')">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+              <div style="display:flex;align-items:center;gap:6px">
+                <span style="font-size:10px;font-weight:800;background:${pin.authorColor || '#10b981'};color:#fff;padding:1px 5px;border-radius:4px">#${pin.number}</span>
+                <strong style="font-size:11px;color:var(--text-main)">${pin.author}</strong>
+              </div>
+              <span style="font-size:9.5px;color:var(--text-dim)">${pin.createdAt || ''}</span>
+            </div>
+            <div style="font-size:11.5px;color:var(--text);margin-bottom:6px;line-height:1.35;word-break:break-word">${pin.text}</div>
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <span style="font-size:10px;font-weight:700;color:${pin.resolved ? '#10b981' : 'var(--text-muted)'}">${pin.resolved ? '✓ Resolved' : '● Active'}</span>
+              <button class="collab-pin-act-btn" onclick="event.stopPropagation(); CommentsEngine.toggleResolve('${pin.id}')" style="font-size:10px">
+                ${pin.resolved ? '↺ Reopen' : '✓ Resolve'}
+              </button>
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+  }
+};
+
+// ══════════════════════════════════════════════════════════════════
+// 3. VOICE INTERCOM ENGINE (WebRTC Audio Chat)
+// ══════════════════════════════════════════════════════════════════
+var VoiceIntercomEngine = {
+  localStream: null,
+  isMicOn: false,
+  activeCalls: new Map(),
+  audioElements: new Map(),
+  audioContext: null,
+  analyser: null,
+  vadTimer: null,
+  isSpeaking: false,
+
+  async toggleMic() {
+    if (this.isMicOn) {
+      this.stopMic();
+    } else {
+      await this.startMic();
+    }
+  },
+
+  async startMic() {
+    try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        toast('🎙️ Microphone access is not supported in this browser.');
+        return;
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        },
+        video: false
+      });
+
+      this.localStream = stream;
+      this.isMicOn = true;
+      this.updateMicUI(true);
+      toast('🎙️ Live Voice Intercom active: Speaking live to peers!');
+
+      this.initVAD(stream);
+
+      if (typeof CollabEngine !== 'undefined' && CollabEngine.peerJsInstance && CollabEngine.peerConnections) {
+        CollabEngine.peerConnections.forEach((conn, peerId) => {
+          this.callPeer(peerId);
+        });
+      }
+    } catch(err) {
+      console.warn('Microphone error:', err);
+      toast('⚠️ Could not access microphone: ' + (err.message || 'Permission denied'));
+      this.stopMic();
+    }
+  },
+
+  stopMic() {
+    if (this.localStream) {
+      this.localStream.getTracks().forEach(track => track.stop());
+      this.localStream = null;
+    }
+    this.isMicOn = false;
+    this.isSpeaking = false;
+    clearInterval(this.vadTimer);
+    if (this.audioContext && this.audioContext.state !== 'closed') {
+      try { this.audioContext.close(); } catch(e){}
+    }
+    this.audioContext = null;
+    this.analyser = null;
+
+    this.activeCalls.forEach(call => {
+      try { call.close(); } catch(e){}
+    });
+    this.activeCalls.clear();
+
+    this.updateMicUI(false);
+    toast('🎙️ Microphone muted.');
+
+    if (typeof CollabEngine !== 'undefined' && CollabEngine.isActive && CollabEngine.isActive()) {
+      CollabEngine.broadcast({
+        type: 'voice_speaking',
+        isSpeaking: false
+      });
+    }
+  },
+
+  callPeer(peerId) {
+    if (!this.localStream || !CollabEngine.peerJsInstance) return;
+    try {
+      const call = CollabEngine.peerJsInstance.call(peerId, this.localStream);
+      this.setupCall(call, peerId);
+    } catch(err) {
+      console.warn('PeerJS call error:', err);
+    }
+  },
+
+  handleIncomingCall(call) {
+    if (!call) return;
+    const peerId = call.peer;
+    call.answer(this.localStream || undefined);
+    this.setupCall(call, peerId);
+  },
+
+  setupCall(call, peerId) {
+    this.activeCalls.set(peerId, call);
+
+    call.on('stream', remoteStream => {
+      this.attachRemoteStream(peerId, remoteStream);
+    });
+
+    call.on('close', () => {
+      this.activeCalls.delete(peerId);
+      this.removeAudioElement(peerId);
+    });
+
+    call.on('error', (err) => {
+      console.warn('Call error with peer ' + peerId, err);
+      this.activeCalls.delete(peerId);
+      this.removeAudioElement(peerId);
+    });
+  },
+
+  attachRemoteStream(peerId, remoteStream) {
+    let audio = this.audioElements.get(peerId);
+    if (!audio) {
+      audio = document.createElement('audio');
+      audio.autoplay = true;
+      audio.playsInline = true;
+      audio.style.display = 'none';
+      document.body.appendChild(audio);
+      this.audioElements.set(peerId, audio);
+    }
+    audio.srcObject = remoteStream;
+    audio.play().catch(e => console.warn('Audio play notice:', e));
+  },
+
+  removeAudioElement(peerId) {
+    const audio = this.audioElements.get(peerId);
+    if (audio) {
+      try { audio.srcObject = null; audio.remove(); } catch(e){}
+      this.audioElements.delete(peerId);
+    }
+  },
+
+  initVAD(stream) {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      this.audioContext = new AudioCtx();
+      const source = this.audioContext.createMediaStreamSource(stream);
+      this.analyser = this.audioContext.createAnalyser();
+      this.analyser.fftSize = 256;
+      source.connect(this.analyser);
+
+      const dataArray = new Uint8Array(this.analyser.frequencyBinCount);
+      clearInterval(this.vadTimer);
+
+      this.vadTimer = setInterval(() => {
+        if (!this.isMicOn || !this.analyser) return;
+        this.analyser.getByteFrequencyData(dataArray);
+        let sum = 0;
+        for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
+        const avg = sum / dataArray.length;
+        const speakingNow = avg > 14;
+
+        if (speakingNow !== this.isSpeaking) {
+          this.isSpeaking = speakingNow;
+          this.updateSpeakingUI(CollabEngine.myId, speakingNow);
+
+          if (CollabEngine.isActive && CollabEngine.isActive()) {
+            CollabEngine.broadcast({
+              type: 'voice_speaking',
+              isSpeaking: speakingNow
+            });
+          }
+        }
+      }, 90);
+    } catch(e) {
+      console.warn('VAD init note:', e);
+    }
+  },
+
+  updateSpeakingUI(peerId, speaking) {
+    const layer = document.getElementById('collab-cursors-layer');
+    if (layer) {
+      const cursor = layer.querySelector(`.collab-cursor[data-peer="${peerId}"]`);
+      if (cursor) {
+        cursor.classList.toggle('speaking-pulse', speaking);
+      }
+    }
+    const micBtn = document.getElementById('collab-mic-btn');
+    const isMe = peerId === 'local' || (typeof CollabEngine !== 'undefined' && peerId === CollabEngine.myId);
+    if (micBtn && isMe) {
+      micBtn.style.transform = speaking ? 'scale(1.1)' : 'scale(1)';
+      micBtn.classList.toggle('speaking-pulse', speaking);
+    }
+  },
+
+  updateMicUI(on) {
+    const btn = document.getElementById('collab-mic-btn');
+    const txt = document.getElementById('collab-mic-txt');
+    const modalBtn = document.getElementById('collab-modal-mic-btn');
+    const modalTxt = document.getElementById('collab-modal-mic-txt');
+
+    if (btn) {
+      btn.classList.toggle('mic-live', on);
+      if (txt) txt.textContent = on ? 'Live' : 'Mic';
+    }
+    if (modalBtn) {
+      modalBtn.classList.toggle('active-approved', on);
+      if (modalTxt) modalTxt.textContent = on ? '🎙️ Mic: Live (Broadcasting)' : '🎙️ Mic: Muted';
+    }
+  }
+};
+
+// ══════════════════════════════════════════════════════════════════
+// 4. CLIENT PROOFING ENGINE (5-Star Rating & Status Bar)
+// ══════════════════════════════════════════════════════════════════
+var ProofingEngine = {
+  rating: 5,
+  status: 'review',
+  updatedBy: '',
+  updatedAt: '',
+
+  init() {
+    this.render();
+  },
+
+  getState() {
+    return {
+      rating: this.rating,
+      status: this.status,
+      updatedBy: this.updatedBy,
+      updatedAt: this.updatedAt
+    };
+  },
+
+  setRating(stars) {
+    this.rating = Math.max(1, Math.min(5, stars));
+    this.updatedBy = (typeof CollabEngine !== 'undefined' && CollabEngine.myName) ? CollabEngine.myName : 'User';
+    this.updatedAt = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    this.render();
+    toast(`⭐ Rated ${this.rating} of 5 stars`);
+    this.broadcastUpdate();
+  },
+
+  setStatus(newStatus) {
+    if (!['review', 'approved', 'revisions'].includes(newStatus)) return;
+    this.status = newStatus;
+    this.updatedBy = (typeof CollabEngine !== 'undefined' && CollabEngine.myName) ? CollabEngine.myName : 'User';
+    this.updatedAt = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    this.render();
+
+    const labelMap = {
+      'approved': '✓ Approved for Export',
+      'revisions': '⚠️ Revisions Requested',
+      'review': '🕒 In Review'
+    };
+    toast(`Proofing status set to: ${labelMap[newStatus]}`);
+    this.broadcastUpdate();
+  },
+
+  receiveUpdate(data) {
+    if (!data) return;
+    if (data.rating !== undefined) this.rating = data.rating;
+    if (data.status !== undefined) this.status = data.status;
+    if (data.updatedBy) this.updatedBy = data.updatedBy;
+    if (data.updatedAt) this.updatedAt = data.updatedAt;
+    this.render();
+  },
+
+  broadcastUpdate() {
+    if (typeof CollabEngine !== 'undefined' && CollabEngine.isActive && CollabEngine.isActive()) {
+      CollabEngine.broadcast({
+        type: 'collab_proofing',
+        rating: this.rating,
+        status: this.status,
+        updatedBy: this.updatedBy,
+        updatedAt: this.updatedAt
+      });
+    }
+  },
+
+  render() {
+    const badge = document.getElementById('collab-proofing-topbar-badge');
+    const starsLabel = document.getElementById('collab-proof-stars');
+    const statusLabel = document.getElementById('collab-proof-status-label');
+
+    if (badge) {
+      if (S.hasImg) {
+        badge.style.display = 'inline-flex';
+        badge.className = 'collab-proofing-topbar-badge status-' + this.status;
+
+        const starStr = '★ ' + this.rating;
+        if (starsLabel) starsLabel.textContent = starStr;
+
+        const statusNames = {
+          'approved': 'Approved',
+          'revisions': 'Revisions',
+          'review': 'In Review'
+        };
+        if (statusLabel) statusLabel.textContent = statusNames[this.status] || 'Proof';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+
+    const starBtns = document.querySelectorAll('.collab-star-btn');
+    starBtns.forEach(btn => {
+      const val = parseInt(btn.getAttribute('data-val')) || 0;
+      btn.classList.toggle('active', val <= this.rating);
+      btn.textContent = val <= this.rating ? '★' : '☆';
+    });
+
+    const chipReview = document.getElementById('chip-proof-review');
+    const chipApproved = document.getElementById('chip-proof-approved');
+    const chipRevisions = document.getElementById('chip-proof-revisions');
+
+    if (chipReview) chipReview.className = 'collab-status-chip' + (this.status === 'review' ? ' active-review' : '');
+    if (chipApproved) chipApproved.className = 'collab-status-chip' + (this.status === 'approved' ? ' active-approved' : '');
+    if (chipRevisions) chipRevisions.className = 'collab-status-chip' + (this.status === 'revisions' ? ' active-revisions' : '');
+
+    const metaLabel = document.getElementById('collab-proof-meta-txt');
+    if (metaLabel) {
+      metaLabel.textContent = this.updatedBy ? `Updated by ${this.updatedBy} at ${this.updatedAt}` : 'Proofing status syncs instantly to all collaborators';
+    }
+  }
+};
 
 var CollabEngine = window.CollabEngine = {
   active: false,
@@ -10612,6 +11860,9 @@ var CollabEngine = window.CollabEngine = {
     const cursorsLayer = document.getElementById('collab-cursors-layer');
     if (cursorsLayer) cursorsLayer.innerHTML = '';
 
+    if (typeof LaserEngine !== 'undefined') LaserEngine.clear();
+    if (typeof VoiceIntercomEngine !== 'undefined') VoiceIntercomEngine.stopMic();
+
     const viewBanner = document.getElementById('collab-view-banner');
     if (viewBanner) viewBanner.style.display = 'none';
 
@@ -10659,6 +11910,12 @@ var CollabEngine = window.CollabEngine = {
 
         p.on('connection', (conn) => {
           this.setupDataConn(conn);
+        });
+
+        p.on('call', (call) => {
+          if (typeof VoiceIntercomEngine !== 'undefined') {
+            VoiceIntercomEngine.handleIncomingCall(call);
+          }
         });
 
         p.on('error', (err) => {
@@ -10884,6 +12141,47 @@ var CollabEngine = window.CollabEngine = {
       case 'cursor_move':
         this.onCursorMove(pkt);
         break;
+      case 'collab_laser':
+        if (typeof LaserEngine !== 'undefined') LaserEngine.receiveRemotePoints(pkt);
+        break;
+      case 'collab_pin_add':
+        if (typeof CommentsEngine !== 'undefined') CommentsEngine.addRemotePin(pkt.pin);
+        break;
+      case 'collab_pin_resolve':
+        if (typeof CommentsEngine !== 'undefined') {
+          const pin = CommentsEngine.pins.find(p => p.id === pkt.pinId);
+          if (pin) pin.resolved = pkt.resolved;
+          CommentsEngine.render();
+          toast((pkt.resolved ? '✓ Pin resolved by ' : '↺ Pin reopened by ') + (pkt.by || 'collaborator'));
+        }
+        break;
+      case 'collab_pin_delete':
+        if (typeof CommentsEngine !== 'undefined') {
+          CommentsEngine.pins = CommentsEngine.pins.filter(p => p.id !== pkt.pinId);
+          CommentsEngine.render();
+        }
+        break;
+      case 'sync_collab_extras':
+        if (typeof CommentsEngine !== 'undefined' && pkt.pins) {
+          CommentsEngine.pins = pkt.pins;
+          CommentsEngine.nextPinNumber = Math.max(1, ...pkt.pins.map(p => p.number || 0)) + 1;
+          CommentsEngine.render();
+        }
+        if (typeof ProofingEngine !== 'undefined' && pkt.proofing) {
+          ProofingEngine.receiveUpdate(pkt.proofing);
+        }
+        break;
+      case 'collab_proofing':
+        if (typeof ProofingEngine !== 'undefined') {
+          ProofingEngine.receiveUpdate(pkt);
+          toast(`⭐ Proofing updated: ${pkt.status} (${pkt.rating}★)`);
+        }
+        break;
+      case 'voice_speaking':
+        if (typeof VoiceIntercomEngine !== 'undefined') {
+          VoiceIntercomEngine.updateSpeakingUI(pkt.senderId, pkt.isSpeaking);
+        }
+        break;
       case 'set_mode':
         this.onModeChanged(pkt);
         break;
@@ -10946,6 +12244,21 @@ var CollabEngine = window.CollabEngine = {
     }
     this.broadcast(slidersPkt);
     this.broadcast(layersPkt);
+
+    // 4. Sync Pins & Proofing State
+    if (typeof CommentsEngine !== 'undefined' && typeof ProofingEngine !== 'undefined') {
+      const extrasPkt = {
+        type: 'sync_collab_extras',
+        pins: CommentsEngine.pins,
+        proofing: ProofingEngine.getState(),
+        senderId: this.myId,
+        roomId: this.roomId
+      };
+      if (sourceConn && sourceConn.open) {
+        try { sourceConn.send(extrasPkt); } catch(e){}
+      }
+      this.broadcast(extrasPkt);
+    }
   },
 
   onHostHeartbeat(pkt) {
@@ -11357,7 +12670,10 @@ var CollabEngine = window.CollabEngine = {
       if (btn) btn.classList.add('active-collab');
       if (idleWrap) idleWrap.style.display = 'none';
       if (activeWrap) activeWrap.style.display = 'inline-flex';
-      if (pillRoom) pillRoom.textContent = this.roomId;
+      if (pillRoom) {
+        const parts = (this.roomId || '').split('-');
+        pillRoom.textContent = parts.length > 1 ? parts[1] : 'Live';
+      }
       if (pillCount) pillCount.textContent = String(totalPeople);
 
       if (!this.isHost && this.roomMode === 'view') {
